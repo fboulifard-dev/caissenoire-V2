@@ -1,0 +1,145 @@
+<ion-header >
+  <ion-toolbar color="primary">
+    <ion-title>{{ seasonYear ? seasonYear : 'Synthèse' }}</ion-title>
+
+    
+  </ion-toolbar>
+</ion-header>
+
+<ion-popover trigger="profile-menu-trigger" triggerAction="click">
+  <ng-template>
+    <ion-content class="profile-popover">
+      <div class="profile-header">
+        <ion-icon name="person-circle-outline" class="profile-icon"></ion-icon>
+        <div>
+          <strong>{{ firstName }}</strong>
+          <div>{{ lastName }}</div>
+        </div>
+      </div>
+
+      <ion-item lines="none" button detail="false" (click)="logout()">
+        <ion-icon name="log-out-outline" slot="start" color="danger"></ion-icon>
+        <ion-label color="danger">Déconnexion</ion-label>
+      </ion-item>
+    </ion-content>
+  </ng-template>
+</ion-popover>
+
+<ion-content class="ion-padding">
+  <section class="summary-section">
+    <h2>Caisse commune</h2>
+    <div class="summary-cards">
+      <ion-card button="true" [routerLink]="seasonId ? ['/saisons', seasonId, 'paiements'] : null" class="payments-summary-card">
+      <ion-card-header><ion-card-title>Paiements</ion-card-title></ion-card-header>
+      <ion-card-content>
+        <ion-spinner *ngIf="summaryLoading" name="crescent"></ion-spinner>
+        <div *ngIf="!summaryLoading" class="payments-summary">
+          <div><strong>{{ paymentCount }}</strong><span>Nb</span></div>
+          <div><strong>{{ formatPaymentTotal() }}</strong><span>Payé</span></div>
+        </div>
+        <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
+      </ion-card-content>
+      </ion-card>
+
+      <ion-card button="true" [routerLink]="seasonId ? ['/saisons', seasonId, 'amendes'] : null" class="fines-summary-card">
+      <ion-card-header><ion-card-title>Amendes</ion-card-title></ion-card-header>
+      <ion-card-content>
+        <ion-spinner *ngIf="summaryLoading" name="crescent"></ion-spinner>
+        <div *ngIf="!summaryLoading" class="payments-summary">
+          <div><strong>{{ fineCount }}</strong><span>Nb</span></div>
+          <div><strong>{{ formatFineTotal() }}</strong><span>Total</span></div>
+        </div>
+        <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
+      </ion-card-content>
+      </ion-card>
+
+      <ion-card class="balance-summary-card">
+      <ion-card-header><ion-card-title>Balance</ion-card-title></ion-card-header>
+      <ion-card-content>
+        <ion-spinner *ngIf="summaryLoading" name="crescent"></ion-spinner>
+        <div *ngIf="!summaryLoading" class="payments-summary">
+          <div><strong>{{ formatAmountDue() }}</strong><span>Dû</span></div>
+        </div>
+      </ion-card-content>
+      </ion-card>
+    </div>
+  </section>
+
+  <section class="summary-section player-summary-section">
+    <div class="player-summary-header">
+      <h2 >{{ selectedPlayerId === connectedPlayerId ? 'Ma caisse' : 'Caisse noire du joueur' }}</h2>
+      <ion-select
+        *ngIf="players.length"
+        label="Joueur"
+        labelPlacement="stacked"
+        [(ngModel)]="selectedPlayerId"
+        (ionChange)="onPlayerChanged()"
+        interface="popover">
+        <ion-select-option *ngFor="let player of players" [value]="player.id">
+          {{ playerName(player.id) }}
+        </ion-select-option>
+      </ion-select>
+    </div>
+
+    <div class="summary-cards">
+      <ion-card button="true" [routerLink]="seasonId ? ['/saisons', seasonId, 'paiements'] : null" [queryParams]="selectedPlayerId ? { joueur: selectedPlayerId } : null" class="payments-summary-card">
+      <ion-card-header><ion-card-title>Paiements</ion-card-title></ion-card-header>
+      <ion-card-content>
+        <ion-spinner *ngIf="summaryLoading" name="crescent"></ion-spinner>
+        <div *ngIf="!summaryLoading" class="payments-summary">
+          <div><strong>{{ playerPaymentCount }}</strong><span>Nb</span></div>
+          <div><strong>{{ formatPlayerPaymentTotal() }}</strong><span>Payé</span></div>
+        </div>
+        <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
+      </ion-card-content>
+      </ion-card>
+
+      <ion-card button="true" [routerLink]="seasonId ? ['/saisons', seasonId, 'amendes'] : null" [queryParams]="selectedPlayerId ? { joueur: selectedPlayerId } : null" class="fines-summary-card">
+      <ion-card-header><ion-card-title>Amendes</ion-card-title></ion-card-header>
+      <ion-card-content>
+        <ion-spinner *ngIf="summaryLoading" name="crescent"></ion-spinner>
+        <div *ngIf="!summaryLoading" class="payments-summary">
+          <div><strong>{{ playerFineCount }}</strong><span>Nb</span></div>
+          <div><strong>{{ formatPlayerFineTotal() }}</strong><span>Total</span></div>
+        </div>
+        <ion-icon name="arrow-forward-outline" aria-hidden="true"></ion-icon>
+      </ion-card-content>
+      </ion-card>
+
+      <ion-card class="balance-summary-card">
+      <ion-card-header><ion-card-title>Balance</ion-card-title></ion-card-header>
+      <ion-card-content>
+        <ion-spinner *ngIf="summaryLoading" name="crescent"></ion-spinner>
+        <div *ngIf="!summaryLoading" class="payments-summary">
+          <div><strong>{{ formatPlayerAmountDue() }}</strong><span>Dû</span></div>
+        </div>
+      </ion-card-content>
+      </ion-card>
+
+      <ion-card button="true" [routerLink]="seasonId ? ['/saisons', seasonId, 'classement'] : null" class="classment-summary-card">
+      <ion-card-header><ion-card-title>Classement</ion-card-title></ion-card-header>
+      <ion-card-content>
+        <ion-spinner *ngIf="summaryLoading" name="crescent"></ion-spinner>
+        <div *ngIf="!summaryLoading" class="payments-summary">
+          <div><strong>{{ formatPlayerRank() }}</strong><span>Position</span></div>
+          <div><strong>{{ rankingSize }}</strong><span>Joueurs</span></div>
+        </div>
+      </ion-card-content>
+      </ion-card>
+    </div>
+  </section>
+
+  <ion-fab *ngIf="seasonId" slot="fixed" vertical="bottom" horizontal="center">
+    <ion-fab-button aria-label="Ajouter une ligne">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+    <ion-fab-list side="top">
+      <ion-fab-button color="primary" [routerLink]="['/saisons', seasonId, 'paiements', 'create']" aria-label="Créer un paiement">
+        <ion-icon name="cash-outline"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-button color="danger" [routerLink]="['/saisons', seasonId, 'amendes', 'create']" aria-label="Créer une amende">
+        <ion-icon name="warning-outline"></ion-icon>
+      </ion-fab-button>
+    </ion-fab-list>
+  </ion-fab>
+</ion-content>

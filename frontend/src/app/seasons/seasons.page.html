@@ -1,0 +1,24 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Saisons</ion-title>
+    
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <h1>Bonjour {{ userName }}</h1>
+  <p>Choisissez une saison</p>
+  <ion-list *ngIf="!loading">
+    <ion-item *ngFor="let season of seasons" button detail (click)="openSeason(season)" [class.inactive-season]="!season.active">
+      <ion-label>
+        <h2>{{ season.id }}</h2>
+        <p>{{ season.name || (season.active ? 'Saison active' : 'Saison archivée') }}</p>
+      </ion-label>
+      <ion-badge slot="end" [color]="season.active ? 'success' : 'medium'">
+        {{ season.active ? 'Active' : 'Lecture seule' }}
+      </ion-badge>
+    </ion-item>
+  </ion-list>
+  <ion-spinner *ngIf="loading"></ion-spinner>
+  <ion-text color="danger" *ngIf="error"><p>{{ error }}</p></ion-text>
+</ion-content>

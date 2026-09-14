@@ -1,0 +1,33 @@
+form {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+ion-list {
+  margin-bottom: 24px;
+}
+
+ion-button {
+  margin-top: 8px;
+}
+
+ion-text p {
+  margin: 16px 0;
+}
+
+.image-picker input {
+  max-width: 190px;
+}
+
+.image-preview {
+  display: block;
+  width: 120px;
+  height: 120px;
+  margin: 8px 16px 16px;
+}
+
+.image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

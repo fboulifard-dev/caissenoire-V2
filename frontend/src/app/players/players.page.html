@@ -1,0 +1,24 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-button (click)="back()" aria-label="Retour">
+        <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Joueurs</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-list *ngIf="!loading">
+    <ion-item *ngFor="let player of players">
+      <ion-label>
+        <h2>{{ player.firstName || player.lastName ? (player.firstName + ' ' + player.lastName) : (player.name || player.email || player.id) }}</h2>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+  <ion-text color="medium" *ngIf="!loading && !players.length">
+    <p>Aucun joueur dans cette saison.</p>
+  </ion-text>
+  <ion-spinner *ngIf="loading"></ion-spinner>
+</ion-content>

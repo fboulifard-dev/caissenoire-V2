@@ -1,0 +1,46 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button [defaultHref]="seasonId ? '/saisons/' + seasonId : '/saisons'"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ seasonYear ? 'Paiements - ' + seasonYear : 'Paiements' }}</ion-title>
+    
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+  <ion-list *ngIf="!loading">
+    <ion-item-sliding *ngFor="let p of payments">
+      <ion-item>
+        <ion-thumbnail slot="start" *ngIf="p.imageData">
+          <img [src]="p.imageData" alt="Justificatif du paiement" />
+        </ion-thumbnail>
+        <ion-label>
+          <h2>{{ p.reference || p.id }}</h2>
+          <p>
+            {{ p.date || '' }} · Joueur : {{ p.playerName || p.playerId || 'Inconnu' }}
+            · Enregistré par {{ p.createdByName || p.createdBy || 'Inconnu' }}
+          </p>
+        </ion-label>
+        <ion-note slot="end">{{ (p.amount || 0) | currency:'EUR':'symbol':'1.0-0' }}</ion-note>
+      </ion-item>
+      <ion-item-options side="start">
+        <ion-item-option color="danger" (click)="deletePayment(p)" [disabled]="readOnly" aria-label="Supprimer le paiement">
+          <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+        </ion-item-option>
+      </ion-item-options>
+      <ion-item-options side="end">
+        <ion-item-option color="primary" (click)="editPayment(p)" [disabled]="readOnly" aria-label="Modifier le paiement">
+          <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+  </ion-list>
+  <ion-spinner *ngIf="loading"></ion-spinner>
+  <ion-fab slot="fixed" vertical="bottom" horizontal="center">
+    <ion-fab-button *ngIf="!readOnly" [routerLink]="seasonId ? ['/saisons', seasonId, 'paiements', 'create'] : null" aria-label="Créer un paiement">
+      <ion-icon name="add" ></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

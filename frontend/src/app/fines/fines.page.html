@@ -1,0 +1,42 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button [defaultHref]="seasonId ? '/saisons/' + seasonId : '/saisons'"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ seasonYear ? 'Amendes - ' + seasonYear : 'Amendes' }}</ion-title>
+    
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-item *ngIf="playerName"><ion-label>{{ playerName }}</ion-label></ion-item>
+  <ion-list *ngIf="!loading">
+    <ion-item-sliding *ngFor="let f of fines">
+      <ion-item>
+        <ion-label>
+          <h2>{{ f.playerName || playerName || f.playerId }}</h2>
+          <p>{{ f.date }} - {{ f.ruleLabel || f.title || f.id }} - {{ f.comment || '' }}</p>
+        </ion-label>
+        <ion-thumbnail slot="end" *ngIf="f.photo"><img [src]="f.photo" alt="Photo de l'amende"></ion-thumbnail>
+        <ion-note slot="end">{{ (f.amount || 0) | currency:'EUR':'symbol':'1.0-0' }} </ion-note>
+      </ion-item>
+      <ion-item-options side="start">
+        <ion-item-option color="danger" (click)="deleteFine(f)" [disabled]="readOnly" aria-label="Supprimer l'amende">
+          <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+        </ion-item-option>
+      </ion-item-options>
+      <ion-item-options side="end">
+        <ion-item-option color="primary" (click)="editFine(f)" [disabled]="readOnly" aria-label="Modifier l'amende">
+          <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+  </ion-list>
+  <ion-spinner *ngIf="loading"></ion-spinner>
+
+  <ion-fab slot="fixed" vertical="bottom" horizontal="center">
+    <ion-fab-button *ngIf="!readOnly" [routerLink]="seasonId ? ['/saisons', seasonId, 'amendes', 'create'] : null" aria-label="Créer une amende">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

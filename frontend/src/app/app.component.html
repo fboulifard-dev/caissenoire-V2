@@ -1,0 +1,50 @@
+<ion-app>
+
+  <ion-popover
+    *ngIf="authService.currentUser$ | async"
+    trigger="global-profile-menu-trigger"
+    triggerAction="click">
+    <ng-template>
+      <ion-list>
+        <ion-item button detail="false" (click)="logout()">
+          <ion-icon name="log-out-outline" slot="start" color="danger"></ion-icon>
+          <ion-label color="danger">Déconnexion</ion-label>
+        </ion-item>
+      </ion-list>
+    </ng-template>
+  </ion-popover>
+  <ion-content>
+    <ion-router-outlet></ion-router-outlet>
+  </ion-content>
+
+  <ion-footer *ngIf="isSeasonPage" >
+    <ion-toolbar color="primary">
+      <ion-buttons class="season-navigation" role="navigation" aria-label="Navigation de la saison">
+        <ion-button routerLink="/saisons" routerLinkActive="season-navigation-active" [routerLinkActiveOptions]="{ exact: true }" aria-label="Retour à la liste des saisons">
+          <span class="season-navigation-content">
+            <ion-icon name="albums-outline"></ion-icon>
+            <span>Saisons</span>
+          </span>
+        </ion-button>
+        <ion-button [routerLink]="['/saisons', currentSeasonId]" routerLinkActive="season-navigation-active" [routerLinkActiveOptions]="{ exact: true }" aria-label="Synthèse de la saison">
+          <span class="season-navigation-content">
+            <ion-icon name="home-outline"></ion-icon>
+            <span>Synthèse</span>
+          </span>
+        </ion-button>
+        <ion-button [routerLink]="['/saisons', currentSeasonId, 'classement']" routerLinkActive="season-navigation-active" [routerLinkActiveOptions]="{ exact: true }" aria-label="Classement de la saison">
+          <span class="season-navigation-content">
+            <ion-icon name="trophy-outline"></ion-icon>
+            <span>Classement</span>
+          </span>
+        </ion-button>
+        <ion-button [routerLink]="['/saisons', currentSeasonId, 'regles']" routerLinkActive="season-navigation-active" [routerLinkActiveOptions]="{ exact: true }" aria-label="Règles de la saison">
+          <span class="season-navigation-content">
+            <ion-icon name="book-outline"></ion-icon>
+            <span>Règles</span>
+          </span>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-footer>
+</ion-app>

@@ -1,0 +1,21 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Connexion</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-item>
+    <ion-label position="floating">Email</ion-label>
+    <ion-input [(ngModel)]="email"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label position="floating">Mot de passe</ion-label>
+    <ion-input type="password" [(ngModel)]="password"></ion-input>
+  </ion-item>
+
+  <ion-button expand="full" (click)="signInEmail()" [disabled]="loading">Se connecter</ion-button>
+  <ion-button expand="full" (click)="signInGoogle()" [disabled]="loading">Se connecter avec Google</ion-button>
+  <ion-button expand="full" (click)="signInApple()" [disabled]="loading">Se connecter avec Apple</ion-button>
+</ion-content>

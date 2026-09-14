@@ -1,0 +1,27 @@
+# Dependencies and build output
+**/node_modules/
+**/dist/
+**/www/
+**/.angular/
+
+# Local environment and secrets
+**/.env
+**/.env.*
+!**/.env.example
+backend/serviceAccountKey.json
+
+# Local logs and caches
+firebase-debug.log
+**/*.log
+**/.cache/
+
+# IDE and OS files
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+
+# Native build artifacts
+frontend/android/.gradle/
+frontend/android/app/build/
+frontend/android/build/

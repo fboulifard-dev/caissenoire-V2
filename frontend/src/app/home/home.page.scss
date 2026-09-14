@@ -1,0 +1,135 @@
+.top-toolbar {
+  --background: #121212;
+  --color: #ffffff;
+}
+
+.profile-button {
+  --color: #ffffff;
+  margin-right: 8px;
+}
+
+.profile-popover {
+  --background: #ffffff;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 16px 8px;
+}
+
+.profile-icon {
+  font-size: 2rem;
+  color: rgb(16, 92, 17);
+}
+
+ion-card {
+  margin-top: 24px;
+}
+
+.summary-section h2 {
+  margin: 24px 0 0;
+  font-size: 1.15rem;
+}
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.summary-cards ion-card {
+  margin-top: 16px;
+}
+
+.player-summary-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.player-summary-header ion-select {
+  min-width: 180px;
+}
+
+.selected-player-name {
+  margin: 8px 0 0;
+  color: var(--ion-color-medium);
+}
+
+.payments-summary-card {
+  --background: #1d3557;
+  color: #ffffff;
+}
+
+.payments-summary-card ion-card-subtitle,
+.payments-summary-card ion-card-title {
+  color: #ffffff;
+}
+
+.payments-summary-card ion-card-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.payments-summary {
+  display: flex;
+  gap: 32px;
+}
+
+.payments-summary div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.payments-summary strong {
+  font-size: 1.5rem;
+}
+
+.payments-summary span {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.payments-summary-card ion-icon {
+  font-size: 1.5rem;
+}
+
+.fines-summary-card {
+  --background: #7f1d1d;
+  color: #ffffff;
+}
+
+.fines-summary-card ion-card-subtitle,
+.fines-summary-card ion-card-title {
+  color: #ffffff;
+}
+
+.fines-summary-card ion-card-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.balance-summary-card {
+  --background: #57491d;
+  color: #ffffff;
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+@media (max-width: 400px) {
+  .summary-cards {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+}

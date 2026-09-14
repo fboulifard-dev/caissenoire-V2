@@ -1,0 +1,7 @@
+{
+  "name": "frontend/caisse-noire-frontend",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}

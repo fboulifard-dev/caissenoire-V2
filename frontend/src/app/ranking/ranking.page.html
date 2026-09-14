@@ -1,0 +1,18 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    
+    <ion-title>Classement</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-list *ngIf="!loading">
+    <ion-item *ngFor="let player of ranking; let position = index">
+      <ion-label>
+        <h2>{{ position + 1 }}. {{ player.name }}</h2>
+        <p>Amendes : {{ player.finesTotal | currency:'EUR':'symbol':'1.0-0' }} · Paiements : {{ player.paymentsTotal | currency:'EUR':'symbol':'1.0-0' }}</p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+  <ion-spinner *ngIf="loading"></ion-spinner>
+</ion-content>
