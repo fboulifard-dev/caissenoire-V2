@@ -70,4 +70,38 @@ Security notes:
 - Keep the `serviceAccountKey.json` private. Do not commit it to source control.
 - Use Firebase IAM to scope service account permissions if needed.
 
+Deploiement sur un NAS Synology (Container Manager)
+----------------------------------------------------
+
+Prerequis:
+- Container Manager installe sur le NAS
+- Git installe sur le NAS, ou copie du dossier `backend`
+- Fichier `serviceAccountKey.json` Firebase copie sur le NAS dans le dossier `backend`
+
+Depuis un terminal SSH du NAS, par exemple:
+
+```sh
+mkdir -p /volume1/docker/caissenoire
+cd /volume1/docker/caissenoire
+git clone https://github.com/fboulifard-dev/caissenoire-V2.git .
+cd backend
+# Copier ici serviceAccountKey.json avec SCP ou File Station
+docker compose up -d --build
+docker compose logs -f backend
+```
+
+L'API est alors disponible sur `http://ADRESSE_DU_NAS:3000`. Dans le pare-feu
+Synology, autoriser le port TCP 3000 uniquement depuis les réseaux nécessaires.
+Pour un accès Internet, utiliser de préférence un reverse proxy HTTPS Synology
+et ne pas exposer directement le port 3000.
+
+Commandes utiles:
+
+```sh
+docker compose ps
+docker compose logs --tail=100 backend
+docker compose restart backend
+docker compose down
+```
+
 

@@ -1,0 +1,13 @@
+services:
+  backend:
+    build: .
+    container_name: caissenoire-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      FIREBASE_SERVICE_ACCOUNT: /run/secrets/firebase-service-account.json
+    volumes:
+      - ./serviceAccountKey.json:/run/secrets/firebase-service-account.json:ro
