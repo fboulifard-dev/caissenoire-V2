@@ -70,6 +70,47 @@ Security notes:
 - Keep the `serviceAccountKey.json` private. Do not commit it to source control.
 - Use Firebase IAM to scope service account permissions if needed.
 
+Deploiement sur Firebase App Hosting
+------------------------------------
+
+Le backend Express peut etre deploye depuis le dossier du projet avec Firebase
+CLI. App Hosting utilise automatiquement les identifiants du runtime Firebase
+Admin; aucune cle JSON ne doit etre envoyee au serveur.
+
+Prerequis:
+- Projet Firebase sur le plan Blaze
+- Firebase CLI 14.4.0 ou plus recent
+- Droits Owner ou IAM Admin pour le premier deploiement dans une region
+
+Depuis la racine du projet:
+
+```powershell
+cd C:\caissenoire
+npm install -g firebase-tools
+firebase login
+firebase init apphosting
+```
+
+Pendant l'initialisation:
+- choisir le projet Firebase existant;
+- choisir ou creer un backend, par exemple `caisse-noire-api`;
+- choisir `backend` comme repertoire racine de l'application;
+- choisir une region et Node.js 20 ou plus recent.
+
+Puis deployer:
+
+```powershell
+firebase deploy --only apphosting:caisse-noire-api
+```
+
+Remplacer `caisse-noire-api` par l'ID reel du backend choisi pendant
+`firebase init apphosting`. L'URL publique sera affichee par la commande de
+deploiement. Les routes actives sont notamment `/api/users` et `/api/seasons`.
+
+Pour les appels depuis l'application Ionic, remplacer l'URL locale de l'API
+par cette URL App Hosting et verifier que le jeton Firebase est envoye dans
+`Authorization: Bearer <ID_TOKEN>`.
+
 Deploiement sur un NAS Synology (Container Manager)
 ----------------------------------------------------
 

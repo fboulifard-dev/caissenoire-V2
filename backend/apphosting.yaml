@@ -1,0 +1,11 @@
+runConfig:
+  cpu: 1
+  memoryMiB: 512
+  maxInstances: 10
+
+scripts:
+  runCommand: node index.js
+
+env:
+  - variable: NODE_ENV
+    value: production
