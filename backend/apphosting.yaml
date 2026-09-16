@@ -8,4 +8,4 @@ scripts:
 
 env:
   - variable: NODE_ENV
-    value: production
+    value: recette

@@ -8,6 +8,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+app.get('/test', (req, res) => {
+	res.send("L'api est OK");
+});
+
 const finesRouter = require('./routes/fines');
 const paymentsRouter = require('./routes/payments');
 const usersRouter = require('./routes/users');
