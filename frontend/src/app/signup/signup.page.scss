@@ -1,0 +1,10 @@
+.back-to-login {
+  --color: var(--ion-color-primary);
+  text-transform: none;
+}
+
+.field-error {
+  margin: -4px 8px 12px;
+  color: var(--ion-color-danger);
+  font-size: 0.85rem;
+}

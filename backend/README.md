@@ -5,7 +5,7 @@ Prerequis:
 
 Installation:
 
-1. Placer le fichier de compte de service Firebase dans `C:\caissenoire\backend\serviceAccountKey.json` ou indiquer le chemin via `FIREBASE_SERVICE_ACCOUNT`.
+1. Configurer les variables `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL` et `FIREBASE_PRIVATE_KEY` dans `.env`, ou utiliser localement `FIREBASE_SERVICE_ACCOUNT` avec un fichier JSON.
 2. Copier `.env.example` en `.env` et adapter.
 3. Installer les dépendances et démarrer:
 
@@ -41,7 +41,7 @@ Firebase setup (quick start)
 1. Create a Firebase project at https://console.firebase.google.com.
 2. Enable Firestore (Native mode) and Authentication -> Sign-in method: enable `Email/Password`, `Google` and `Apple`.
 3. Create a Web app in Firebase to obtain the client config (used by the frontend).
-4. Create a service account for the backend: Project Settings -> Service accounts -> Generate new private key. Download the JSON file and place it at `backend/serviceAccountKey.json` or set the path in `.env` via `FIREBASE_SERVICE_ACCOUNT`.
+4. Create a service account for the backend: Project Settings -> Service accounts -> Generate new private key. Configure `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL` and `FIREBASE_PRIVATE_KEY` in `.env`. The private key must use `\\n` for line breaks. The local JSON file remains supported through `FIREBASE_SERVICE_ACCOUNT`.
 5. (Optional) Deploy Firestore rules from this repo:
 
 ```powershell

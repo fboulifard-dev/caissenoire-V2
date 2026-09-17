@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { getAuth, Auth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, OAuthProvider, signOut, onAuthStateChanged, AuthError } from 'firebase/auth';
+import { getAuth, Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, OAuthProvider, signOut, onAuthStateChanged } from 'firebase/auth';
 import { initializeApp } from 'firebase/app';
 import { environment } from '../../environments/environment';
 import { BehaviorSubject } from 'rxjs';
@@ -49,6 +49,10 @@ export class AuthService {
 
   signInEmail(email: string, password: string) {
     return signInWithEmailAndPassword(this.auth, email, password);
+  }
+
+  createAccount(email: string, password: string) {
+    return createUserWithEmailAndPassword(this.auth, email, password);
   }
 
   signInGoogle() {

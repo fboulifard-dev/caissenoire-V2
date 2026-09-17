@@ -68,6 +68,10 @@ const routes: Routes = [
     loadChildren: () => import('./login/login.module').then(m => m.LoginPageModule)
   },
   {
+    path: 'inscription',
+    loadChildren: () => import('./signup/signup.module').then(m => m.SignupPageModule)
+  },
+  {
     path: 'operation',
     redirectTo: 'operation/amendes',
     pathMatch: 'full'

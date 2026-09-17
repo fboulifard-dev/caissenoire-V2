@@ -29,6 +29,23 @@ export class RankingPage implements OnInit {
     });
   }
 
+  get totalFines(): number {
+    return this.ranking.reduce((total, player) => total + this.amount(player.finesTotal), 0);
+  }
+
+  finesShare(player: any): number {
+    if (this.totalFines === 0) {
+      return 0;
+    }
+
+    return Math.min(100, (this.amount(player.finesTotal) / this.totalFines) * 100);
+  }
+
+  private amount(value: unknown): number {
+    const amount = Number(value || 0);
+    return Number.isFinite(amount) ? amount : 0;
+  }
+
   private ensureSeasonUrl() {
     const seasonId = this.route.snapshot.paramMap.get('seasonId') || this.route.parent?.snapshot.paramMap.get('seasonId');
     if (seasonId) {

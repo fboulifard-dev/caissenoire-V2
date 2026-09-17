@@ -1,0 +1,60 @@
+<ion-content class="ion-padding">
+  <section class="season-hero">
+    <img src="assets/image/logo-asptt-grande.png" alt="ASPTT" />
+    <h1>Créer un compte</h1>
+  </section>
+
+  <ion-item>
+    <ion-label position="floating">Email</ion-label>
+    <ion-input
+      type="email"
+      name="email"
+      [(ngModel)]="email"
+      #emailModel="ngModel"
+      required>
+    </ion-input>
+  </ion-item>
+  <p class="field-error" *ngIf="(emailModel.dirty || emailModel.touched) && !isEmailValid">
+    {{ email.trim() ? 'Saisissez une adresse email valide.' : 'L’adresse email est obligatoire.' }}
+  </p>
+
+  <ion-item>
+    <ion-label position="floating">Mot de passe</ion-label>
+    <ion-input
+      type="password"
+      name="password"
+      [(ngModel)]="password"
+      #passwordModel="ngModel"
+      required>
+    </ion-input>
+  </ion-item>
+  <p class="field-error" *ngIf="(passwordModel.dirty || passwordModel.touched) && password.length < 6">
+    Le mot de passe doit contenir au moins 6 caractères.
+  </p>
+
+  <ion-item>
+    <ion-label position="floating">Confirmer le mot de passe</ion-label>
+    <ion-input
+      type="password"
+      name="confirmPassword"
+      [(ngModel)]="confirmPassword"
+      #confirmPasswordModel="ngModel"
+      required>
+    </ion-input>
+  </ion-item>
+  <p class="field-error" *ngIf="(confirmPasswordModel.dirty || confirmPasswordModel.touched) && password !== confirmPassword">
+    Les mots de passe ne correspondent pas.
+  </p>
+
+  <ion-text color="danger" *ngIf="error">
+    <p>{{ error }}</p>
+  </ion-text>
+
+  <ion-button expand="full" (click)="createAccount()" [disabled]="loading || !canCreateAccount">
+    Créer mon compte
+  </ion-button>
+
+  <ion-button class="back-to-login" fill="clear" expand="block" routerLink="/login">
+    Déjà un compte ? Se connecter
+  </ion-button>
+</ion-content>

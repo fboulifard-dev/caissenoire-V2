@@ -13,6 +13,10 @@ export class LoginPage {
   password = '';
   loading = false;
 
+  get canSignInEmail(): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email.trim()) && this.password.trim().length > 0;
+  }
+
   constructor(private auth: AuthService, private router: Router) {
     if (this.auth.isLoggedIn()) {
       this.router.navigate(['/saisons']);

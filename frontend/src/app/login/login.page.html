@@ -1,13 +1,12 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Connexion</ion-title>
-  </ion-toolbar>
-</ion-header>
 
 <ion-content class="ion-padding">
+  <section class="season-hero">
+    <img src="assets/image/logo-asptt-grande.png" alt="ASPTT" />
+    <h1>Caisse noire</h1>
+  </section>
   <ion-item>
     <ion-label position="floating">Email</ion-label>
-    <ion-input [(ngModel)]="email"></ion-input>
+    <ion-input type="email" [(ngModel)]="email"></ion-input>
   </ion-item>
 
   <ion-item>
@@ -15,7 +14,15 @@
     <ion-input type="password" [(ngModel)]="password"></ion-input>
   </ion-item>
 
-  <ion-button expand="full" (click)="signInEmail()" [disabled]="loading">Se connecter</ion-button>
+  <ion-button expand="full" (click)="signInEmail()" [disabled]="loading || !canSignInEmail">Se connecter</ion-button>
+  <ion-button class="signup-link" fill="clear" expand="block" routerLink="/inscription">
+    Pas encore de compte ? Créer un compte
+  </ion-button>
+
+  <div class="login-divider" role="separator" aria-label="Autres méthodes de connexion">
+    <span>ou</span>
+  </div>
+
   <ion-button expand="full" (click)="signInGoogle()" [disabled]="loading">Se connecter avec Google</ion-button>
   <ion-button expand="full" (click)="signInApple()" [disabled]="loading">Se connecter avec Apple</ion-button>
 </ion-content>
