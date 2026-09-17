@@ -34,4 +34,33 @@
 
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import "@ionic/angular/css/palettes/dark.system.css";
+// @import "@ionic/angular/css/palettes/dark.system.css";
+
+ion-app {
+	--ion-background-color: #f3f5f3;
+}
+
+ion-content {
+	--background: #f3f5f3;
+}
+
+ion-card {
+	--background: #ffffff;
+}
+
+ion-fab[slot="fixed"][vertical="bottom"] {
+	bottom: calc(92px + env(safe-area-inset-bottom));
+}
+
+ion-header {
+	box-shadow: none !important;
+}
+
+ion-header ion-toolbar {
+	--box-shadow: none;
+	--border-width: 0;
+}
+
+h1 {
+	color: var(--ion-color-primary);
+}

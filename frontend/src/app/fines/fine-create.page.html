@@ -23,6 +23,20 @@
 
       <ion-item>
         <ion-select
+          *ngIf="!editing"
+          label="Joueur"
+          labelPlacement="stacked"
+          name="playerIds"
+          [multiple]="true"
+          [(ngModel)]="fine.playerIds"
+          required
+          interface="popover">
+          <ion-select-option *ngFor="let player of players" [value]="player.id">
+            {{ player.firstName || player.lastName ? (player.firstName + ' ' + player.lastName) : (player.name || player.email || player.id) }}
+          </ion-select-option>
+        </ion-select>
+        <ion-select
+          *ngIf="editing"
           label="Joueur"
           labelPlacement="stacked"
           name="playerId"

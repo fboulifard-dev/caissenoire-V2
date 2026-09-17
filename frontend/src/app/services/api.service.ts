@@ -136,7 +136,8 @@ export class ApiService {
 
   createFine(seasonId: string, fine: {
     date: string;
-    playerId: string;
+    playerId?: string;
+    playerIds?: string[];
     ruleId: string;
     amount?: number;
     comment?: string;

@@ -14,5 +14,12 @@
       </ion-label>
     </ion-item>
   </ion-list>
-  <ion-spinner *ngIf="loading"></ion-spinner>
+  <ion-list *ngIf="loading" class="list-skeleton" aria-label="Chargement du classement">
+    <ion-item *ngFor="let item of [1, 2, 3, 4, 5]">
+      <ion-label>
+        <h2><ion-skeleton-text [animated]="true" style="width: 48%"></ion-skeleton-text></h2>
+        <p><ion-skeleton-text [animated]="true" style="width: 82%"></ion-skeleton-text></p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
 </ion-content>

@@ -12,6 +12,7 @@ export class FineCreatePage {
   fine = {
     date: new Date().toISOString().slice(0, 10),
     playerId: '',
+    playerIds: [] as string[],
     ruleId: '',
     amount: 0,
     comment: '',
@@ -75,6 +76,7 @@ export class FineCreatePage {
         this.fine = {
           date: existingFine.date || this.fine.date,
           playerId: existingFine.playerId || '',
+          playerIds: existingFine.playerId ? [existingFine.playerId] : [],
           ruleId: existingFine.ruleId || '',
           amount: Number(existingFine.amount) || 0,
           comment: existingFine.comment || '',
@@ -115,8 +117,10 @@ export class FineCreatePage {
       return;
     }
 
-    if (!this.fine.playerId || !this.fine.ruleId) {
-      this.error = 'Sélectionnez un joueur et une règle.';
+    const playerIds = (this.editing ? [this.fine.playerId] : this.fine.playerIds)
+      .filter((playerId): playerId is string => typeof playerId === 'string' && playerId.trim().length > 0);
+    if (!playerIds.length || !this.fine.ruleId) {
+      this.error = 'Sélectionnez au moins un joueur et une règle.';
       return;
     }
 
@@ -127,9 +131,8 @@ export class FineCreatePage {
 
     this.saving = true;
     this.error = '';
-    const fineData = {
+    const commonFineData = {
       date: this.fine.date,
-      playerId: this.fine.playerId,
       ruleId: this.fine.ruleId,
       amount: Number(this.fine.amount),
       comment: this.fine.comment,
@@ -137,10 +140,10 @@ export class FineCreatePage {
       matchDay: this.fine.matchDay,
     };
     const saveRequest = this.editing
-      ? this.api.updateFine(this.seasonId, this.fineId, fineData)
-      : this.api.createFine(this.seasonId, fineData);
+      ? this.api.updateFine(this.seasonId, this.fineId, { ...commonFineData, playerId: this.fine.playerId })
+      : this.api.createFine(this.seasonId, { ...commonFineData, playerIds });
     saveRequest.subscribe({
-      next: () => this.router.navigate(['/saisons', this.seasonId, 'amendes']),
+      next: () => this.router.navigate(['/saisons', this.seasonId,'operation', 'amendes']),
       error: () => {
         this.error = `Impossible de ${this.editing ? 'modifier' : 'créer'} l’amende. Réessayez.`;
         this.saving = false;

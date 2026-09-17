@@ -26,6 +26,11 @@
                 "output": "assets"
               },
               {
+                "glob": ".htaccess",
+                "input": "src/assets",
+                "output": "."
+              },
+              {
                 "glob": "**/*.svg",
                 "input": "node_modules/ionicons/dist/ionicons/svg",
                 "output": "./svg"
@@ -48,6 +53,7 @@
                   "maximumError": "4kb"
                 }
               ],
+              "outputPath": "www-production",
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
@@ -57,15 +63,26 @@
               "outputHashing": "all"
             },
             "recette": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "2kb",
+                  "maximumError": "4kb"
+                }
+              ],
+              "outputPath": "www-recette",
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.rec.ts"
                 }
               ],
-              "optimization": false,
-              "sourceMap": true,
-              "namedChunks": true
+              "outputHashing": "all"
             },
             "development": {
               "buildOptimizer": false,

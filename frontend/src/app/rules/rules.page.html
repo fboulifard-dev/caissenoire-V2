@@ -1,5 +1,8 @@
 <ion-header>
   <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button [defaultHref]="seasonId ? '/saisons/' + seasonId : null"></ion-back-button>
+    </ion-buttons>
     <ion-title>Règles</ion-title>
   </ion-toolbar>
 </ion-header>
@@ -19,6 +22,16 @@
       </ion-button>
     </ion-item>
   </ion-list>
+  <ion-list *ngIf="loading" class="list-skeleton" aria-label="Chargement des règles">
+    <ion-item *ngFor="let item of [1, 2, 3, 4, 5]">
+      <ion-label>
+        <h2><ion-skeleton-text [animated]="true" style="width: 65%"></ion-skeleton-text></h2>
+        <p><ion-skeleton-text [animated]="true" style="width: 35%"></ion-skeleton-text></p>
+      </ion-label>
+      <ion-skeleton-text slot="end" [animated]="true" style="width: 72px"></ion-skeleton-text>
+    </ion-item>
+  </ion-list>
+  <section style="height: 150px;"></section>
 
   <ion-fab slot="fixed" vertical="bottom" horizontal="center">
     <ion-fab-button *ngIf="isAdmin" [routerLink]="seasonId ? ['/saisons', seasonId, 'regles', 'create'] : null" aria-label="Créer une règle">

@@ -2,6 +2,8 @@
 **/node_modules/
 **/dist/
 **/www/
+**/www-*/
+www-*
 **/.angular/
 
 # Local environment and secrets

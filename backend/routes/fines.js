@@ -25,33 +25,51 @@ router.get('/', async (req, res) => {
 
 router.post('/', requireAdmin, async (req, res) => {
   try {
-    const { date, playerId, ruleId, amount = 0, matchDay = false, photo, comment } = req.body;
-    const player = await getDb().collection('seasons').doc(req.season.id).collection('players').doc(playerId).get();
+    const { date, playerIds = [], ruleId, amount = 0, matchDay = false, photo, comment } = req.body;
+    const requestedPlayerIds = Array.isArray(playerIds) ? playerIds :  [];
+    const selectedPlayerIds = [...new Set(requestedPlayerIds.filter(id => typeof id === 'string' && id.trim()))];
+    if (!selectedPlayerIds.length || typeof ruleId !== 'string' || !ruleId.trim()) {
+      return res.status(400).json({ error: 'At least one player and one rule are required' });
+    }
+
+    const playersRef = getDb().collection('seasons').doc(req.season.id).collection('players');
+    const players = await Promise.all(selectedPlayerIds.map(id => playersRef.doc(id).get()));
     const rule = await getDb().collection('seasons').doc(req.season.id).collection('rules').doc(ruleId).get();
-    if (!player.exists || !rule.exists) return res.status(400).json({ error: 'Invalid player or rule' });
+    if (players.some(player => !player.exists) || !rule.exists) return res.status(400).json({ error: 'Invalid player or rule' });
     const ruleData = rule.data();
     const finalMatchDay = Boolean(matchDay);
     const finalAmount = finalMatchDay ? Number(ruleData.cost) * 2 : Number(ruleData.cost);
-    const payload = {
-      date: date || new Date().toISOString().slice(0, 10),
-      playerId,
-      playerName: `${player.data().firstName || ''} ${player.data().lastName || ''}`.trim() || player.data().name || playerId,
-      ruleId,
-      ruleLabel: ruleData.label,
-      amount: Number.isFinite(finalAmount) ? finalAmount : Number(amount) || 0,
-      matchDay: finalMatchDay,
-      photo: photo || null,
-      comment: comment || '',
-      createdBy: req.user.uid,
-      createdAt: new Date().toISOString()
-    };
-    const ref = await getDb().collection('seasons').doc(req.season.id).collection('fines').add(payload);
-    try {
-      await notifyPlayer(req.season.id, playerId, 'Nouvelle amende', `${ruleData.label} : ${payload.amount} EUR`, { fineId: ref.id });
-    } catch (notificationError) {
-      console.error('Fine notification failed:', notificationError.message);
-    }
-    res.status(201).json({ id: ref.id });
+    const finesRef = getDb().collection('seasons').doc(req.season.id).collection('fines');
+    const createdAt = new Date().toISOString();
+    const batch = getDb().batch();
+    const createdFines = players.map((player, index) => {
+      const selectedId = selectedPlayerIds[index];
+      const payload = {
+        date: date || new Date().toISOString().slice(0, 10),
+        playerId: selectedId,
+        playerName: `${player.data().firstName || ''} ${player.data().lastName || ''}`.trim() || player.data().name || selectedId,
+        ruleId,
+        ruleLabel: ruleData.label,
+        amount: Number.isFinite(finalAmount) ? finalAmount : Number(amount) || 0,
+        matchDay: finalMatchDay,
+        photo: photo || null,
+        comment: comment || '',
+        createdBy: req.user.uid,
+        createdAt
+      };
+      const ref = finesRef.doc();
+      batch.set(ref, payload);
+      return { id: ref.id, playerId: selectedId, amount: payload.amount };
+    });
+    await batch.commit();
+    await Promise.all(createdFines.map(async fine => {
+      try {
+        await notifyPlayer(req.season.id, fine.playerId, 'Nouvelle amende', `${ruleData.label} : ${fine.amount} EUR`, { fineId: fine.id });
+      } catch (notificationError) {
+        console.error('Fine notification failed:', notificationError.message);
+      }
+    }));
+    res.status(201).json({ ids: createdFines.map(fine => fine.id) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

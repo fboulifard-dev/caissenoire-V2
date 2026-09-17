@@ -33,14 +33,20 @@ ion-card {
   font-size: 1.15rem;
 }
 
+.summary-section > ion-segment {
+  margin-bottom: 8px;
+}
+
 .summary-cards {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  gap: 0px;
+  container-type: inline-size;
 }
 
 .summary-cards ion-card {
-  margin-top: 16px;
+  margin: 4px;
+  min-width: 0;
 }
 
 .player-summary-header {
@@ -48,6 +54,8 @@ ion-card {
   align-items: end;
   justify-content: space-between;
   gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
 }
 
 .player-summary-header ion-select {
@@ -60,13 +68,13 @@ ion-card {
 }
 
 .payments-summary-card {
-  --background: #1d3557;
-  color: #ffffff;
+  --background: #ffffff;
+  color: #1d3557;
 }
 
 .payments-summary-card ion-card-subtitle,
 .payments-summary-card ion-card-title {
-  color: #ffffff;
+  color: #1d3557;
 }
 
 .payments-summary-card ion-card-content {
@@ -76,9 +84,17 @@ ion-card {
   gap: 16px;
 }
 
+.payments-summary-card ion-card-title,
+.fines-summary-card ion-card-title,
+.balance-summary-card ion-card-title,
+.classment-summary-card ion-card-title {
+  overflow-wrap: anywhere;
+}
+
 .payments-summary {
   display: flex;
   gap: 32px;
+  min-width: 0;
 }
 
 .payments-summary div {
@@ -89,6 +105,7 @@ ion-card {
 
 .payments-summary strong {
   font-size: 1.5rem;
+  overflow-wrap: anywhere;
 }
 
 .payments-summary span {
@@ -101,13 +118,13 @@ ion-card {
 }
 
 .fines-summary-card {
-  --background: #7f1d1d;
-  color: #ffffff;
+  --background: #ffffff;
+  color: #7f1d1d;
 }
 
 .fines-summary-card ion-card-subtitle,
 .fines-summary-card ion-card-title {
-  color: #ffffff;
+  color: #7f1d1d;
 }
 
 .fines-summary-card ion-card-content {
@@ -118,8 +135,8 @@ ion-card {
 }
 
 .balance-summary-card {
-  --background: #57491d;
-  color: #ffffff;
+  --background: #ffffff;
+  color: #57491d;
 }
 
 h2 {
@@ -127,9 +144,45 @@ h2 {
   font-size: 1.3rem;
 }
 
-@media (max-width: 400px) {
+@media (max-width: 350px) {
   .summary-cards {
     grid-template-columns: 1fr;
     gap: 0;
+  }
+}
+
+@container (max-width: 420px) {
+  .payments-summary-card ion-card-title,
+  .fines-summary-card ion-card-title,
+  .balance-summary-card ion-card-title,
+  .classment-summary-card ion-card-title {
+    font-size: 1rem;
+  }
+
+  .payments-summary {
+    gap: 16px;
+  }
+
+  .payments-summary strong {
+    font-size: 1.25rem;
+  }
+}
+
+@container (max-width: 300px) {
+  .payments-summary-card ion-card-content,
+  .fines-summary-card ion-card-content {
+    gap: 8px;
+  }
+
+  .payments-summary {
+    gap: 12px;
+  }
+
+  .payments-summary strong {
+    font-size: 1.1rem;
+  }
+
+  .payments-summary span {
+    font-size: 0.75rem;
   }
 }

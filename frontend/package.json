@@ -6,7 +6,8 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build.ps1",
+    "build-rec": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build-rec.ps1",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint"

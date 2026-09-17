@@ -78,7 +78,7 @@ export class PaymentCreatePage {
       ? this.api.updatePayment(this.seasonId, this.paymentId, this.payment)
       : this.api.createPayment(this.seasonId, this.payment);
     saveRequest.subscribe({
-      next: () => this.router.navigate(['/saisons', this.seasonId, 'paiements']),
+      next: () => this.router.navigate(['/saisons', this.seasonId,'operation', 'paiements']),
       error: () => {
         this.error = `Impossible de ${this.editing ? 'modifier' : 'créer'} le paiement. Réessayez.`;
         this.saving = false;

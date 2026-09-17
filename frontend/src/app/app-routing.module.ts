@@ -9,14 +9,19 @@ const routes: Routes = [
     canActivate: [authGuard]
   },
   {
-    path: 'saisons/:seasonId/paiements',
+    path: 'saisons/:seasonId/operation/paiements',
     loadChildren: () => import('./payments/payments.module').then(m => m.PaymentsPageModule),
     canActivate: [authGuard]
   },
   {
-    path: 'saisons/:seasonId/amendes',
+    path: 'saisons/:seasonId/operation/amendes',
     loadChildren: () => import('./fines/fines.module').then(m => m.FinesPageModule),
     canActivate: [authGuard]
+  },
+  {
+    path: 'saisons/:seasonId/operation',
+    redirectTo: 'saisons/:seasonId/operation/amendes',
+    pathMatch: 'full'
   },
   {
     path: 'saisons/:seasonId/regles',
@@ -61,6 +66,11 @@ const routes: Routes = [
   {
     path: 'login',
     loadChildren: () => import('./login/login.module').then(m => m.LoginPageModule)
+  },
+  {
+    path: 'operation',
+    redirectTo: 'operation/amendes',
+    pathMatch: 'full'
   },
   {
     path: '',

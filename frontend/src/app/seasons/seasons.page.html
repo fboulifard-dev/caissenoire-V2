@@ -1,24 +1,39 @@
-<ion-header>
+<!-- <ion-header>
   <ion-toolbar color="primary">
     <ion-title>Saisons</ion-title>
     
   </ion-toolbar>
-</ion-header>
+</ion-header> -->
 
-<ion-content class="ion-padding">
-  <h1>Bonjour {{ userName }}</h1>
-  <p>Choisissez une saison</p>
-  <ion-list *ngIf="!loading">
-    <ion-item *ngFor="let season of seasons" button detail (click)="openSeason(season)" [class.inactive-season]="!season.active">
-      <ion-label>
-        <h2>{{ season.id }}</h2>
-        <p>{{ season.name || (season.active ? 'Saison active' : 'Saison archivée') }}</p>
-      </ion-label>
-      <ion-badge slot="end" [color]="season.active ? 'success' : 'medium'">
-        {{ season.active ? 'Active' : 'Lecture seule' }}
-      </ion-badge>
-    </ion-item>
-  </ion-list>
-  <ion-spinner *ngIf="loading"></ion-spinner>
-  <ion-text color="danger" *ngIf="error"><p>{{ error }}</p></ion-text>
+<ion-content class="ion-padding" background="primary">
+  <section class="season-hero">
+    <img src="assets/image/logo-asptt-grande.png" alt="ASPTT" />
+    <h1>Caisse noire</h1>
+  </section>
+
+  <section class="season-content">
+    <p>Choisissez une saison</p>
+    <div *ngIf="!loading" class="season-cards">
+      <ion-card
+        *ngFor="let season of seasons"
+        button="true"
+        (click)="openSeason(season)"
+        [class.inactive-season]="!season.active">
+        <ion-card-content>
+          <h2>{{ season.name || (season.active ? 'Saison active' : 'Saison archivée') }}</h2>
+          <ion-badge [color]="season.active ? 'success' : 'medium'">
+            {{ season.active ? 'Active' : 'Lecture seule' }}
+          </ion-badge>
+          <ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon>
+        </ion-card-content>
+      </ion-card>
+    </div>
+    <ion-spinner *ngIf="loading"></ion-spinner>
+    <ion-text color="danger" *ngIf="error"><p>{{ error }}</p></ion-text>
+    <ion-button expand="block" fill="clear" color="danger" class="logout-button" (click)="logout()">
+      <ion-icon name="log-out-outline" slot="start"></ion-icon>
+      Déconnexion
+    </ion-button>
+    <ion-text color="medium" class="app-version">Version {{ appVersion }}</ion-text>
+  </section>
 </ion-content>

@@ -2,10 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../services/api.service';
 import { AuthService } from '../services/auth.service';
+import { APP_VERSION } from '../../environments/version';
 
 @Component({
   selector: 'app-seasons',
   templateUrl: './seasons.page.html',
+  styleUrls: ['./seasons.page.scss'],
   standalone: false,
 })
 export class SeasonsPage implements OnInit {
@@ -13,6 +15,7 @@ export class SeasonsPage implements OnInit {
   loading = true;
   error = '';
   userName = 'Utilisateur';
+  appVersion = APP_VERSION;
 
   constructor(private api: ApiService, private auth: AuthService, private router: Router) {}
 

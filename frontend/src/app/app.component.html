@@ -17,31 +17,35 @@
     <ion-router-outlet></ion-router-outlet>
   </ion-content>
 
-  <ion-footer *ngIf="isSeasonPage" >
-    <ion-toolbar color="primary">
+  <ion-footer *ngIf="isSeasonPage" class="floating-season-navigation">
+    <ion-toolbar>
       <ion-buttons class="season-navigation" role="navigation" aria-label="Navigation de la saison">
-        <ion-button routerLink="/saisons" routerLinkActive="season-navigation-active" [routerLinkActiveOptions]="{ exact: true }" aria-label="Retour à la liste des saisons">
+        <ion-button routerLink="/saisons" routerLinkActive="season-navigation-active" #seasonsNav="routerLinkActive" [routerLinkActiveOptions]="{ exact: true }" aria-label="Retour à la liste des saisons">
           <span class="season-navigation-content">
-            <ion-icon name="albums-outline"></ion-icon>
+            <ion-icon *ngIf="seasonsNav.isActive" name="albums"></ion-icon>
+            <ion-icon *ngIf="!seasonsNav.isActive" name="albums-outline"></ion-icon>
             <span>Saisons</span>
           </span>
         </ion-button>
-        <ion-button [routerLink]="['/saisons', currentSeasonId]" routerLinkActive="season-navigation-active" [routerLinkActiveOptions]="{ exact: true }" aria-label="Synthèse de la saison">
+        <ion-button [routerLink]="['/saisons', currentSeasonId]" routerLinkActive="season-navigation-active" #homeNav="routerLinkActive" [routerLinkActiveOptions]="{ exact: true }" aria-label="Synthèse de la saison">
           <span class="season-navigation-content">
-            <ion-icon name="home-outline"></ion-icon>
+            <ion-icon *ngIf="homeNav.isActive" name="home"></ion-icon>
+            <ion-icon *ngIf="!homeNav.isActive" name="home-outline"></ion-icon>
             <span>Synthèse</span>
           </span>
         </ion-button>
-        <ion-button [routerLink]="['/saisons', currentSeasonId, 'classement']" routerLinkActive="season-navigation-active" [routerLinkActiveOptions]="{ exact: true }" aria-label="Classement de la saison">
+        <ion-button [routerLink]="['/saisons', currentSeasonId, 'classement']" routerLinkActive="season-navigation-active" #rankingNav="routerLinkActive" [routerLinkActiveOptions]="{ exact: true }" aria-label="Classement de la saison">
           <span class="season-navigation-content">
-            <ion-icon name="trophy-outline"></ion-icon>
+            <ion-icon *ngIf="rankingNav.isActive" name="trophy"></ion-icon>
+            <ion-icon *ngIf="!rankingNav.isActive" name="trophy-outline"></ion-icon>
             <span>Classement</span>
           </span>
         </ion-button>
-        <ion-button [routerLink]="['/saisons', currentSeasonId, 'regles']" routerLinkActive="season-navigation-active" [routerLinkActiveOptions]="{ exact: true }" aria-label="Règles de la saison">
+        <ion-button [routerLink]="['/saisons', currentSeasonId, 'operation']" routerLinkActive="season-navigation-active" #operationsNav="routerLinkActive" [routerLinkActiveOptions]="{ exact: false }" aria-label="Opérations de la saison">
           <span class="season-navigation-content">
-            <ion-icon name="book-outline"></ion-icon>
-            <span>Règles</span>
+            <ion-icon *ngIf="operationsNav.isActive" name="book"></ion-icon>
+            <ion-icon *ngIf="!operationsNav.isActive" name="book-outline"></ion-icon>
+            <span>Opérations</span>
           </span>
         </ion-button>
       </ion-buttons>

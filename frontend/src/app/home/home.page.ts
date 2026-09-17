@@ -33,6 +33,7 @@ export class HomePage implements OnInit {
   connectedPlayerId = '';
   selectedPlayerId = '';
   players: any[] = [];
+  summaryView: 'common' | 'connected' | 'selected' = 'common';
 
   constructor(
     private auth: AuthService,
@@ -147,9 +148,17 @@ export class HomePage implements OnInit {
   }
 
   onPlayerChanged() {
+    this.summaryView = 'selected';
     if (this.seasonId) {
       this.summaryLoading = true;
       this.loadPaymentSummary(this.seasonId);
+    }
+  }
+
+  onSummaryViewChanged(event: CustomEvent) {
+    const view = event.detail.value;
+    if (view === 'common' || view === 'connected' || view === 'selected') {
+      this.summaryView = view;
     }
   }
 
@@ -206,7 +215,7 @@ export class HomePage implements OnInit {
       return '-';
     }
 
-    return this.playerRank === 1 ? '1er' : `${this.playerRank}e`;
+    return (this.playerRank === 1 ? '1er' : `${this.playerRank}ème`) + ` / ${this.rankingSize}`;
   }
 
   private formatCurrency(amount: number): string {
