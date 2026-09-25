@@ -1,10 +1,3 @@
-<ion-header>
-  <ion-toolbar color="primary">
-    
-    <ion-title>Classement</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content class="ranking-content">
   <div class="ranking-page">
     <section class="ranking-intro">
@@ -31,20 +24,19 @@
 
       <ion-list class="ranking-list">
         <ion-item *ngFor="let player of ranking; let position = index" lines="none" class="ranking-row">
-          <div class="rank-number" [class.top-rank]="position < 3">{{ position + 1 }}</div>
-          <ion-label>
-            <div class="player-heading">
-              <h3>{{ player.name }}</h3>
-              <strong>{{ player.finesTotal | currency:'EUR':'symbol':'1.0-0' }}</strong>
-            </div>
-            <div class="share-track" role="progressbar" [attr.aria-valuenow]="finesShare(player)" aria-valuemin="0" aria-valuemax="100" [attr.aria-label]="'Part des amendes de ' + player.name">
-              <span [style.width.%]="finesShare(player)"></span>
-            </div>
-            <div class="player-meta">
-              <span>{{ finesShare(player) | number:'1.0-0' }} % de la caisse</span>
-              <span>Paiements : {{ player.paymentsTotal | currency:'EUR':'symbol':'1.0-0' }}</span>
-            </div>
-          </ion-label>
+            <div class="rank-number" [class.top-rank]="position < 3">{{ position + 1 }}</div>
+            <ion-label>
+              <div class="player-heading">
+                <h3>{{ player.name }}</h3>
+                <strong>{{ player.finesTotal | currency:'EUR':'symbol':'1.0-0' }}</strong>
+              </div>
+              <div class="share-track" role="progressbar" [attr.aria-valuenow]="finesShare(player)" aria-valuemin="0" aria-valuemax="100" [attr.aria-label]="'Part des amendes de ' + player.name">
+                <span [style.width.%]="finesShare(player)"></span>
+              </div>
+              <div class="player-meta">
+                <span>{{ finesShare(player) | number:'1.0-0' }} % de la caisse</span>
+              </div>
+            </ion-label>
         </ion-item>
       </ion-list>
     </section>

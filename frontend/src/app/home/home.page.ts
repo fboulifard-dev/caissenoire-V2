@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ToastController } from '@ionic/angular';
 import { AuthService } from '../services/auth.service';
 import { ApiService } from '../services/api.service';
 
@@ -34,12 +35,14 @@ export class HomePage implements OnInit {
   selectedPlayerId = '';
   players: any[] = [];
   summaryView: 'common' | 'connected' | 'selected' = 'common';
+  readonly iban = 'FR76 1444 1444 1444 1444';
 
   constructor(
     private auth: AuthService,
     private route: ActivatedRoute,
     private router: Router,
     private api: ApiService,
+    private toastController: ToastController,
   ) {}
 
   ngOnInit() {
@@ -159,6 +162,26 @@ export class HomePage implements OnInit {
     const view = event.detail.value;
     if (view === 'common' || view === 'connected' || view === 'selected') {
       this.summaryView = view;
+    }
+  }
+
+  async copyIban() {
+    try {
+      await navigator.clipboard.writeText(this.iban);
+      const toast = await this.toastController.create({
+        message: 'IBAN copié',
+        duration: 1800,
+        position: 'bottom'
+      });
+      await toast.present();
+    } catch {
+      const toast = await this.toastController.create({
+        message: 'Impossible de copier l’IBAN',
+        duration: 1800,
+        position: 'bottom',
+        color: 'danger'
+      });
+      await toast.present();
     }
   }
 

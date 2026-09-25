@@ -10,26 +10,29 @@
 	justify-content: space-between;
 	align-items: center;
 	gap: 12px;
-	font-size: 1rem;
+	font-size: 0.8rem;
 	font-weight: 600;
 	color: var(--ion-color-primary);
-	background: #e7f0e7;
-	border-left: 4px solid var(--ion-color-primary);
 }
 
 .date-group ion-list {
 	margin-top: 0;
-	--background: transparent;
-	background: transparent;
+
+}
+
+.content-list {
+	padding: 0;
 }
 
 .list-card {
 	margin: 6px 12px;
-	--background: #ffffff;
-	--border-radius: 12px;
-	--inner-border-width: 0;
-	border-radius: 12px;
-	box-shadow: 0 2px 8px rgba(31, 41, 31, 0.08);
+	background: #ffffff;
+
+}
+
+ion-card, ion-card-content, ion-list, ion-item, ion-item-sliding {
+	background: #ffffff !important;
+	--background: #ffffff !important;
 }
 
 .fine-amount {

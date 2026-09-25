@@ -12,32 +12,51 @@ import { AuthService } from './services/auth.service';
   standalone: false,
 })
 export class AppComponent {
+  private pushListenerRegistered = false;
+  private pushUserId = '';
+
   constructor(
     private api: ApiService,
     public authService: AuthService,
     private router: Router
   ) {
-    this.initializePushNotifications();
+    this.authService.currentUser$.subscribe((user) => {
+      if (!user) {
+        this.pushUserId = '';
+        return;
+      }
+
+      this.initializePushNotifications(user.uid);
+    });
   }
 
-  private async initializePushNotifications() {
+  private async initializePushNotifications(userId: string) {
     if (Capacitor.getPlatform() === 'web') {
       return;
     }
 
-    if (!(await this.authService.authReady())) {
+    if (this.pushUserId === userId) {
       return;
     }
 
-    const permission = await PushNotifications.requestPermissions();
-    if (permission.receive !== 'granted') {
-      return;
-    }
+    try {
+      const permission = await PushNotifications.requestPermissions();
+      if (permission.receive !== 'granted') {
+        return;
+      }
 
-    await PushNotifications.addListener('registration', ({ value }) => {
-      this.api.registerDeviceToken(value).subscribe();
-    });
-    await PushNotifications.register();
+      if (!this.pushListenerRegistered) {
+        await PushNotifications.addListener('registration', ({ value }) => {
+          this.api.registerDeviceToken(value).subscribe();
+        });
+        this.pushListenerRegistered = true;
+      }
+
+      this.pushUserId = userId;
+      await PushNotifications.register();
+    } catch (error) {
+      console.error('Push notification initialization failed:', error);
+    }
   }
 
   getUserName(user: any): string {

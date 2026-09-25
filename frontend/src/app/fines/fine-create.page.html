@@ -11,25 +11,27 @@
   <form #fineForm="ngForm" (ngSubmit)="submit()">
     <ion-list>
       <ion-item>
+        <ion-icon name="calendar-outline" slot="start"></ion-icon>
         <ion-input
           type="date"
-          label="Date"
           labelPlacement="stacked"
           name="date"
           [(ngModel)]="fine.date"
+          placeholder="Date"
           required>
         </ion-input>
       </ion-item>
 
       <ion-item>
+        <ion-icon name="person-outline" slot="start"></ion-icon>
         <ion-select
           *ngIf="!editing"
-          label="Joueur"
           labelPlacement="stacked"
           name="playerIds"
           [multiple]="true"
           [(ngModel)]="fine.playerIds"
           required
+          placeholder="Sélectionnez un ou plusieurs joueurs"
           interface="popover">
           <ion-select-option *ngFor="let player of players" [value]="player.id">
             {{ player.firstName || player.lastName ? (player.firstName + ' ' + player.lastName) : (player.name || player.email || player.id) }}
@@ -37,11 +39,11 @@
         </ion-select>
         <ion-select
           *ngIf="editing"
-          label="Joueur"
           labelPlacement="stacked"
           name="playerId"
           [(ngModel)]="fine.playerId"
           required
+          placeholder="Sélectionnez un joueur"
           interface="popover">
           <ion-select-option *ngFor="let player of players" [value]="player.id">
             {{ player.firstName || player.lastName ? (player.firstName + ' ' + player.lastName) : (player.name || player.email || player.id) }}
@@ -50,13 +52,14 @@
       </ion-item>
 
       <ion-item>
+        <ion-icon name="alert-circle-outline" slot="start"></ion-icon>
         <ion-select
-          label="Règle"
           labelPlacement="stacked"
           name="ruleId"
           [(ngModel)]="fine.ruleId"
           (ionChange)="onRuleChanged()"
           required
+          placeholder="Sélectionnez une règle"
           interface="popover">
           <ion-select-option *ngFor="let rule of rules" [value]="rule.id">
             {{ rule.label }} ({{ rule.cost | number:'1.0-0' }} €{{ rule.matchDay ? ' · Match' : '' }})
@@ -65,13 +68,14 @@
       </ion-item>
 
       <ion-item>
+        <ion-icon name="cash-outline" slot="start"></ion-icon>
         <ion-input
           type="number"
-          label="Montant"
           labelPlacement="stacked"
           name="amount"
           [(ngModel)]="fine.amount"
           min="0"
+          placeholder="Montant"
           required>
         </ion-input>
       </ion-item>
@@ -124,7 +128,7 @@
       type="submit"
       [disabled]="fineForm.invalid || saving">
       <ion-spinner *ngIf="saving" name="crescent"></ion-spinner>
-      <span *ngIf="!saving">{{ editing ? 'Enregistrer les modifications' : 'Créer l’amende' }}</span>
+      <span *ngIf="!saving">{{ editing ? 'Modifier' : 'Créer' }}</span>
     </ion-button>
   </form>
 </ion-content>

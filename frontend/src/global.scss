@@ -72,6 +72,13 @@ ion-header ion-toolbar {
 	--box-shadow: none;
 	--border-width: 0;
 }
+ion-button [fill="block"] {
+	margin-top: 20px;
+}
+
+ion-button  {
+	text-transform: none;
+}
 
 h1 {
 	color: var(--ion-color-primary);
@@ -110,4 +117,16 @@ h1 {
 .season-content {
   padding-top: 20px;
 //   background: var(--ion-color-primary-contrast);
+}
+
+.logo-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin: 16px 0;
+}
+
+.logo-container img {
+	max-width: 40%;
+	height: auto;
 }

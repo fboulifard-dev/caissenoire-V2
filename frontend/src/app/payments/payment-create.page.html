@@ -11,35 +11,37 @@
   <form #paymentForm="ngForm" (ngSubmit)="submit()">
     <ion-list>
       <ion-item>
+        <ion-icon name="calendar-outline" slot="start"></ion-icon>
         <ion-input
           type="date"
-          label="Date"
           labelPlacement="stacked"
           name="date"
           [(ngModel)]="payment.date"
+          placeholder="Date"
           required>
         </ion-input>
       </ion-item>
 
       <ion-item>
+        <ion-icon name="cash-outline" slot="start"></ion-icon>
         <ion-input
           type="text"
           inputmode="decimal"
-          label="Montant"
           labelPlacement="stacked"
           name="amount"
           [(ngModel)]="payment.amount"
           required
-          placeholder="Ex. 80 EUR">
+          placeholder="Montant">
         </ion-input>
       </ion-item>
 
       <ion-item>
+        <ion-icon name="person-outline" slot="start"></ion-icon>
         <ion-select
-          label="Joueur"
           labelPlacement="stacked"
           name="playerId"
           [(ngModel)]="payment.playerId"
+          placeholder="Sélectionnez un joueur"
           required
           interface="popover">
           <ion-select-option *ngFor="let user of users" [value]="user.id">
@@ -68,7 +70,7 @@
       type="submit"
       [disabled]="paymentForm.invalid || saving">
       <ion-spinner *ngIf="saving" name="crescent"></ion-spinner>
-      <span *ngIf="!saving">{{ editing ? 'Enregistrer les modifications' : 'Créer le paiement' }}</span>
+      <span *ngIf="!saving">{{ editing ? 'Modifier' : 'Créer' }}</span>
     </ion-button>
   </form>
 </ion-content>

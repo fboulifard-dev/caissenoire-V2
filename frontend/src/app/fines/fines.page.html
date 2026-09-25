@@ -16,35 +16,39 @@
         <span>{{ group.label }}</span>
         <span>{{ formatGroupTotal(group.total) }}</span>
       </h2>
-      <ion-list>
-        <ion-item-sliding *ngFor="let f of group.items">
-          <ion-item class="list-card">
-            <ion-label>
-              <h3><b>{{ f.ruleLabel }}</b></h3>
-              <h3>{{ f.playerName || playerName || f.playerId }}</h3>
-              <p *ngIf="f.comment">{{ f.comment || '' }}</p>
-            </ion-label>
-            <ion-thumbnail slot="end" *ngIf="f.photo"><img [src]="f.photo" alt="Photo de l'amende"></ion-thumbnail>
-            <ion-note slot="end" class="fine-amount">
-              <span>{{ (f.amount || 0) | currency:'EUR':'symbol':'1.0-0' }}</span>
-              <ion-icon
-                *ngIf="f.matchDay"
-                name="football-outline"
-                aria-label="Jour de match"></ion-icon>
-            </ion-note>
-          </ion-item>
-          <ion-item-options side="start">
-            <ion-item-option color="danger" (click)="deleteFine(f)" [disabled]="readOnly" aria-label="Supprimer l'amende">
-              <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
-            </ion-item-option>
-          </ion-item-options>
-          <ion-item-options side="end">
-            <ion-item-option color="primary" (click)="editFine(f)" [disabled]="readOnly" aria-label="Modifier l'amende">
-              <ion-icon name="create-outline" slot="icon-only"></ion-icon>
-            </ion-item-option>
-          </ion-item-options>
-        </ion-item-sliding>
-      </ion-list>
+      <ion-card>
+      <ion-card-content class="content-list">
+        <ion-list>
+          <ion-item-sliding *ngFor="let f of group.items">
+            <ion-item class="list-card">
+              <ion-label>
+                <h3><b>{{ f.ruleLabel }}</b></h3>
+                <h3>{{ f.playerName || playerName || f.playerId }}</h3>
+                <p *ngIf="f.comment">{{ f.comment || '' }}</p>
+              </ion-label>
+              <ion-thumbnail slot="end" *ngIf="f.photo"><img [src]="f.photo" alt="Photo de l'amende"></ion-thumbnail>
+              <ion-note slot="end" class="fine-amount">
+                <span>{{ (f.amount || 0) | currency:'EUR':'symbol':'1.0-0' }}</span>
+                <ion-icon
+                  *ngIf="f.matchDay"
+                  name="football-outline"
+                  aria-label="Jour de match"></ion-icon>
+              </ion-note>
+            </ion-item>
+            <ion-item-options side="start">
+              <ion-item-option color="danger" (click)="deleteFine(f)" [disabled]="readOnly" aria-label="Supprimer l'amende">
+                <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+              </ion-item-option>
+            </ion-item-options>
+            <ion-item-options side="end">
+              <ion-item-option color="primary" (click)="editFine(f)" [disabled]="readOnly" aria-label="Modifier l'amende">
+                <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+              </ion-item-option>
+            </ion-item-options>
+          </ion-item-sliding>
+        </ion-list>
+      </ion-card-content>
+      </ion-card>
     </section>
   </div>
   <ion-list *ngIf="loading" class="list-skeleton" aria-label="Chargement des amendes">

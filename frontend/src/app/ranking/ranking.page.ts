@@ -22,7 +22,7 @@ export class RankingPage implements OnInit {
     this.ensureSeasonUrl();
     this.api.getSeasonRanking(this.seasonId).subscribe({
       next: (ranking: any) => {
-        this.ranking = ranking || [];
+        this.ranking = this.filterPlayersWithFines(ranking || []);
         this.loading = false;
       },
       error: () => (this.loading = false)
@@ -44,6 +44,10 @@ export class RankingPage implements OnInit {
   private amount(value: unknown): number {
     const amount = Number(value || 0);
     return Number.isFinite(amount) ? amount : 0;
+  }
+
+  private filterPlayersWithFines(ranking: any[]): any[] {
+    return ranking.filter((player: any) => this.amount(player?.finesTotal) > 0 || this.amount(player?.finesCount) > 0);
   }
 
   private ensureSeasonUrl() {

@@ -1,16 +1,27 @@
 <ion-content class="ion-padding">
-  <section class="season-hero">
+    <p align="right" >
+    <ion-button fill="clear"  routerLink="/login">
+        Se connecter
+      </ion-button>
+  </p>
+  <section class="logo-container">
+    
     <img src="assets/image/logo-asptt-grande.png" alt="ASPTT" />
-    <h1>Créer un compte</h1>
   </section>
-
+  <section class="ion-padding">
+    <p >
+      <ion-text color="secondary">
+        Créer un compte
+      </ion-text>
+    </p>
   <ion-item>
-    <ion-label position="floating">Email</ion-label>
+    <ion-icon name="person-outline" slot="start"></ion-icon>
     <ion-input
       type="email"
       name="email"
       [(ngModel)]="email"
       #emailModel="ngModel"
+      placeholder="Email"
       required>
     </ion-input>
   </ion-item>
@@ -19,12 +30,13 @@
   </p>
 
   <ion-item>
-    <ion-label position="floating">Mot de passe</ion-label>
+        <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
     <ion-input
       type="password"
       name="password"
       [(ngModel)]="password"
       #passwordModel="ngModel"
+      placeholder="Mot de passe"
       required>
     </ion-input>
   </ion-item>
@@ -33,12 +45,13 @@
   </p>
 
   <ion-item>
-    <ion-label position="floating">Confirmer le mot de passe</ion-label>
+    <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
     <ion-input
       type="password"
       name="confirmPassword"
       [(ngModel)]="confirmPassword"
       #confirmPasswordModel="ngModel"
+      placeholder="Confirmation du mot de passe"
       required>
     </ion-input>
   </ion-item>
@@ -50,11 +63,8 @@
     <p>{{ error }}</p>
   </ion-text>
 
-  <ion-button expand="full" (click)="createAccount()" [disabled]="loading || !canCreateAccount">
+  <ion-button expand="block" (click)="createAccount()" [disabled]="loading || !canCreateAccount">
     Créer mon compte
   </ion-button>
-
-  <ion-button class="back-to-login" fill="clear" expand="block" routerLink="/login">
-    Déjà un compte ? Se connecter
-  </ion-button>
+  </section>
 </ion-content>

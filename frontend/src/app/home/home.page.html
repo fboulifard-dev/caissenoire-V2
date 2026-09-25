@@ -6,24 +6,6 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-popover trigger="profile-menu-trigger" triggerAction="click">
-  <ng-template>
-    <ion-content class="profile-popover">
-      <div class="profile-header">
-        <ion-icon name="person-circle-outline" class="profile-icon"></ion-icon>
-        <div>
-          <strong>{{ firstName }}</strong>
-          <div>{{ lastName }}</div>
-        </div>
-      </div>
-
-      <ion-item lines="none" button detail="false" (click)="logout()">
-        <ion-icon name="log-out-outline" slot="start" color="danger"></ion-icon>
-        <ion-label color="danger">Déconnexion</ion-label>
-      </ion-item>
-    </ion-content>
-  </ng-template>
-</ion-popover>
 
 <ion-content class="ion-padding">
   <section class="summary-section">
@@ -45,25 +27,29 @@
 
     <div class="summary-cards">
       <ion-card button="true" [routerLink]="seasonId ? ['/saisons', seasonId, 'operation', 'paiements'] : null" [queryParams]="summaryView === 'common' ? null : { joueur: selectedPlayerId }" class="payments-summary-card">
-      <ion-card-header><ion-card-title>Paiements</ion-card-title></ion-card-header>
+      <ion-card-header><ion-card-title>{{playerPaymentCount}} Paiements</ion-card-title></ion-card-header>
       <ion-card-content>
         <ion-spinner *ngIf="summaryLoading" name="crescent"></ion-spinner>
         <div *ngIf="!summaryLoading" class="payments-summary">
-          <div><strong>{{ summaryView === 'common' ? paymentCount : playerPaymentCount }}</strong><span>Nb</span></div>
           <div><strong>{{ summaryView === 'common' ? formatPaymentTotal() : formatPlayerPaymentTotal() }}</strong><span>Payé</span></div>
         </div>
       </ion-card-content>
+      <ion-button class="home-card-action" [routerLink]="seasonId ? ['/saisons', seasonId] : ['/home']" aria-label="Retour à l'accueil" fill="clear">
+        <ion-icon name="arrow-forward" aria-hidden="true" size="small"></ion-icon>
+      </ion-button>
       </ion-card>
 
       <ion-card button="true" [routerLink]="seasonId ? ['/saisons', seasonId, 'operation', 'amendes'] : null" [queryParams]="summaryView === 'common' ? null : { joueur: selectedPlayerId }" class="fines-summary-card">
-      <ion-card-header><ion-card-title>Amendes</ion-card-title></ion-card-header>
+      <ion-card-header><ion-card-title>{{playerFineCount}} Amendes</ion-card-title></ion-card-header>
       <ion-card-content>
         <ion-spinner *ngIf="summaryLoading" name="crescent"></ion-spinner>
         <div *ngIf="!summaryLoading" class="payments-summary">
-          <div><strong>{{ summaryView === 'common' ? fineCount : playerFineCount }}</strong><span>Nb</span></div>
           <div><strong>{{ summaryView === 'common' ? formatFineTotal() : formatPlayerFineTotal() }}</strong><span>Total</span></div>
         </div>
       </ion-card-content>
+      <ion-button class="home-card-action" [routerLink]="seasonId ? ['/saisons', seasonId] : ['/home']" aria-label="Retour à l'accueil" fill="clear">
+        <ion-icon name="arrow-forward" aria-hidden="true" size="small"></ion-icon>
+      </ion-button>
       </ion-card>
 
       <ion-card class="balance-summary-card">
@@ -84,6 +70,9 @@
           <div><strong>{{ formatPlayerRank() }}</strong><span>Position</span></div>
         </div>
       </ion-card-content>
+      <ion-button class="home-card-action" [routerLink]="seasonId ? ['/saisons', seasonId] : ['/home']" aria-label="Retour à l'accueil" fill="clear">
+        <ion-icon name="arrow-forward" aria-hidden="true" size="small"></ion-icon>
+      </ion-button>
       </ion-card>
 
       <ion-card *ngIf="summaryView == 'common'" button="true" [routerLink]="seasonId ? ['/saisons', seasonId, 'regles'] : null" class="classment-summary-card">
@@ -94,9 +83,21 @@
           <div><strong>{{ rulesCount }}</strong><span>Nb</span></div>
         </div>
       </ion-card-content>
+      <ion-button class="home-card-action" [routerLink]="seasonId ? ['/saisons', seasonId] : ['/home']" aria-label="Retour à l'accueil" fill="clear">
+        <ion-icon name="arrow-forward" aria-hidden="true" size="small"></ion-icon>
+      </ion-button>
+      </ion-card>
+
+      <ion-card button="true" class="iban-card" (click)="copyIban()" aria-label="Copier l’IBAN">
+        <ion-card-header><ion-card-title>IBAN</ion-card-title></ion-card-header>
+        <ion-card-content>
+          <div>{{ iban }}</div>
+        </ion-card-content>
       </ion-card>
     </div>
   </section>
+
+  
 
   <div *ngIf="summaryView === 'selected'" class="player-summary-header">
       <ion-select

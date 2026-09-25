@@ -6,13 +6,22 @@
 </ion-header> -->
 
 <ion-content class="ion-padding" background="primary">
-  <section class="season-hero">
+  <p align="right" >
+    <ion-button  fill="clear" >
+        {{userName}}
+      </ion-button>
+  </p>
+  <section class="logo-container">
+    
     <img src="assets/image/logo-asptt-grande.png" alt="ASPTT" />
-    <h1>Caisse noire</h1>
   </section>
 
   <section class="season-content">
-    <p>Choisissez une saison</p>
+    <p >
+      <ion-text color="secondary">
+        Choisir une saison
+      </ion-text>
+      </p>
     <div *ngIf="!loading" class="season-cards">
       <ion-card
         *ngFor="let season of seasons"

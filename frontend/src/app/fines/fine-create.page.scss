@@ -1,5 +1,15 @@
 .image-picker {
-  align-items: center;
+  align-items: stretch;
+}
+
+.image-picker::part(native) {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.image-picker ion-label {
+  width: 100%;
+  margin-bottom: 8px;
 }
 
 .image-preview {

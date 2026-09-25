@@ -1,28 +1,46 @@
 
 <ion-content class="ion-padding">
-  <section class="season-hero">
+  <p align="right" >
+    <ion-button  fill="clear"  routerLink="/inscription">
+        S'inscrire
+      </ion-button>
+  </p>
+  <section class="logo-container">
+    
     <img src="assets/image/logo-asptt-grande.png" alt="ASPTT" />
-    <h1>Caisse noire</h1>
   </section>
-  <ion-item>
-    <ion-label position="floating">Email</ion-label>
-    <ion-input type="email" [(ngModel)]="email"></ion-input>
-  </ion-item>
+  
+    <section class="ion-padding">
+      <p >
+      <ion-text color="secondary">
+        Se connecter
+      </ion-text>
+      </p>
+      <ion-item>
+          <ion-icon name="person-outline" slot="start"></ion-icon>
 
-  <ion-item>
-    <ion-label position="floating">Mot de passe</ion-label>
-    <ion-input type="password" [(ngModel)]="password"></ion-input>
-  </ion-item>
+        <ion-input type="email" [(ngModel)]="email" autofocus="true" placeholder="Email"></ion-input>
+      </ion-item>
 
-  <ion-button expand="full" (click)="signInEmail()" [disabled]="loading || !canSignInEmail">Se connecter</ion-button>
-  <ion-button class="signup-link" fill="clear" expand="block" routerLink="/inscription">
-    Pas encore de compte ? Créer un compte
-  </ion-button>
+      <ion-item>
+        <ion-icon name="lock-closed-outline" slot="start" ></ion-icon>
+        <ion-input type="password" [(ngModel)]="password" placeholder="Mot de passe"></ion-input>
+      </ion-item>
 
-  <div class="login-divider" role="separator" aria-label="Autres méthodes de connexion">
-    <span>ou</span>
-  </div>
+      <ion-button expand="block" (click)="signInEmail()" [disabled]="loading || !canSignInEmail" >Connexion</ion-button>
+      <ion-button class="signup-link" fill="clear" expand="block" routerLink="/inscription">
+        Mot de passe oublié ?
+      </ion-button>
 
-  <ion-button expand="full" (click)="signInGoogle()" [disabled]="loading">Se connecter avec Google</ion-button>
-  <ion-button expand="full" (click)="signInApple()" [disabled]="loading">Se connecter avec Apple</ion-button>
+ 
+      </section>
+      <section class="ion-padding">
+         <ion-button expand="block" (click)="signInGoogle()" [disabled]="loading">
+          <ion-icon slot="start" name="logo-google"></ion-icon>
+          Google</ion-button>
+  <!-- <ion-button expand="block" (click)="signInApple()" [disabled]="loading">
+    <ion-icon slot="start" name="logo-apple"></ion-icon>
+    Apple</ion-button> -->
+      </section>
+
 </ion-content>
