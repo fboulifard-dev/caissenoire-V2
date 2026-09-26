@@ -1,4 +1,5 @@
 export const environment = {
+  name: 'recette',
   production: false,
   apiUrl: 'https://rec-api-asptt.fboulifard.com',
   firebase: {

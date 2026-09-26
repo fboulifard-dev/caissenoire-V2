@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { ApiService } from '../services/api.service';
 import { AuthService } from '../services/auth.service';
 import { APP_VERSION } from '../../environments/version';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-seasons',
@@ -15,7 +16,7 @@ export class SeasonsPage implements OnInit {
   loading = true;
   error = '';
   userName = 'Utilisateur';
-  appVersion = APP_VERSION;
+  appVersion = environment.name ? `${APP_VERSION}-${environment.name}` : APP_VERSION;
 
   constructor(private api: ApiService, private auth: AuthService, private router: Router) {}
 
