@@ -1,13 +1,14 @@
 export const environment = {
+  name: '',
   production: true,
   apiUrl: 'https://api-asptt.fboulifard.com',
   firebase: {
-    apiKey: "aa",
-  authDomain: "caissenoire-dev-84854.firebaseapp.com",
-  projectId: "caissenoire-dev-84854",
-  storageBucket: "caissenoire-dev-84854.firebasestorage.app",
-  messagingSenderId: "786805881122",
-  appId: "1:786805881122:web:914088a4b9c3fece12cd7b",
-  measurementId: "G-9BQNRTY4LP"
+    apiKey: "AIzaSyCueNKKZBvdzYIup4MNFeBIcZqx8l2kuNs",
+    authDomain: "asptt-nantes-hb.firebaseapp.com",
+    projectId: "asptt-nantes-hb",
+    storageBucket: "asptt-nantes-hb.appspot.com",
+    messagingSenderId: "159078381250",
+    appId: "1:159078381250:web:d8cf3c8b5f9815db356d5b",
+    measurementId: "G-DJKRPHTVQP"
   }
 };
