@@ -85,7 +85,7 @@ export class ApiService {
     );
   }
 
-  createRule(rule: { label: string; cost: number; matchDay: boolean }, seasonId: string) {
+  createRule(rule: { label: string; cost: number; matchDay: boolean; active: boolean }, seasonId: string) {
     return this.getHeadersWithToken().pipe(
       switchMap((headers) => this.http.post(`${environment.apiUrl}/api/seasons/${seasonId}/rules`, rule, { headers, params: { seasonId } }))
     );
