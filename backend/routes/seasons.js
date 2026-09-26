@@ -137,6 +137,23 @@ router.get('/:seasonId/players', requireSeason, async (req, res) => {
   }
 });
 
+router.post('/:seasonId/players', requireSeason, async (req, res) => {
+  try {
+    const { id, email, firstName, lastName, nickName } = req.body;
+    const payload = {
+      id: id ,
+      email: email || '',
+      firstName: firstName || '',
+      lastName: lastName || '',
+      nickName: nickName || '',
+    };
+    const snapshot = await getDb().collection('seasons').doc(req.season.id).collection('players').add(payload);
+    res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 /**
  * payments
  */
