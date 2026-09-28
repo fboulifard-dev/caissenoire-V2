@@ -30,9 +30,9 @@ export class PaymentCreatePage {
     this.ensureSeasonUrl();
     this.paymentId = this.route.snapshot.paramMap.get('paymentId') || '';
     this.editing = Boolean(this.paymentId);
-    this.api.getUsers().subscribe({
-      next: (users: any) => (this.users = users || []),
-      error: () => (this.error = 'Impossible de charger les utilisateurs.')
+    this.api.getSeasonPlayers(this.seasonId).subscribe({
+      next: (players: any) => (this.users = players || []),
+      error: () => (this.error = 'Impossible de charger les joueurs.')
     });
     if (this.editing) {
       this.loadPayment();

@@ -47,7 +47,8 @@ router.post('/', requireAdmin, async (req, res) => {
       const payload = {
         date: date || new Date().toISOString().slice(0, 10),
         playerId: selectedId,
-        playerName: `${player.data().firstName || ''} ${player.data().lastName || ''}`.trim() || player.data().name || selectedId,
+        playerFirstName: player.data().playerFirstName || '',
+        playerLastName: player.data().playerLastName || '',
         ruleId,
         ruleLabel: ruleData.label,
         amount: Number.isFinite(finalAmount) ? finalAmount : Number(amount) || 0,
@@ -79,7 +80,24 @@ router.put('/:id', requireAdmin, async (req, res) => {
   try {
     const db = getDb();
     const id = req.params.id;
-    const payload = req.body;
+    
+    const rule = await getDb().collection('seasons').doc(req.season.id).collection('rules').doc(req.body.ruleId).get();
+    const player = await getDb().collection('seasons').doc(req.season.id).collection('players').doc(req.body.playerId).get();
+    
+    const payload = {
+        date: req.body.date,
+        playerId: req.body.playerId,
+        playerFirstName: player.data().playerFirstName || '',
+        playerLastName: player.data().playerLastName || '',
+        ruleId: req.body.ruleId,
+        ruleLabel: rule.data().label,
+        amount: Number.isFinite(finalAmount) ? finalAmount : Number(req.body.amount) || 0,
+        matchDay: req.body.matchDay,
+        photo: req.body.photo || null,
+        comment: req.body.comment || '',
+        createdBy: req.user.uid,
+        createdAt
+      };
     payload.updatedAt = new Date().toISOString();
     await db.collection('seasons').doc(req.season.id).collection('fines').doc(id).set(payload, { merge: true });
     res.json({ id });
