@@ -36,12 +36,8 @@
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 // @import "@ionic/angular/css/palettes/dark.system.css";
 
-ion-app {
-	--ion-background-color: #f3f5f3;
-}
-
-ion-content {
-	--background: #f3f5f3;
+ion-app, ion-content {
+  --background: var(--background-color-app)
 }
 
 ion-card {

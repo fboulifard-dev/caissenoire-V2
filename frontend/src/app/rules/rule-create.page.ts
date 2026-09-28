@@ -46,7 +46,8 @@ export class RuleCreatePage {
     this.api.createRule({
       label: this.rule.label.trim(),
       cost: Number(this.rule.cost),
-      matchDay: this.rule.matchDay
+      matchDay: this.rule.matchDay,
+      active: true
     }, this.seasonId).subscribe({
       next: () => this.router.navigate(['/saisons', this.seasonId, 'regles']),
       error: () => {

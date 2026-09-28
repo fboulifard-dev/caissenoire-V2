@@ -22,7 +22,7 @@
                   <img [src]="p.imageData" alt="Justificatif du paiement" />
                 </ion-thumbnail>
                 <ion-label>
-                  <h3>{{ p.playerName || p.playerId || 'Inconnu' }}</h3>
+                  <h3>{{ p.playerFirstName + ' ' + p.playerLastName || p.playerId || 'Inconnu' }}</h3>
                   <p *ngIf="p.comment">{{ p.comment || '' }}</p>
                 </ion-label>
                 <ion-note slot="end">{{ (p.amount || 0) | currency:'EUR':'symbol':'1.0-0' }}</ion-note>

@@ -32,26 +32,32 @@ router.get('/', async (req, res) => {
   try {
     const db = getDb();
     const snapshot = await db.collection('seasons').doc(req.season.id).collection('payments').get();
+    const players = await db.collection('seasons').doc(req.season.id).collection('players').get();
     let data = await Promise.all(snapshot.docs.map(async doc => {
       const payment = { id: doc.id, ...doc.data() };
 
       if (!payment.createdByName && payment.createdBy) {
         try {
-          const creator = await admin.auth().getUser(payment.createdBy);
-          payment.createdByName = creator.displayName || creator.email || payment.createdBy;
+          const creator = players.docs.find(doc => doc.id === payment.createdBy);
+          payment.createdBy = creator;
         } catch {
-          payment.createdByName = payment.createdBy;
+          payment.createdBy = payment.createdBy;
+        }
+      }v
+
+      if (payment.playerId) {
+        try {
+          const player = players.docs.find(doc => doc.id === payment.playerId);
+          payment.playerFirstName = player.firstName;
+          payment.playerLastName = player.lastName;
+        } catch {
+          payment.createdBy = payment.playerId;
         }
       }
 
       return payment;
     }));
 
-    if (req.query.creator) {
-      data = data.filter(payment =>
-        payment.createdBy === req.query.creator || payment.createdByName === req.query.creator
-      );
-    }
     if (req.query.playerId) {
       data = data.filter(payment => payment.playerId === req.query.playerId);
     }
@@ -90,7 +96,7 @@ router.post('/', requireAdmin, async (req, res) => {
     const payload = {
       date: date || new Date().toISOString().slice(0, 10),
       playerId,
-      playerName: `${player.data().firstName || ''} ${player.data().lastName || ''}`.trim() || player.data().name || playerId,
+      // playerName: `${player.data().firstName || ''} ${player.data().lastName || ''}`.trim() || player.data().name || playerId,
       amount: numericAmount,
       comment: comment || '',
       createdBy: req.user.uid,
@@ -99,7 +105,6 @@ router.post('/', requireAdmin, async (req, res) => {
     if (imageData) {
       payload.imageData = imageData;
     }
-    payload.createdByName = req.user.name || req.user.email || req.user.uid;
     const ref = await db.collection('seasons').doc(req.season.id).collection('payments').add(payload);
 
     try {

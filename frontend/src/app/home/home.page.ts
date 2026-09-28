@@ -35,7 +35,7 @@ export class HomePage implements OnInit {
   selectedPlayerId = '';
   players: any[] = [];
   summaryView: 'common' | 'connected' | 'selected' = 'common';
-  readonly iban = 'FR76 1444 1444 1444 1444';
+  iban = '';
 
   constructor(
     private auth: AuthService,
@@ -107,6 +107,7 @@ export class HomePage implements OnInit {
         this.firstName = season.player?.firstName || this.firstName;
         this.lastName = season.player?.lastName || this.lastName;
         this.userName = `${this.firstName} ${this.lastName}`.trim();
+        this.iban = season.iban
         this.loadPlayers(season.id);
         this.loadPaymentSummary(season.id);
       },

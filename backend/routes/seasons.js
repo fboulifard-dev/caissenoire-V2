@@ -131,6 +131,30 @@ router.get('/:seasonId/ranking', requireSeason, async (req, res) => {
 router.get('/:seasonId/players', requireSeason, async (req, res) => {
   try {
     const snapshot = await getDb().collection('seasons').doc(req.season.id).collection('players').get();
+    res.json(
+      snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      .sort((first, second) => {
+      const firstName = `${first.firstName || ''} ${first.lastName || ''}`.trim() || first.name || first.email || first.id;
+      const secondName = `${second.firstName || ''} ${second.lastName || ''}`.trim() || second.name || second.email || second.id;
+      return firstName.localeCompare(secondName, 'fr');
+      } )
+  );   
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post('/:seasonId/players', requireSeason, async (req, res) => {
+  try {
+    const { id, email, firstName, lastName, nickName } = req.body;
+    const payload = {
+      id: id ,
+      email: email || '',
+      firstName: firstName || '',
+      lastName: lastName || '',
+      nickName: nickName || '',
+    };
+    const snapshot = await getDb().collection('seasons').doc(req.season.id).collection('players').add(payload);
     res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -144,11 +168,36 @@ router.get('/:seasonId/players', requireSeason, async (req, res) => {
 router.get('/:seasonId/payments', requireSeason, requireSeason, async (req, res) => {
   try {
     const snapshot = await getDb().collection('seasons').doc(req.season.id).collection('payments').get();
+    const players = await getDb().collection('seasons').doc(req.season.id).collection('players').get();
+
     const data = snapshot.docs
-      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .map(doc => {
+        const payment = { id: doc.id, ...doc.data() };
+        if (payment.createdBy) {
+          try {
+            const creator = players.docs.find(doc => doc.id === payment.createdBy);
+            payment.createdByFirstName = creator.data().firstName;
+            payment.createdByLastName = creator.data().lastName;
+          } catch {
+            payment.createdBy = payment.createdBy;
+          }
+        }
+
+        if (payment.playerId) {
+          try {
+            const player = players.docs.find(doc => doc.id === payment.playerId);
+            payment.playerFirstName = player.data().firstName;
+            payment.playerLastName = player.data().lastName;
+          } catch {
+            payment.playerId = payment.playerId;
+          }
+        }
+
+        return payment; 
+      })
       .sort((first, second) => new Date(second.date || second.createdAt || 0).getTime() - new Date(first.date || first.createdAt || 0).getTime());
     if (req.query.playerId) {
-      return res.json(data.filter(fine => fine.playerId === req.query.playerId));
+      return res.json(data.filter(payment => payment.playerId === req.query.playerId));
     }
     res.json(data);
   } catch (err) {
@@ -181,7 +230,7 @@ router.post('/:seasonId/payments', requireSeason, requireAdmin, async (req, res)
     const payload = {
       date: date || new Date().toISOString().slice(0, 10),
       playerId,
-      playerName: `${player.data().firstName || ''} ${player.data().lastName || ''}`.trim() || player.data().name || playerId,
+      // playerName: `${player.data().firstName || ''} ${player.data().lastName || ''}`.trim() || player.data().name || playerId,
       amount: numericAmount,
       comment: comment || '',
       createdBy: req.user.uid,
@@ -190,7 +239,7 @@ router.post('/:seasonId/payments', requireSeason, requireAdmin, async (req, res)
     if (imageData) {
       payload.imageData = imageData;
     }
-    payload.createdByName = req.user.name || req.user.email || req.user.uid;
+    // payload.createdByName = req.user.name || req.user.email || req.user.uid;
     const ref = await db.collection('seasons').doc(req.season.id).collection('payments').add(payload);
 
     try {
@@ -236,8 +285,42 @@ router.delete('/:seasonId/payments/:id', requireSeason, requireAdmin, async (req
 router.get('/:seasonId/fines', requireSeason, async (req, res) => {
   try {
     const snapshot = await getDb().collection('seasons').doc(req.season.id).collection('fines').get();
+    const players = await getDb().collection('seasons').doc(req.season.id).collection('players').get();
+    const rules = await getDb().collection('seasons').doc(req.season.id).collection('rules').get();
     const data = snapshot.docs
-      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .map(doc => {
+        const fine = { id: doc.id, ...doc.data() };
+        if (fine.createdBy) {
+          try {
+            const creator = players.docs.find(doc => doc.id === fine.createdBy);
+            fine.createdByFirstName = creator.data().firstName;
+            fine.createdByLastName = creator.data().lastName;
+          } catch {
+            fine.createdBy = fine.createdBy;
+          }
+        }
+
+        if (fine.playerId) {
+          try {
+            const player = players.docs.find(doc => doc.id === fine.playerId);
+            fine.playerFirstName = player.data().firstName;
+            fine.playerLastName = player.data().lastName;
+          } catch {
+            fine.playerId = fine.playerId;
+          }
+        }
+
+        if (fine.ruleId) {
+          try {
+            const rule = rules.docs.find(doc => doc.id === fine.ruleId);
+            fine.ruleLabel = rule.data().label  ;
+          } catch {
+            fine.ruleId = fine.ruleId;
+          }
+        }
+
+        return fine; 
+      })
       .sort((first, second) => new Date(second.date || second.createdAt || 0).getTime() - new Date(first.date || first.createdAt || 0).getTime());
     if (req.query.playerId) {
       return res.json(data.filter(fine => fine.playerId === req.query.playerId));
