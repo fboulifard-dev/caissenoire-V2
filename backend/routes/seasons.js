@@ -417,7 +417,12 @@ router.delete('/:seasonId/fines/:id', requireSeason, requireAdmin, async (req, r
 router.get('/:seasonId/rules', requireSeason, async (req, res) => {
   try {
     const snapshot = await getDb().collection('seasons').doc(req.season.id).collection('rules').get();
-    res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    res.json(
+      snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))
+      .sort((first, second) => {
+           return first.label.localeCompare(second.label, 'fr')
+      } )
+    );
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

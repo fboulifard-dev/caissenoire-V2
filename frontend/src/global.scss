@@ -46,6 +46,7 @@ ion-card {
 
 ion-item:has(ion-input),
 ion-item:has(ion-select),
+ion-item:has(ion-toggle),
 ion-item:has(ion-textarea) {
   --background: #ffffff;
   --border-color: var(--ion-color-primary);

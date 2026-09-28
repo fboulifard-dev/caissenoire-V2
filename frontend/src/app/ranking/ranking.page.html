@@ -23,11 +23,11 @@
       </div>
 
       <ion-list class="ranking-list">
-        <ion-item *ngFor="let player of ranking; let position = index" lines="none" class="ranking-row">
+        <ion-item *ngFor="let player of ranking; let position = index" lines="none" class="ranking-row" [routerLink]="seasonId ? ['/saisons', seasonId, 'operation', 'amendes'] : null" [queryParams]="{ joueur: player.playerId }">
             <div class="rank-number" [class.top-rank]="position < 3">{{ position + 1 }}</div>
             <ion-label>
               <div class="player-heading">
-                <h3>{{ player.name }}</h3>
+                <h3>{{ player.name }}{{ player.uid }}</h3>
                 <strong>{{ player.finesTotal | currency:'EUR':'symbol':'1.0-0' }}</strong>
               </div>
               <div class="share-track" role="progressbar" [attr.aria-valuenow]="finesShare(player)" aria-valuemin="0" aria-valuemax="100" [attr.aria-label]="'Part des amendes de ' + player.name">
