@@ -16,8 +16,8 @@
       <ion-card>
         <ion-card-content class="content-list">
           <ion-list>
-            <ion-item-sliding *ngFor="let p of group.items">
-              <ion-item class="list-card">
+            <ion-item-sliding *ngFor="let p of group.items; let last = last">
+            <ion-item class="list-card" [lines]="last ? 'none' : 'inset'">
                 <ion-thumbnail slot="start" *ngIf="p.imageData">
                   <img [src]="p.imageData" alt="Justificatif du paiement" />
                 </ion-thumbnail>
