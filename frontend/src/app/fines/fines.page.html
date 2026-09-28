@@ -19,8 +19,8 @@
       <ion-card>
       <ion-card-content class="content-list">
         <ion-list>
-          <ion-item-sliding *ngFor="let f of group.items">
-            <ion-item class="list-card">
+          <ion-item-sliding *ngFor="let f of group.items; let last = last">
+            <ion-item class="list-card" [lines]="last ? 'none' : 'inset'">
               <ion-label>
                 <h3><b>{{ f.ruleLabel }}</b></h3>
                 <h3>{{ f.playerFirstName || f.playerLastName ? (f.playerFirstName + ' ' + f.playerLastName) : (f.name || f.email || f.id) }}</h3>
