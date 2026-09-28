@@ -23,7 +23,7 @@
             <ion-item class="list-card">
               <ion-label>
                 <h3><b>{{ f.ruleLabel }}</b></h3>
-                <h3>{{ f.playerName || playerName || f.playerId }}</h3>
+                <h3>{{ f.playerFirstName || f.playerLastName ? (f.playerFirstName + ' ' + f.playerLastName) : (f.name || f.email || f.id) }}</h3>
                 <p *ngIf="f.comment">{{ f.comment || '' }}</p>
               </ion-label>
               <ion-thumbnail slot="end" *ngIf="f.photo"><img [src]="f.photo" alt="Photo de l'amende"></ion-thumbnail>

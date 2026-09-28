@@ -27,7 +27,7 @@
 
     <div class="summary-cards">
       <ion-card button="true" [routerLink]="seasonId ? ['/saisons', seasonId, 'operation', 'paiements'] : null" [queryParams]="summaryView === 'common' ? null : { joueur: selectedPlayerId }" class="payments-summary-card">
-      <ion-card-header><ion-card-title>{{playerPaymentCount}} Paiements</ion-card-title></ion-card-header>
+      <ion-card-header><ion-card-title>{{summaryView === 'common' ? paymentCount : playerPaymentCount}} Paiements</ion-card-title></ion-card-header>
       <ion-card-content>
         <ion-spinner *ngIf="summaryLoading" name="crescent"></ion-spinner>
         <div *ngIf="!summaryLoading" class="payments-summary">
@@ -40,7 +40,7 @@
       </ion-card>
 
       <ion-card button="true" [routerLink]="seasonId ? ['/saisons', seasonId, 'operation', 'amendes'] : null" [queryParams]="summaryView === 'common' ? null : { joueur: selectedPlayerId }" class="fines-summary-card">
-      <ion-card-header><ion-card-title>{{playerFineCount}} Amendes</ion-card-title></ion-card-header>
+      <ion-card-header><ion-card-title>{{summaryView === 'common' ? fineCount : playerFineCount }} Amendes</ion-card-title></ion-card-header>
       <ion-card-content>
         <ion-spinner *ngIf="summaryLoading" name="crescent"></ion-spinner>
         <div *ngIf="!summaryLoading" class="payments-summary">
