@@ -4,7 +4,7 @@ const router = express.Router();
 const { getDb } = require('../firebase-admin-init');
 const { verifyToken } = require('../middleware/auth');
 const { requireSeason, requireAdmin } = require('../middleware/season');
-const { notifyPlayer } = require('../services/notifications');
+const { notifyPlayer } = require('./notifications');
 
 router.use(verifyToken);
 router.use(requireSeason);

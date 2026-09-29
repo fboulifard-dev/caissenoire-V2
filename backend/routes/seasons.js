@@ -2,8 +2,9 @@ const express = require('express');
 const router = express.Router();
 const { getDb } = require('../firebase-admin-init');
 const { verifyToken } = require('../middleware/auth');
-const { getSeason, requireSeason, requireAdmin } = require('../middleware/season');
+const { requireSeason, requireAdmin } = require('../middleware/season');
 const { notifyPlayer } = require('../services/notifications');
+const { getFines, createFine, updateFine, deleteFine } = require('../services/fines');
 
 router.use(verifyToken);
 
@@ -284,47 +285,8 @@ router.delete('/:seasonId/payments/:id', requireSeason, requireAdmin, async (req
 
 router.get('/:seasonId/fines', requireSeason, async (req, res) => {
   try {
-    const snapshot = await getDb().collection('seasons').doc(req.season.id).collection('fines').get();
-    const players = await getDb().collection('seasons').doc(req.season.id).collection('players').get();
-    const rules = await getDb().collection('seasons').doc(req.season.id).collection('rules').get();
-    const data = snapshot.docs
-      .map(doc => {
-        const fine = { id: doc.id, ...doc.data() };
-        if (fine.createdBy) {
-          try {
-            const creator = players.docs.find(doc => doc.id === fine.createdBy);
-            fine.createdByFirstName = creator.data().firstName;
-            fine.createdByLastName = creator.data().lastName;
-          } catch {
-            fine.createdBy = fine.createdBy;
-          }
-        }
 
-        if (fine.playerId) {
-          try {
-            const player = players.docs.find(doc => doc.id === fine.playerId);
-            fine.playerFirstName = player.data().firstName;
-            fine.playerLastName = player.data().lastName;
-          } catch {
-            fine.playerId = fine.playerId;
-          }
-        }
-
-        if (fine.ruleId) {
-          try {
-            const rule = rules.docs.find(doc => doc.id === fine.ruleId);
-            fine.ruleLabel = rule.data().label  ;
-          } catch {
-            fine.ruleId = fine.ruleId;
-          }
-        }
-
-        return fine; 
-      })
-      .sort((first, second) => new Date(second.date || second.createdAt || 0).getTime() - new Date(first.date || first.createdAt || 0).getTime());
-    if (req.query.playerId) {
-      return res.json(data.filter(fine => fine.playerId === req.query.playerId));
-    }
+    const data = await getFines(req.season.id, req.query.playerId);
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -333,51 +295,13 @@ router.get('/:seasonId/fines', requireSeason, async (req, res) => {
 
 router.post('/:seasonId/fines',requireSeason, requireAdmin, async (req, res) => {
   try {
-    const { date, playerId, playerIds = [], ruleId, amount = 0, matchDay = false, photo, comment } = req.body;
-    const requestedPlayerIds = Array.isArray(playerIds) ? playerIds : (playerId ? [playerId] : []);
+    const fine = {...req.body, creator : req.user.uid};
+    const requestedPlayerIds = Array.isArray(fine.playerIds) ? fine.playerIds : (fine.playerId ? [fine.playerId] : []);
     const selectedPlayerIds = [...new Set(requestedPlayerIds.filter(id => typeof id === 'string' && id.trim()))];
-    if (!selectedPlayerIds.length || typeof ruleId !== 'string' || !ruleId.trim()) {
+    if (!selectedPlayerIds.length || typeof fine.ruleId !== 'string' || !fine.ruleId.trim()) {
       return res.status(400).json({ error: 'At least one player and one rule are required' });
     }
-
-    const db = getDb();
-    const playersRef = db.collection('seasons').doc(req.season.id).collection('players');
-    const players = await Promise.all(selectedPlayerIds.map(id => playersRef.doc(id).get()));
-    const rule = await db.collection('seasons').doc(req.season.id).collection('rules').doc(ruleId).get();
-    if (players.some(player => !player.exists) || !rule.exists) return res.status(400).json({ error: 'Invalid player or rule' });
-    const ruleData = rule.data();
-    const finalMatchDay = Boolean(matchDay);
-    const finalAmount = finalMatchDay ? Number(ruleData.cost) * 2 : Number(ruleData.cost);
-    const finesRef = db.collection('seasons').doc(req.season.id).collection('fines');
-    const createdAt = new Date().toISOString();
-    const batch = db.batch();
-    const createdFines = players.map((player, index) => {
-      const selectedId = selectedPlayerIds[index];
-      const payload = {
-        date: date || new Date().toISOString().slice(0, 10),
-        playerId: selectedId,
-        playerName: `${player.data().firstName || ''} ${player.data().lastName || ''}`.trim() || player.data().name || selectedId,
-        ruleId,
-        ruleLabel: ruleData.label,
-        amount: Number.isFinite(finalAmount) ? finalAmount : Number(amount) || 0,
-        matchDay: finalMatchDay,
-        photo: photo || null,
-        comment: comment || '',
-        createdBy: req.user.uid,
-        createdAt
-      };
-      const ref = finesRef.doc();
-      batch.set(ref, payload);
-      return { id: ref.id, playerId: selectedId, amount: payload.amount };
-    });
-    await batch.commit();
-    await Promise.all(createdFines.map(async fine => {
-      try {
-        await notifyPlayer(req.season.id, fine.playerId, 'Nouvelle amende', `${ruleData.label} : ${fine.amount} EUR`, { fineId: fine.id });
-      } catch (notificationError) {
-        console.error('Fine notification failed:', notificationError.message);
-      }
-    }));
+    const createdFines = await createFine(req.season.id, fine, selectedPlayerIds);
     res.status(201).json({ ids: createdFines.map(fine => fine.id) });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -386,12 +310,9 @@ router.post('/:seasonId/fines',requireSeason, requireAdmin, async (req, res) => 
 
 router.put('/:seasonId/fines/:id', requireSeason, requireAdmin, async (req, res) => {
   try {
-    const db = getDb();
-    const id = req.params.id;
-    const payload = req.body;
-    payload.updatedAt = new Date().toISOString();
-    await db.collection('seasons').doc(req.season.id).collection('fines').doc(id).set(payload, { merge: true });
-    res.json({ id });
+    const fine = {...req.body, id : req.params.id};
+    await updateFine(req.season.id, fine)
+    res.json(fine.id);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -401,7 +322,7 @@ router.delete('/:seasonId/fines/:id', requireSeason, requireAdmin, async (req, r
   try {
     const db = getDb();
     const id = req.params.id;
-    await db.collection('seasons').doc(req.season.id).collection('fines').doc(id).delete();
+    await deleteFine(req.season.id, id)
     res.status(204).end();
   } catch (err) {
     res.status(500).json({ error: err.message });
