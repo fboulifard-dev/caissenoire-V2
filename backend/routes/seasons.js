@@ -5,6 +5,7 @@ const { verifyToken } = require('../middleware/auth');
 const { requireSeason, requireAdmin } = require('../middleware/season');
 const { notifyPlayer } = require('../services/notifications');
 const { getFines, createFine, updateFine, deleteFine } = require('../services/fines');
+const { getPayments, createPayment, updatePayment, deletePayment } = require('../services/payments');
 
 router.use(verifyToken);
 
@@ -125,9 +126,9 @@ router.get('/:seasonId/ranking', requireSeason, async (req, res) => {
   }
 });
 
-/**
+/*****************************************************************************
  * players
- */
+ *****************************************************************************/
 
 router.get('/:seasonId/players', requireSeason, async (req, res) => {
   try {
@@ -162,44 +163,13 @@ router.post('/:seasonId/players', requireSeason, async (req, res) => {
   }
 });
 
-/**
+/*****************************************************************************
  * payments
- */
+ *****************************************************************************/
 
 router.get('/:seasonId/payments', requireSeason, requireSeason, async (req, res) => {
   try {
-    const snapshot = await getDb().collection('seasons').doc(req.season.id).collection('payments').get();
-    const players = await getDb().collection('seasons').doc(req.season.id).collection('players').get();
-
-    const data = snapshot.docs
-      .map(doc => {
-        const payment = { id: doc.id, ...doc.data() };
-        if (payment.createdBy) {
-          try {
-            const creator = players.docs.find(doc => doc.id === payment.createdBy);
-            payment.createdByFirstName = creator.data().firstName;
-            payment.createdByLastName = creator.data().lastName;
-          } catch {
-            payment.createdBy = payment.createdBy;
-          }
-        }
-
-        if (payment.playerId) {
-          try {
-            const player = players.docs.find(doc => doc.id === payment.playerId);
-            payment.playerFirstName = player.data().firstName;
-            payment.playerLastName = player.data().lastName;
-          } catch {
-            payment.playerId = payment.playerId;
-          }
-        }
-
-        return payment; 
-      })
-      .sort((first, second) => new Date(second.date || second.createdAt || 0).getTime() - new Date(first.date || first.createdAt || 0).getTime());
-    if (req.query.playerId) {
-      return res.json(data.filter(payment => payment.playerId === req.query.playerId));
-    }
+    const data = await getPayments(req.season.id, req.query.playerId);
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -208,48 +178,16 @@ router.get('/:seasonId/payments', requireSeason, requireSeason, async (req, res)
 
 router.post('/:seasonId/payments', requireSeason, requireAdmin, async (req, res) => {
   try {
-    const db = getDb();
-    const { date, playerId, amount, comment, imageData } = req.body;
+    const payment = {...req.body, creator : req.user.uid};
 
-    const player = await db.collection('seasons').doc(req.season.id).collection('players').doc(playerId).get();
-    if (!player.exists) {
-      return res.status(400).json({ error: 'Le joueur du paiement est invalide.' });
-    }
-    const numericAmount = Number(amount);
-    if (!Number.isFinite(numericAmount) || numericAmount < 0) {
-      return res.status(400).json({ error: 'Le montant du paiement est invalide.' });
-    }
+    const data = await createPayment(req.season.id, payment);
+    // try {
+    //   await notifyPlayer(req.season.id, playerId, 'Nouveau paiement', `Nouveau paiement de ${numericAmount} EUR`, { paymentId: data.id });
+    // } catch (notificationError) {
+    //   console.error('Payment notification failed:', notificationError.message);
+    // }
 
-    if (imageData && (
-      typeof imageData !== 'string' ||
-      !/^data:image\/(jpeg|png|webp);base64,/.test(imageData) ||
-      imageData.length > 900000
-    )) {
-      return res.status(400).json({ error: 'Image invalide ou trop volumineuse.' });
-    }
-
-    const payload = {
-      date: date || new Date().toISOString().slice(0, 10),
-      playerId,
-      // playerName: `${player.data().firstName || ''} ${player.data().lastName || ''}`.trim() || player.data().name || playerId,
-      amount: numericAmount,
-      comment: comment || '',
-      createdBy: req.user.uid,
-      createdAt: new Date().toISOString()
-    };
-    if (imageData) {
-      payload.imageData = imageData;
-    }
-    // payload.createdByName = req.user.name || req.user.email || req.user.uid;
-    const ref = await db.collection('seasons').doc(req.season.id).collection('payments').add(payload);
-
-    try {
-      await notifyPlayer(req.season.id, playerId, 'Nouveau paiement', `Nouveau paiement de ${numericAmount} EUR`, { paymentId: ref.id });
-    } catch (notificationError) {
-      console.error('Payment notification failed:', notificationError.message);
-    }
-
-    res.status(201).json({ id: ref.id });
+    res.status(201).json({ id: data.id });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -257,12 +195,9 @@ router.post('/:seasonId/payments', requireSeason, requireAdmin, async (req, res)
 
 router.put('/:seasonId/payments/:id', requireSeason, requireAdmin, async (req, res) => {
   try {
-    const db = getDb();
-    const id = req.params.id;
-    const payload = req.body;
-    payload.updatedAt = new Date().toISOString();
-    await db.collection('seasons').doc(req.season.id).collection('payments').doc(id).set(payload, { merge: true });
-    res.json({ id });
+    const payment = {...req.body, id : req.params.id};
+    await updatePayment(req.season.id, payment);
+    res.json(payment.id );
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -270,18 +205,17 @@ router.put('/:seasonId/payments/:id', requireSeason, requireAdmin, async (req, r
 
 router.delete('/:seasonId/payments/:id', requireSeason, requireAdmin, async (req, res) => {
   try {
-    const db = getDb();
-    const id = req.params.id;
-    await db.collection('seasons').doc(req.season.id).collection('payments').doc(id).delete();
+    const paymentId = req.params.id;
+    await deletePayment(req.season.id, paymentId)
     res.status(204).end();
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-/**
+/*****************************************************************************
  * fines
- */
+ *****************************************************************************/
 
 router.get('/:seasonId/fines', requireSeason, async (req, res) => {
   try {
@@ -320,7 +254,6 @@ router.put('/:seasonId/fines/:id', requireSeason, requireAdmin, async (req, res)
 
 router.delete('/:seasonId/fines/:id', requireSeason, requireAdmin, async (req, res) => {
   try {
-    const db = getDb();
     const id = req.params.id;
     await deleteFine(req.season.id, id)
     res.status(204).end();
@@ -331,9 +264,9 @@ router.delete('/:seasonId/fines/:id', requireSeason, requireAdmin, async (req, r
 
 
 
-/**
+/*****************************************************************************
  * rules
- */
+ *****************************************************************************/
 
 router.get('/:seasonId/rules', requireSeason, async (req, res) => {
   try {

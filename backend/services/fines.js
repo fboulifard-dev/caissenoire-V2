@@ -47,8 +47,8 @@ async function getFines(saisonId, playerId) {
       })
       .sort((first, second) => new Date(second.date || second.createdAt || 0).getTime() - new Date(first.date || first.createdAt || 0).getTime());
     
-    reponse = data;
-    
+    let reponse = data;
+
       if (playerId) {
       reponse = data.filter(fine => fine.playerId === playerId);
     }

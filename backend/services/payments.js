@@ -1,146 +1,101 @@
-const express = require('express');
 const admin = require('firebase-admin');
-const router = express.Router();
 const { getDb } = require('../firebase-admin-init');
-const { verifyToken } = require('../middleware/auth');
-const { requireSeason, requireAdmin } = require('../middleware/season');
-const { notifyPlayer } = require('./notifications');
 
-router.use(verifyToken);
-router.use(requireSeason);
+/**
+ * 
+ * @param {*} saisonId 
+ * @param {*} playerId 
+ * @returns 
+ */
+async function getPayments(saisonId, playerId) {
+  const snapshot = await getDb().collection('seasons').doc(saisonId).collection('payments').get();
+    const players = await getDb().collection('seasons').doc(saisonId).collection('players').get();
 
-router.post('/device-token', async (req, res) => {
-  try {
-    const { token } = req.body;
-    if (!token || typeof token !== 'string' || token.length > 4096) {
-      return res.status(400).json({ error: 'Token de notification invalide.' });
-    }
-
-    await getDb().collection('notificationTokens').doc(token).set({
-      token,
-      seasonId: req.season.id,
-      userId: req.user.uid,
-      updatedAt: new Date().toISOString()
-    });
-    res.status(204).end();
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.get('/', async (req, res) => {
-  try {
-    const db = getDb();
-    const snapshot = await db.collection('seasons').doc(req.season.id).collection('payments').get();
-    const players = await db.collection('seasons').doc(req.season.id).collection('players').get();
-    let data = await Promise.all(snapshot.docs.map(async doc => {
-      const payment = { id: doc.id, ...doc.data() };
-
-      if (!payment.createdByName && payment.createdBy) {
-        try {
-          const creator = players.docs.find(doc => doc.id === payment.createdBy);
-          payment.createdBy = creator;
-        } catch {
-          payment.createdBy = payment.createdBy;
+    const data = snapshot.docs
+      .map(doc => {
+        const payment = { id: doc.id, ...doc.data() };
+        if (payment.createdBy) {
+          try {
+            const creator = players.docs.find(doc => doc.id === payment.createdBy);
+            payment.createdByFirstName = creator.data().firstName;
+            payment.createdByLastName = creator.data().lastName;
+          } catch {
+            payment.createdBy = payment.createdBy;
+          }
         }
-      }v
 
-      if (payment.playerId) {
-        try {
-          const player = players.docs.find(doc => doc.id === payment.playerId);
-          payment.playerFirstName = player.firstName;
-          payment.playerLastName = player.lastName;
-        } catch {
-          payment.createdBy = payment.playerId;
+        if (payment.playerId) {
+          try {
+            const player = players.docs.find(doc => doc.id === payment.playerId);
+            payment.playerFirstName = player.data().firstName;
+            payment.playerLastName = player.data().lastName;
+          } catch {
+            payment.playerId = payment.playerId;
+          }
         }
-      }
 
-      return payment;
-    }));
-
-    if (req.query.playerId) {
-      data = data.filter(payment => payment.playerId === req.query.playerId);
+        return payment; 
+      })
+      .sort((first, second) => new Date(second.date || second.createdAt || 0).getTime() - new Date(first.date || first.createdAt || 0).getTime());
+    let reponse = data;
+    
+    if (playerId) {
+      reponse = data.filter(payment => payment.playerId === playerId);
     }
+    return reponse;
+}
 
-    data.sort((first, second) =>
-      new Date(second.createdAt || 0).getTime() - new Date(first.createdAt || 0).getTime()
-    );
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.post('/', requireAdmin, async (req, res) => {
-  try {
+/**
+ * 
+ * @param {*} saisonId 
+ * @param {*} payment 
+ * @returns 
+ */
+async function createPayment(saisonId, payment) {
     const db = getDb();
-    const { date, playerId, amount, comment, imageData } = req.body;
-
-    const player = await db.collection('seasons').doc(req.season.id).collection('players').doc(playerId).get();
+    const player = await db.collection('seasons').doc(saisonId).collection('players').doc(payment.playerId).get();
     if (!player.exists) {
-      return res.status(400).json({ error: 'Le joueur du paiement est invalide.' });
+      throw new Error({ error: 'Le joueur du paiement est invalide.' });
     }
-    const numericAmount = Number(amount);
+    const numericAmount = Number(payment.amount);
     if (!Number.isFinite(numericAmount) || numericAmount < 0) {
-      return res.status(400).json({ error: 'Le montant du paiement est invalide.' });
-    }
-
-    if (imageData && (
-      typeof imageData !== 'string' ||
-      !/^data:image\/(jpeg|png|webp);base64,/.test(imageData) ||
-      imageData.length > 900000
-    )) {
-      return res.status(400).json({ error: 'Image invalide ou trop volumineuse.' });
+      throw new Error({ error: 'Le montant du paiement est invalide.' });
     }
 
     const payload = {
-      date: date || new Date().toISOString().slice(0, 10),
-      playerId,
-      // playerName: `${player.data().firstName || ''} ${player.data().lastName || ''}`.trim() || player.data().name || playerId,
+      date: payment.date || new Date().toISOString().slice(0, 10),
+      playerId : payment.playerId,
       amount: numericAmount,
-      comment: comment || '',
-      createdBy: req.user.uid,
+      comment: payment.comment || '',
+      createdBy: payment.creator,
       createdAt: new Date().toISOString()
     };
-    if (imageData) {
-      payload.imageData = imageData;
-    }
-    const ref = await db.collection('seasons').doc(req.season.id).collection('payments').add(payload);
 
-    try {
-      await notifyPlayer(req.season.id, playerId, 'Nouveau paiement', `Nouveau paiement de ${numericAmount} EUR`, { paymentId: ref.id });
-    } catch (notificationError) {
-      console.error('Payment notification failed:', notificationError.message);
-    }
+    return await db.collection('seasons').doc(saisonId).collection('payments').add(payload);
 
-    res.status(201).json({ id: ref.id });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+  
+}
 
-router.put('/:id', requireAdmin, async (req, res) => {
-  try {
-    const db = getDb();
-    const id = req.params.id;
-    const payload = req.body;
-    payload.updatedAt = new Date().toISOString();
-    await db.collection('seasons').doc(req.season.id).collection('payments').doc(id).set(payload, { merge: true });
-    res.json({ id });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+/**
+ * 
+ * @param {*} saisonId 
+ * @param {*} payment 
+ */
+async function updatePayment(saisonId, payment) {
+  const db = getDb();
+  const id = payment.id;
+  payment.updatedAt = new Date().toISOString();
+  await db.collection('seasons').doc(saisonId).collection('payments').doc(id).set(payment, { merge: true });
+}
 
-router.delete('/:id', requireAdmin, async (req, res) => {
-  try {
-    const db = getDb();
-    const id = req.params.id;
-    await db.collection('seasons').doc(req.season.id).collection('payments').doc(id).delete();
-    res.status(204).end();
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+/**
+ * 
+ * @param {*} saisonId 
+ * @param {*} paymentId 
+ */
+async function deletePayment(saisonId, paymentId) {
+  const db = getDb();
+  await db.collection('seasons').doc(saisonId).collection('payments').doc(paymentId).delete();
+}
 
-//module.exports = router;
+module.exports = { getPayments, createPayment, updatePayment, deletePayment };
