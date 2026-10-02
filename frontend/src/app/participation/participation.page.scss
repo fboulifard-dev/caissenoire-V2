@@ -1,0 +1,27 @@
+.participation-page {
+	max-width: 520px;
+	margin: 0 auto;
+	padding-top: min(12vh, 72px);
+}
+
+.logo {
+	display: block;
+	width: min(70%, 280px);
+	height: auto;
+	margin: 0 auto 40px;
+}
+
+h1 {
+	font-size: 1.5rem;
+	line-height: 1.3;
+}
+
+p {
+	line-height: 1.55;
+}
+
+.decision-actions {
+	display: grid;
+	gap: 8px;
+	margin-top: 28px;
+}

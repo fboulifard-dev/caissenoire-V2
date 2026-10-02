@@ -2,12 +2,132 @@ const express = require('express');
 const router = express.Router();
 const { getDb } = require('../firebase-admin-init');
 const { verifyToken } = require('../middleware/auth');
-const { requireSeason, requireAdmin } = require('../middleware/season');
+const { getActiveSeason, requireSeason, requireAdmin } = require('../middleware/season');
 const { notifyPlayer } = require('../services/notifications');
 const { getFines, createFine, updateFine, deleteFine } = require('../services/fines');
 const { getPayments, createPayment, updatePayment, deletePayment } = require('../services/payments');
 
 router.use(verifyToken);
+
+router.get('/participation/active', async (req, res) => {
+  try {
+    const season = await getActiveSeason();
+    const response = await getDb().collection('seasons').doc(season.id)
+      .collection('participationResponses').doc(req.user.uid).get();
+    res.json({
+      season: { id: season.id, name: season.name || season.id },
+      participating: response.exists ? response.data().participating : null,
+      notificationsEnabled: response.exists ? response.data().notificationsEnabled ?? null : null
+    });
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
+router.post('/participation/active', async (req, res) => {
+  try {
+    if (typeof req.body.participating !== 'boolean') {
+      return res.status(400).json({ error: 'A participation decision is required' });
+    }
+
+    const season = await getActiveSeason();
+    const seasonRef = getDb().collection('seasons').doc(season.id);
+    const playerRef = seasonRef.collection('players').doc(req.user.uid);
+    const responseRef = seasonRef.collection('participationResponses').doc(req.user.uid);
+    const existingResponse = await responseRef.get();
+    if (existingResponse.exists) {
+      const savedResponse = existingResponse.data();
+      return res.json({
+        participating: savedResponse.participating,
+        notificationsEnabled: savedResponse.notificationsEnabled ?? null
+      });
+    }
+
+    const now = new Date().toISOString();
+
+    if (req.body.participating) {
+      const player = await playerRef.get();
+      if (!player.exists) {
+        const displayName = String(req.user.name || '').trim();
+        const nameParts = displayName.split(/\s+/).filter(Boolean);
+        const email = String(req.user.email || '');
+        await playerRef.set({
+          email,
+          firstName: nameParts[0] || email.split('@')[0] || 'Joueur',
+          lastName: nameParts.slice(1).join(' '),
+          nickName: '',
+          roles: []
+        });
+      }
+    }
+
+    await responseRef.set({
+      participating: req.body.participating,
+      notificationsEnabled: req.body.participating ? null : false,
+      answeredAt: now,
+      updatedAt: now
+    }, { merge: true });
+    res.json({
+      participating: req.body.participating,
+      notificationsEnabled: req.body.participating ? null : false
+    });
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
+router.post('/participation/active/notifications', async (req, res) => {
+  try {
+    if (typeof req.body.enabled !== 'boolean') {
+      return res.status(400).json({ error: 'A notification decision is required' });
+    }
+
+    const season = await getActiveSeason();
+    const responseRef = getDb().collection('seasons').doc(season.id)
+      .collection('participationResponses').doc(req.user.uid);
+    const response = await responseRef.get();
+    if (!response.exists || response.data().participating !== true) {
+      return res.status(403).json({ error: 'Season participation is required' });
+    }
+
+    await responseRef.set({ notificationsEnabled: req.body.enabled, updatedAt: new Date().toISOString() }, { merge: true });
+    res.json({ notificationsEnabled: req.body.enabled });
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
+router.post('/notification-token', async (req, res) => {
+  try {
+    const { seasonId, token } = req.body;
+    if (typeof token !== 'string' || !token.trim() || typeof seasonId !== 'string') {
+      return res.status(400).json({ error: 'A valid notification token and season are required' });
+    }
+
+    const season = await getActiveSeason();
+    if (season.id !== seasonId) {
+      return res.status(403).json({ error: 'Notification token season does not match the active season' });
+    }
+    const response = await getDb().collection('seasons').doc(season.id)
+      .collection('participationResponses').doc(req.user.uid).get();
+    if (!response.exists || response.data().participating !== true || response.data().notificationsEnabled !== true) {
+      return res.status(403).json({ error: 'Notification consent is required' });
+    }
+
+    await getDb().collection('notificationTokens').doc(token.trim()).set({
+      userId: req.user.uid,
+      seasonId: season.id,
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
+    res.status(204).end();
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
+router.get('/active', requireSeason, async (req, res) => {
+  res.json({ ...req.season, player: req.player });
+});
 
 /**
  * seasons
@@ -31,10 +151,6 @@ router.get('/', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-});
-
-router.get('/active', requireSeason, async (req, res) => {
-  res.json({ ...req.season, player: req.player });
 });
 
 router.get('/:seasonId/summary', requireSeason, async (req, res) => {
@@ -181,11 +297,17 @@ router.post('/:seasonId/payments', requireSeason, requireAdmin, async (req, res)
     const payment = {...req.body, creator : req.user.uid};
 
     const data = await createPayment(req.season.id, payment);
-    // try {
-    //   await notifyPlayer(req.season.id, playerId, 'Nouveau paiement', `Nouveau paiement de ${numericAmount} EUR`, { paymentId: data.id });
-    // } catch (notificationError) {
-    //   console.error('Payment notification failed:', notificationError.message);
-    // }
+    try {
+      await notifyPlayer(
+        req.season.id,
+        payment.playerId,
+        'Nouveau paiement',
+        `Un paiement de ${Number(payment.amount).toFixed(2)} EUR vous a été attribué.`,
+        { type: 'payment', paymentId: data.id }
+      );
+    } catch (notificationError) {
+      console.error('Payment notification failed:', notificationError.message);
+    }
 
     res.status(201).json({ id: data.id });
   } catch (err) {
@@ -236,6 +358,19 @@ router.post('/:seasonId/fines',requireSeason, requireAdmin, async (req, res) => 
       return res.status(400).json({ error: 'At least one player and one rule are required' });
     }
     const createdFines = await createFine(req.season.id, fine, selectedPlayerIds);
+    await Promise.all(createdFines.map(async createdFine => {
+      try {
+        await notifyPlayer(
+          req.season.id,
+          createdFine.playerId,
+          'Nouvelle amende',
+          `Une amende de ${Number(createdFine.amount).toFixed(2)} EUR vous a été attribuée.`,
+          { type: 'fine', fineId: createdFine.id }
+        );
+      } catch (notificationError) {
+        console.error('Fine notification failed:', notificationError.message);
+      }
+    }));
     res.status(201).json({ ids: createdFines.map(fine => fine.id) });
   } catch (err) {
     res.status(500).json({ error: err.message });

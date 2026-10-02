@@ -1,8 +1,13 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
-import { authGuard } from './guards/auth.guard';
+import { authGuard, verifiedAuthGuard } from './guards/auth.guard';
 
 const routes: Routes = [
+  {
+    path: 'participation',
+    loadChildren: () => import('./participation/participation.module').then(m => m.ParticipationPageModule),
+    canActivate: [verifiedAuthGuard]
+  },
   {
     path: 'saisons',
     loadChildren: () => import('./seasons/seasons.module').then(m => m.SeasonsPageModule),

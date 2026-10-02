@@ -71,6 +71,24 @@ export class ApiService {
     );
   }
 
+  getActiveParticipation() {
+    return this.getHeadersWithToken().pipe(
+      switchMap((headers) => this.http.get(`${environment.apiUrl}/api/seasons/participation/active`, { headers }))
+    );
+  }
+
+  answerActiveParticipation(participating: boolean) {
+    return this.getHeadersWithToken().pipe(
+      switchMap((headers) => this.http.post(`${environment.apiUrl}/api/seasons/participation/active`, { participating }, { headers }))
+    );
+  }
+
+  setActiveNotificationConsent(enabled: boolean) {
+    return this.getHeadersWithToken().pipe(
+      switchMap((headers) => this.http.post(`${environment.apiUrl}/api/seasons/participation/active/notifications`, { enabled }, { headers }))
+    );
+  }
+
   getSeasonRanking(seasonId: string) {
     return this.getHeadersWithToken().pipe(
       switchMap((headers) => this.http.get(`${environment.apiUrl}/api/seasons/${seasonId}/ranking`, { headers }))
@@ -169,11 +187,11 @@ export class ApiService {
     );
   }
 
-  registerDeviceToken(token: string) {
+  registerDeviceToken(seasonId: string, token: string) {
     return this.getHeadersWithToken().pipe(
       switchMap((headers) => this.http.post(
-        `${environment.apiUrl}/api/payments/device-token`,
-        { token },
+        `${environment.apiUrl}/api/seasons/notification-token`,
+        { seasonId, token },
         { headers }
       ))
     );

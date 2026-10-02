@@ -1,4 +1,4 @@
-  <section align=center>
+  <section align=center *ngIf="!resetMode">
     <p align="right" >
       <ion-button fill="clear"  routerLink="/signup">
           Créer un compte
@@ -9,7 +9,7 @@
     <img class="logo" align=center src="assets/image/logo-asptt-grande.png" alt="ASPTT" />
   </section>
   
-    <section class="ion-padding">
+    <section class="ion-padding" *ngIf="!resetMode">
       <p >
       <ion-text color="secondary">
         Se connecter
@@ -27,18 +27,44 @@
       </ion-item>
 
       <ion-button expand="block" (click)="signInEmail()" [disabled]="loading || !canSignInEmail" >Connexion</ion-button>
-      <ion-button class="signup-link" fill="clear" expand="block" routerLink="/inscription">
+      <ion-button class="signup-link" fill="clear" expand="block" (click)="showPasswordReset()">
         Mot de passe oublié ?
       </ion-button>
 
  
       </section>
-      <section class="ion-padding">
+      <section class="ion-padding" *ngIf="!resetMode">
          <ion-button expand="block" (click)="signInGoogle()" [disabled]="loading">
           <ion-icon slot="start" name="logo-google"></ion-icon>
           Google</ion-button>
   <!-- <ion-button expand="block" (click)="signInApple()" [disabled]="loading">
     <ion-icon slot="start" name="logo-apple"></ion-icon>
     Apple</ion-button> -->
+</section>
+
+<section class="ion-padding password-reset" *ngIf="resetMode">
+  <ion-text color="secondary">
+    <h2>Réinitialiser le mot de passe</h2>
+  </ion-text>
+  <p class="reset-description">Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation.</p>
+
+  <ion-item>
+    <ion-icon name="mail-outline" slot="start"></ion-icon>
+    <ion-input type="email" [(ngModel)]="email" placeholder="Email" autocomplete="email"></ion-input>
+  </ion-item>
+
+  <ion-text color="success" *ngIf="resetSent">
+    <p class="reset-message">Si un compte correspond à cette adresse, un lien de réinitialisation vient d’être envoyé. Pensez à vérifier vos courriers indésirables.</p>
+  </ion-text>
+  <ion-text color="danger" *ngIf="resetError">
+    <p class="reset-message">{{ resetError }}</p>
+  </ion-text>
+
+  <ion-button expand="block" (click)="sendPasswordReset()" [disabled]="loading || !isEmailValid">
+    {{ resetSent ? 'Renvoyer l’e-mail' : 'Envoyer le lien' }}
+  </ion-button>
+  <ion-button class="signup-link" fill="clear" expand="block" (click)="cancelPasswordReset()" [disabled]="loading">
+    Retour à la connexion
+  </ion-button>
 </section>
 

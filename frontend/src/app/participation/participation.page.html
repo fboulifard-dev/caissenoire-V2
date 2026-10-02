@@ -1,0 +1,54 @@
+<ion-content>
+  <section class="participation-page ion-padding">
+    <img class="logo" src="assets/image/logo-asptt-grande.png" alt="ASPTT" />
+
+    <ion-spinner *ngIf="loading"></ion-spinner>
+    <ng-container *ngIf="!loading && status">
+      <ng-container *ngIf="status.participating === null">
+        <h1>Participez-vous à la saison {{ status.season.name }} ?</h1>
+        <p>Votre réponse détermine votre accès à cette saison.</p>
+        <div class="decision-actions">
+          <ion-button expand="block" (click)="answerParticipation(true)" [disabled]="saving">
+            Oui, je participe
+          </ion-button>
+          <ion-button expand="block" fill="outline" color="medium" (click)="answerParticipation(false)" [disabled]="saving">
+            Non, je ne participe pas
+          </ion-button>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="status.participating === false">
+        <h1>Vous ne participez pas à cette saison</h1>
+        <p>Votre réponse a été enregistrée. L’accès à la saison active est désactivé.</p>
+        <ion-button expand="block" color="danger" (click)="logout()">
+          <ion-icon name="log-out-outline" slot="start"></ion-icon>
+          Déconnexion
+        </ion-button>
+      </ng-container>
+
+      <ng-container *ngIf="status.participating === true && status.notificationsEnabled === null">
+        <h1>Activer les notifications ?</h1>
+        <p>Recevez une alerte lorsqu’un paiement ou une amende vous est attribué.</p>
+        <ion-text color="medium" *ngIf="!isNative">
+          <p>Les notifications FCM sont disponibles dans l’application mobile.</p>
+        </ion-text>
+        <div class="decision-actions" *ngIf="isNative">
+          <ion-button expand="block" (click)="answerNotifications(true)" [disabled]="saving">
+            <ion-icon name="notifications-outline" slot="start"></ion-icon>
+            Oui, activer
+          </ion-button>
+          <ion-button expand="block" fill="outline" color="medium" (click)="answerNotifications(false)" [disabled]="saving">
+            Non merci
+          </ion-button>
+        </div>
+        <ion-button *ngIf="!isNative" expand="block" (click)="answerNotifications(false)" [disabled]="saving">
+          Continuer
+        </ion-button>
+      </ng-container>
+    </ng-container>
+
+    <ion-text color="danger" *ngIf="error">
+      <p role="alert">{{ error }}</p>
+    </ion-text>
+  </section>
+</ion-content>
