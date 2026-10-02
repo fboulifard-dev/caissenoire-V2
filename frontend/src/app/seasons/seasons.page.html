@@ -1,22 +1,16 @@
-<!-- <ion-header>
-  <ion-toolbar color="primary">
-    <ion-title>Saisons</ion-title>
-    
-  </ion-toolbar>
-</ion-header> -->
+<section align=center>
+    <p align="right" >
+      <ion-button fill="clear"  routerLink="/signup">
+          {{userName}}
+        </ion-button>
+    </p>
 
-<ion-content class="ion-padding" background="primary">
-  <p align="right" >
-    <ion-button  fill="clear" >
-        {{userName}}
-      </ion-button>
-  </p>
-  <section class="logo-container">
-    
-    <img src="assets/image/logo-asptt-grande.png" alt="ASPTT" />
+      
+    <img class="logo" align=center src="assets/image/logo-asptt-grande.png" alt="ASPTT" />
   </section>
+  
 
-  <section class="season-content">
+  <section class="ion-padding season-content">
     <p >
       <ion-text color="secondary">
         Choisir une saison
@@ -39,10 +33,11 @@
     </div>
     <ion-spinner *ngIf="loading"></ion-spinner>
     <ion-text color="danger" *ngIf="error"><p>{{ error }}</p></ion-text>
-    <ion-button expand="block" fill="clear" color="danger" class="logout-button" (click)="logout()">
-      <ion-icon name="log-out-outline" slot="start"></ion-icon>
-      Déconnexion
-    </ion-button>
-    <ion-text color="medium" class="app-version">v{{ appVersion }}</ion-text>
+    </section>
+    <section class="ion-padding">
+      <ion-button expand="block" color="danger" class="logout-button" (click)="logout()">
+        <ion-icon name="log-out-outline" slot="start"></ion-icon>
+        Déconnexion
+      </ion-button>
+      <ion-text color="medium" class="app-version">v{{ appVersion }}</ion-text>
   </section>
-</ion-content>

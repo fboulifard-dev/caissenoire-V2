@@ -26,8 +26,12 @@ export class LoginPage {
   async signInEmail() {
     try {
       this.loading = true;
-      await this.auth.signInEmail(this.email, this.password);
+      const {user} = await this.auth.signInEmail(this.email, this.password);
+      if(user.emailVerified) {
       this.router.navigate(['/saisons']);
+      } else {
+        alert("Votre email n'est pas vérifier. Veuillez vérifier votre boîte mail pour activer votre compte.")
+      }
     } catch (err) {
       alert('Login failed');
     } finally {
