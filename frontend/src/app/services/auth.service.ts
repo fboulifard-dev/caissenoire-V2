@@ -32,7 +32,7 @@ export class AuthService {
   async authReady(): Promise<boolean> {
     try {
       await this.auth.authStateReady();
-      return !!this.auth.currentUser;
+      return !!this.auth.currentUser && this.auth.currentUser.emailVerified;
     } catch {
       return false;
     }
