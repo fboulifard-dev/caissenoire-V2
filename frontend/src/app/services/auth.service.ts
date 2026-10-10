@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { getAuth, Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, OAuthProvider, signOut, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, OAuthProvider, signOut, onAuthStateChanged, sendEmailVerification, sendPasswordResetEmail } from 'firebase/auth';
 import { initializeApp } from 'firebase/app';
 import { environment } from '../../environments/environment';
 import { BehaviorSubject } from 'rxjs';
@@ -26,13 +26,13 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    return !!this.auth.currentUser;
+    return !!this.auth.currentUser && this.auth.currentUser.emailVerified;
   }
 
   async authReady(): Promise<boolean> {
     try {
       await this.auth.authStateReady();
-      return !!this.auth.currentUser;
+      return !!this.auth.currentUser && this.auth.currentUser.emailVerified;
     } catch {
       return false;
     }
@@ -51,8 +51,15 @@ export class AuthService {
     return signInWithEmailAndPassword(this.auth, email, password);
   }
 
-  createAccount(email: string, password: string) {
-    return createUserWithEmailAndPassword(this.auth, email, password);
+  requestPasswordReset(email: string) {
+    return sendPasswordResetEmail(this.auth, email);
+  }
+
+  async createAccount(email: string, password: string) {
+    const {user} = await createUserWithEmailAndPassword(this.auth, email, password);
+    await sendEmailVerification(user);
+
+    
   }
 
   signInGoogle() {

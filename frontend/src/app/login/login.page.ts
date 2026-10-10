@@ -12,9 +12,48 @@ export class LoginPage {
   email = '';
   password = '';
   loading = false;
+  resetMode = false;
+  resetSent = false;
+  resetError = '';
+
+  get isEmailValid(): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email.trim());
+  }
 
   get canSignInEmail(): boolean {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email.trim()) && this.password.trim().length > 0;
+    return this.isEmailValid && this.password.trim().length > 0;
+  }
+
+  showPasswordReset() {
+    this.resetMode = true;
+    this.resetSent = false;
+    this.resetError = '';
+  }
+
+  cancelPasswordReset() {
+    this.resetMode = false;
+    this.resetSent = false;
+    this.resetError = '';
+  }
+
+  async sendPasswordReset() {
+    if (!this.isEmailValid) {
+      return;
+    }
+
+    try {
+      this.loading = true;
+      this.resetError = '';
+      await this.auth.requestPasswordReset(this.email.trim());
+      this.resetSent = true;
+    } catch (err: unknown) {
+      const authError = err as { code?: string };
+      this.resetError = authError.code === 'auth/too-many-requests'
+        ? 'Trop de tentatives. Veuillez réessayer plus tard.'
+        : 'Impossible d’envoyer le lien. Vérifiez l’adresse et réessayez.';
+    } finally {
+      this.loading = false;
+    }
   }
 
   constructor(private auth: AuthService, private router: Router) {
@@ -26,8 +65,12 @@ export class LoginPage {
   async signInEmail() {
     try {
       this.loading = true;
-      await this.auth.signInEmail(this.email, this.password);
+      const {user} = await this.auth.signInEmail(this.email, this.password);
+      if(user.emailVerified) {
       this.router.navigate(['/saisons']);
+      } else {
+        alert("Votre email n'est pas vérifier. Veuillez vérifier votre boîte mail pour activer votre compte.")
+      }
     } catch (err) {
       alert('Login failed');
     } finally {

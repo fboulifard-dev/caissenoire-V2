@@ -40,7 +40,8 @@ export class SignupPage {
       this.loading = true;
       this.error = '';
       await this.auth.createAccount(this.email.trim(), this.password);
-      await this.router.navigate(['/saisons']);
+      alert("Votre compte a été créé. Vérifiez votre boîte mail pour activer votre compte.")
+      await this.router.navigate(['/login']);
     } catch (err: unknown) {
       const authError = err as { code?: string };
       this.error = authError.code === 'auth/email-already-in-use'

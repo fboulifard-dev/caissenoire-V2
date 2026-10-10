@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ToastController } from '@ionic/angular';
+import { NavController, ToastController } from '@ionic/angular';
 import { AuthService } from '../services/auth.service';
 import { ApiService } from '../services/api.service';
 
@@ -41,6 +41,7 @@ export class HomePage implements OnInit {
     private auth: AuthService,
     private route: ActivatedRoute,
     private router: Router,
+    private navController: NavController,
     private api: ApiService,
     private toastController: ToastController,
   ) {}
@@ -252,6 +253,6 @@ export class HomePage implements OnInit {
 
   async logout() {
     await this.auth.signOut();
-    this.router.navigate(['/login']);
+    await this.navController.navigateRoot('/login');
   }
 }
