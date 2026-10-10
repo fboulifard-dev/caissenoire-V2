@@ -1,12 +1,12 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
-import { authGuard } from './guards/auth.guard';
+import { authGuard, verifiedAuthGuard } from './guards/auth.guard';
 
 const routes: Routes = [
   {
     path: 'saisons',
     loadChildren: () => import('./seasons/seasons.module').then(m => m.SeasonsPageModule),
-    canActivate: [authGuard]
+    canActivate: [verifiedAuthGuard]
   },
   {
     path: 'saisons/:seasonId/operation/paiements',
@@ -68,7 +68,7 @@ const routes: Routes = [
     loadChildren: () => import('./login/login.module').then(m => m.LoginPageModule)
   },
   {
-    path: 'inscription',
+    path: 'signup',
     loadChildren: () => import('./signup/signup.module').then(m => m.SignupPageModule)
   },
   {

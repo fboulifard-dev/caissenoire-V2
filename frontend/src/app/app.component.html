@@ -1,18 +1,5 @@
 <ion-app>
 
-  <ion-popover
-    *ngIf="authService.currentUser$ | async"
-    trigger="global-profile-menu-trigger"
-    triggerAction="click">
-    <ng-template>
-      <ion-list>
-        <ion-item button detail="false" (click)="logout()">
-          <ion-icon name="log-out-outline" slot="start" color="danger"></ion-icon>
-          <ion-label color="danger">Déconnexion</ion-label>
-        </ion-item>
-      </ion-list>
-    </ng-template>
-  </ion-popover>
   <ion-content>
     <ion-router-outlet></ion-router-outlet>
   </ion-content>

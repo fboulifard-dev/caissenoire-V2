@@ -2,10 +2,132 @@ const express = require('express');
 const router = express.Router();
 const { getDb } = require('../firebase-admin-init');
 const { verifyToken } = require('../middleware/auth');
-const { getSeason, requireSeason, requireAdmin } = require('../middleware/season');
+const { getActiveSeason, requireSeason, requireAdmin } = require('../middleware/season');
 const { notifyPlayer } = require('../services/notifications');
+const { getFines, createFine, updateFine, deleteFine } = require('../services/fines');
+const { getPayments, createPayment, updatePayment, deletePayment } = require('../services/payments');
 
 router.use(verifyToken);
+
+router.get('/participation/active', async (req, res) => {
+  try {
+    const season = await getActiveSeason();
+    const response = await getDb().collection('seasons').doc(season.id)
+      .collection('participationResponses').doc(req.user.uid).get();
+    res.json({
+      season: { id: season.id, name: season.name || season.id },
+      participating: response.exists ? response.data().participating : null,
+      notificationsEnabled: response.exists ? response.data().notificationsEnabled ?? null : null
+    });
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
+router.post('/participation/active', async (req, res) => {
+  try {
+    if (typeof req.body.participating !== 'boolean') {
+      return res.status(400).json({ error: 'A participation decision is required' });
+    }
+
+    const season = await getActiveSeason();
+    const seasonRef = getDb().collection('seasons').doc(season.id);
+    const playerRef = seasonRef.collection('players').doc(req.user.uid);
+    const responseRef = seasonRef.collection('participationResponses').doc(req.user.uid);
+    const existingResponse = await responseRef.get();
+    if (existingResponse.exists) {
+      const savedResponse = existingResponse.data();
+      return res.json({
+        participating: savedResponse.participating,
+        notificationsEnabled: savedResponse.notificationsEnabled ?? null
+      });
+    }
+
+    const now = new Date().toISOString();
+
+    if (req.body.participating) {
+      const player = await playerRef.get();
+      if (!player.exists) {
+        const displayName = String(req.user.name || '').trim();
+        const nameParts = displayName.split(/\s+/).filter(Boolean);
+        const email = String(req.user.email || '');
+        await playerRef.set({
+          email,
+          firstName: nameParts[0] || email.split('@')[0] || 'Joueur',
+          lastName: nameParts.slice(1).join(' '),
+          nickName: '',
+          roles: []
+        });
+      }
+    }
+
+    await responseRef.set({
+      participating: req.body.participating,
+      notificationsEnabled: req.body.participating ? null : false,
+      answeredAt: now,
+      updatedAt: now
+    }, { merge: true });
+    res.json({
+      participating: req.body.participating,
+      notificationsEnabled: req.body.participating ? null : false
+    });
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
+router.post('/participation/active/notifications', async (req, res) => {
+  try {
+    if (typeof req.body.enabled !== 'boolean') {
+      return res.status(400).json({ error: 'A notification decision is required' });
+    }
+
+    const season = await getActiveSeason();
+    const responseRef = getDb().collection('seasons').doc(season.id)
+      .collection('participationResponses').doc(req.user.uid);
+    const response = await responseRef.get();
+    if (!response.exists || response.data().participating !== true) {
+      return res.status(403).json({ error: 'Season participation is required' });
+    }
+
+    await responseRef.set({ notificationsEnabled: req.body.enabled, updatedAt: new Date().toISOString() }, { merge: true });
+    res.json({ notificationsEnabled: req.body.enabled });
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
+router.post('/notification-token', async (req, res) => {
+  try {
+    const { seasonId, token } = req.body;
+    if (typeof token !== 'string' || !token.trim() || typeof seasonId !== 'string') {
+      return res.status(400).json({ error: 'A valid notification token and season are required' });
+    }
+
+    const season = await getActiveSeason();
+    if (season.id !== seasonId) {
+      return res.status(403).json({ error: 'Notification token season does not match the active season' });
+    }
+    const response = await getDb().collection('seasons').doc(season.id)
+      .collection('participationResponses').doc(req.user.uid).get();
+    if (!response.exists || response.data().participating !== true || response.data().notificationsEnabled !== true) {
+      return res.status(403).json({ error: 'Notification consent is required' });
+    }
+
+    await getDb().collection('notificationTokens').doc(token.trim()).set({
+      userId: req.user.uid,
+      seasonId: season.id,
+      updatedAt: new Date().toISOString()
+    }, { merge: true });
+    res.status(204).end();
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
+router.get('/active', requireSeason, async (req, res) => {
+  res.json({ ...req.season, player: req.player });
+});
 
 /**
  * seasons
@@ -19,8 +141,17 @@ router.get('/', async (req, res) => {
   try {
     const snapshot = await getDb().collection('seasons').get();
     const seasons = await Promise.all(snapshot.docs.map(async doc => {
-      const player = await doc.ref.collection('players').doc(req.user.uid).get();
-      return { id: doc.id, ...doc.data(), player: player.exists ? player.data() : null };
+      const [player, participation] = await Promise.all([
+        doc.ref.collection('players').doc(req.user.uid).get(),
+        doc.ref.collection('participationResponses').doc(req.user.uid).get()
+      ]);
+      return {
+        id: doc.id,
+        ...doc.data(),
+        player: player.exists ? player.data() : null,
+        participationAnswered: participation.exists,
+        participationResponse: participation.exists ? participation.data().participating : null
+      };
     }));
     seasons.sort((first, second) => String(second.id).localeCompare(String(first.id), 'fr', { numeric: true }));
     // res.json(seasons.filter(season => season.player));
@@ -29,10 +160,6 @@ router.get('/', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-});
-
-router.get('/active', requireSeason, async (req, res) => {
-  res.json({ ...req.season, player: req.player });
 });
 
 router.get('/:seasonId/summary', requireSeason, async (req, res) => {
@@ -124,9 +251,9 @@ router.get('/:seasonId/ranking', requireSeason, async (req, res) => {
   }
 });
 
-/**
+/*****************************************************************************
  * players
- */
+ *****************************************************************************/
 
 router.get('/:seasonId/players', requireSeason, async (req, res) => {
   try {
@@ -161,44 +288,13 @@ router.post('/:seasonId/players', requireSeason, async (req, res) => {
   }
 });
 
-/**
+/*****************************************************************************
  * payments
- */
+ *****************************************************************************/
 
 router.get('/:seasonId/payments', requireSeason, requireSeason, async (req, res) => {
   try {
-    const snapshot = await getDb().collection('seasons').doc(req.season.id).collection('payments').get();
-    const players = await getDb().collection('seasons').doc(req.season.id).collection('players').get();
-
-    const data = snapshot.docs
-      .map(doc => {
-        const payment = { id: doc.id, ...doc.data() };
-        if (payment.createdBy) {
-          try {
-            const creator = players.docs.find(doc => doc.id === payment.createdBy);
-            payment.createdByFirstName = creator.data().firstName;
-            payment.createdByLastName = creator.data().lastName;
-          } catch {
-            payment.createdBy = payment.createdBy;
-          }
-        }
-
-        if (payment.playerId) {
-          try {
-            const player = players.docs.find(doc => doc.id === payment.playerId);
-            payment.playerFirstName = player.data().firstName;
-            payment.playerLastName = player.data().lastName;
-          } catch {
-            payment.playerId = payment.playerId;
-          }
-        }
-
-        return payment; 
-      })
-      .sort((first, second) => new Date(second.date || second.createdAt || 0).getTime() - new Date(first.date || first.createdAt || 0).getTime());
-    if (req.query.playerId) {
-      return res.json(data.filter(payment => payment.playerId === req.query.playerId));
-    }
+    const data = await getPayments(req.season.id, req.query.playerId);
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -207,48 +303,22 @@ router.get('/:seasonId/payments', requireSeason, requireSeason, async (req, res)
 
 router.post('/:seasonId/payments', requireSeason, requireAdmin, async (req, res) => {
   try {
-    const db = getDb();
-    const { date, playerId, amount, comment, imageData } = req.body;
+    const payment = {...req.body, creator : req.user.uid};
 
-    const player = await db.collection('seasons').doc(req.season.id).collection('players').doc(playerId).get();
-    if (!player.exists) {
-      return res.status(400).json({ error: 'Le joueur du paiement est invalide.' });
-    }
-    const numericAmount = Number(amount);
-    if (!Number.isFinite(numericAmount) || numericAmount < 0) {
-      return res.status(400).json({ error: 'Le montant du paiement est invalide.' });
-    }
-
-    if (imageData && (
-      typeof imageData !== 'string' ||
-      !/^data:image\/(jpeg|png|webp);base64,/.test(imageData) ||
-      imageData.length > 900000
-    )) {
-      return res.status(400).json({ error: 'Image invalide ou trop volumineuse.' });
-    }
-
-    const payload = {
-      date: date || new Date().toISOString().slice(0, 10),
-      playerId,
-      // playerName: `${player.data().firstName || ''} ${player.data().lastName || ''}`.trim() || player.data().name || playerId,
-      amount: numericAmount,
-      comment: comment || '',
-      createdBy: req.user.uid,
-      createdAt: new Date().toISOString()
-    };
-    if (imageData) {
-      payload.imageData = imageData;
-    }
-    // payload.createdByName = req.user.name || req.user.email || req.user.uid;
-    const ref = await db.collection('seasons').doc(req.season.id).collection('payments').add(payload);
-
+    const data = await createPayment(req.season.id, payment);
     try {
-      await notifyPlayer(req.season.id, playerId, 'Nouveau paiement', `Nouveau paiement de ${numericAmount} EUR`, { paymentId: ref.id });
+      await notifyPlayer(
+        req.season.id,
+        payment.playerId,
+        'Nouveau paiement',
+        `Un paiement de ${Number(payment.amount).toFixed(2)} EUR vous a été attribué.`,
+        { type: 'payment', paymentId: data.id }
+      );
     } catch (notificationError) {
       console.error('Payment notification failed:', notificationError.message);
     }
 
-    res.status(201).json({ id: ref.id });
+    res.status(201).json({ id: data.id });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -256,12 +326,9 @@ router.post('/:seasonId/payments', requireSeason, requireAdmin, async (req, res)
 
 router.put('/:seasonId/payments/:id', requireSeason, requireAdmin, async (req, res) => {
   try {
-    const db = getDb();
-    const id = req.params.id;
-    const payload = req.body;
-    payload.updatedAt = new Date().toISOString();
-    await db.collection('seasons').doc(req.season.id).collection('payments').doc(id).set(payload, { merge: true });
-    res.json({ id });
+    const payment = {...req.body, id : req.params.id};
+    await updatePayment(req.season.id, payment);
+    res.json(payment.id );
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -269,62 +336,22 @@ router.put('/:seasonId/payments/:id', requireSeason, requireAdmin, async (req, r
 
 router.delete('/:seasonId/payments/:id', requireSeason, requireAdmin, async (req, res) => {
   try {
-    const db = getDb();
-    const id = req.params.id;
-    await db.collection('seasons').doc(req.season.id).collection('payments').doc(id).delete();
+    const paymentId = req.params.id;
+    await deletePayment(req.season.id, paymentId)
     res.status(204).end();
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-/**
+/*****************************************************************************
  * fines
- */
+ *****************************************************************************/
 
 router.get('/:seasonId/fines', requireSeason, async (req, res) => {
   try {
-    const snapshot = await getDb().collection('seasons').doc(req.season.id).collection('fines').get();
-    const players = await getDb().collection('seasons').doc(req.season.id).collection('players').get();
-    const rules = await getDb().collection('seasons').doc(req.season.id).collection('rules').get();
-    const data = snapshot.docs
-      .map(doc => {
-        const fine = { id: doc.id, ...doc.data() };
-        if (fine.createdBy) {
-          try {
-            const creator = players.docs.find(doc => doc.id === fine.createdBy);
-            fine.createdByFirstName = creator.data().firstName;
-            fine.createdByLastName = creator.data().lastName;
-          } catch {
-            fine.createdBy = fine.createdBy;
-          }
-        }
 
-        if (fine.playerId) {
-          try {
-            const player = players.docs.find(doc => doc.id === fine.playerId);
-            fine.playerFirstName = player.data().firstName;
-            fine.playerLastName = player.data().lastName;
-          } catch {
-            fine.playerId = fine.playerId;
-          }
-        }
-
-        if (fine.ruleId) {
-          try {
-            const rule = rules.docs.find(doc => doc.id === fine.ruleId);
-            fine.ruleLabel = rule.data().label  ;
-          } catch {
-            fine.ruleId = fine.ruleId;
-          }
-        }
-
-        return fine; 
-      })
-      .sort((first, second) => new Date(second.date || second.createdAt || 0).getTime() - new Date(first.date || first.createdAt || 0).getTime());
-    if (req.query.playerId) {
-      return res.json(data.filter(fine => fine.playerId === req.query.playerId));
-    }
+    const data = await getFines(req.season.id, req.query.playerId);
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -333,47 +360,22 @@ router.get('/:seasonId/fines', requireSeason, async (req, res) => {
 
 router.post('/:seasonId/fines',requireSeason, requireAdmin, async (req, res) => {
   try {
-    const { date, playerId, playerIds = [], ruleId, amount = 0, matchDay = false, photo, comment } = req.body;
-    const requestedPlayerIds = Array.isArray(playerIds) ? playerIds : (playerId ? [playerId] : []);
+    const fine = {...req.body, creator : req.user.uid};
+    const requestedPlayerIds = Array.isArray(fine.playerIds) ? fine.playerIds : (fine.playerId ? [fine.playerId] : []);
     const selectedPlayerIds = [...new Set(requestedPlayerIds.filter(id => typeof id === 'string' && id.trim()))];
-    if (!selectedPlayerIds.length || typeof ruleId !== 'string' || !ruleId.trim()) {
+    if (!selectedPlayerIds.length || typeof fine.ruleId !== 'string' || !fine.ruleId.trim()) {
       return res.status(400).json({ error: 'At least one player and one rule are required' });
     }
-
-    const db = getDb();
-    const playersRef = db.collection('seasons').doc(req.season.id).collection('players');
-    const players = await Promise.all(selectedPlayerIds.map(id => playersRef.doc(id).get()));
-    const rule = await db.collection('seasons').doc(req.season.id).collection('rules').doc(ruleId).get();
-    if (players.some(player => !player.exists) || !rule.exists) return res.status(400).json({ error: 'Invalid player or rule' });
-    const ruleData = rule.data();
-    const finalMatchDay = Boolean(matchDay);
-    const finalAmount = finalMatchDay ? Number(ruleData.cost) * 2 : Number(ruleData.cost);
-    const finesRef = db.collection('seasons').doc(req.season.id).collection('fines');
-    const createdAt = new Date().toISOString();
-    const batch = db.batch();
-    const createdFines = players.map((player, index) => {
-      const selectedId = selectedPlayerIds[index];
-      const payload = {
-        date: date || new Date().toISOString().slice(0, 10),
-        playerId: selectedId,
-        playerName: `${player.data().firstName || ''} ${player.data().lastName || ''}`.trim() || player.data().name || selectedId,
-        ruleId,
-        ruleLabel: ruleData.label,
-        amount: Number.isFinite(finalAmount) ? finalAmount : Number(amount) || 0,
-        matchDay: finalMatchDay,
-        photo: photo || null,
-        comment: comment || '',
-        createdBy: req.user.uid,
-        createdAt
-      };
-      const ref = finesRef.doc();
-      batch.set(ref, payload);
-      return { id: ref.id, playerId: selectedId, amount: payload.amount };
-    });
-    await batch.commit();
-    await Promise.all(createdFines.map(async fine => {
+    const createdFines = await createFine(req.season.id, fine, selectedPlayerIds);
+    await Promise.all(createdFines.map(async createdFine => {
       try {
-        await notifyPlayer(req.season.id, fine.playerId, 'Nouvelle amende', `${ruleData.label} : ${fine.amount} EUR`, { fineId: fine.id });
+        await notifyPlayer(
+          req.season.id,
+          createdFine.playerId,
+          'Nouvelle amende',
+          `Une amende de ${Number(createdFine.amount).toFixed(2)} EUR vous a été attribuée.`,
+          { type: 'fine', fineId: createdFine.id }
+        );
       } catch (notificationError) {
         console.error('Fine notification failed:', notificationError.message);
       }
@@ -386,12 +388,9 @@ router.post('/:seasonId/fines',requireSeason, requireAdmin, async (req, res) => 
 
 router.put('/:seasonId/fines/:id', requireSeason, requireAdmin, async (req, res) => {
   try {
-    const db = getDb();
-    const id = req.params.id;
-    const payload = req.body;
-    payload.updatedAt = new Date().toISOString();
-    await db.collection('seasons').doc(req.season.id).collection('fines').doc(id).set(payload, { merge: true });
-    res.json({ id });
+    const fine = {...req.body, id : req.params.id};
+    await updateFine(req.season.id, fine)
+    res.json(fine.id);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -399,9 +398,8 @@ router.put('/:seasonId/fines/:id', requireSeason, requireAdmin, async (req, res)
 
 router.delete('/:seasonId/fines/:id', requireSeason, requireAdmin, async (req, res) => {
   try {
-    const db = getDb();
     const id = req.params.id;
-    await db.collection('seasons').doc(req.season.id).collection('fines').doc(id).delete();
+    await deleteFine(req.season.id, id)
     res.status(204).end();
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -410,9 +408,9 @@ router.delete('/:seasonId/fines/:id', requireSeason, requireAdmin, async (req, r
 
 
 
-/**
+/*****************************************************************************
  * rules
- */
+ *****************************************************************************/
 
 router.get('/:seasonId/rules', requireSeason, async (req, res) => {
   try {

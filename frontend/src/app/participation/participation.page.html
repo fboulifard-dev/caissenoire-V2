@@ -1,0 +1,35 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Participation</ion-title>
+    <ion-buttons slot="end">
+      <ion-button aria-label="Fermer" (click)="closeModal()">
+        <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <section class="participation-page ion-padding">
+    <ion-spinner *ngIf="loading"></ion-spinner>
+    <ng-container *ngIf="!loading && status">
+      <ng-container *ngIf="status.participating === null">
+        <h1>Participez-vous à la saison {{ status.season.name }} ?</h1>
+        <p>Votre réponse détermine votre accès à cette saison.</p>
+        <div class="decision-actions">
+          <ion-button expand="block" (click)="answerParticipation(true)" [disabled]="saving">
+            Oui, je participe
+          </ion-button>
+          <ion-button expand="block" fill="outline" color="medium" (click)="answerParticipation(false)" [disabled]="saving">
+            Non, je ne participe pas
+          </ion-button>
+        </div>
+      </ng-container>
+
+    </ng-container>
+
+    <ion-text color="danger" *ngIf="error">
+      <p role="alert">{{ error }}</p>
+    </ion-text>
+  </section>
+</ion-content>

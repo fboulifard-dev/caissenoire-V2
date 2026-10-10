@@ -2,6 +2,10 @@ const admin = require('firebase-admin');
 const { getDb } = require('../firebase-admin-init');
 
 async function notifyPlayer(seasonId, playerId, title, body, data = {}) {
+  const participation = await getDb().collection('seasons').doc(seasonId)
+    .collection('participationResponses').doc(playerId).get();
+  if (!participation.exists || participation.data().notificationsEnabled !== true) return;
+
   const snapshot = await getDb().collection('notificationTokens').get();
   const tokens = snapshot.docs
     .filter(doc => doc.data().seasonId === seasonId && doc.data().userId === playerId)

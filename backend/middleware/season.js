@@ -40,6 +40,15 @@ async function requireSeason(req, res, next) {
       return res.status(403).json({ error: 'User is not a player in the active season' });
     }
 
+    if (season.active === true) {
+      const participationSnapshot = await getDb()
+        .collection('seasons').doc(season.id)
+        .collection('participationResponses').doc(req.user.uid).get();
+      if (participationSnapshot.data()?.participating !== true) {
+        return res.status(403).json({ error: 'Participation in the active season is required' });
+      }
+    }
+
     req.season = season;
     req.player = { id: playerSnapshot.id, ...playerSnapshot.data() };
     req.readOnly = season.active !== true;

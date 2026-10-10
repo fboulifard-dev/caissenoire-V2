@@ -13,79 +13,79 @@ const rules = [
   {
     "id": "3Avbmn5WDjhkbQvcsNTz",
     "cost": 2,
-    "defaultMatch": false,
+    "matchDay": false,
     "label": "Salissure"
   },
   {
     "id": "7BspPAHRat12qQruZQte",
     "cost": 10,
-    "defaultMatch": true,
+    "matchDay": true,
     "label": "Contestation"
   },
   {
     "id": "8nByVZxWsUp4bgxykSiN",
     "cost": 3,
-    "defaultMatch": false,
+    "matchDay": false,
     "label": "Retard de paiement"
   },
   {
     "id": "AOgAsPJcNFg0To6yHtve",
     "cost": 5,
-    "defaultMatch": true,
+    "matchDay": true,
     "label": "Quéquette"
   },
   {
     "id": "EljtmnPY83UZXucSvkJe",
     "cost": 2,
-    "defaultMatch": false,
+    "matchDay": false,
     "label": "Retard < 5'"
   },
   {
     "id": "OT8zI91HTJe9CnJPh5JC",
     "cost": 2,
-    "defaultMatch": true,
+    "matchDay": true,
     "label": "Goodberg"
   },
   {
     "id": "WfRsIvDJowOXA28EIwLN",
     "cost": 20,
-    "defaultMatch": true,
+    "matchDay": true,
     "label": "Cartoin rouge"
   },
   {
     "id": "fpK8HKDF05ZlrSp4NrlK",
     "cost": 4,
-    "defaultMatch": false,
+    "matchDay": false,
     "label": "Motion"
   },
   {
     "id": "gVvH1uixkHKYgBX3AsMe",
     "cost": 3,
-    "defaultMatch": false,
+    "matchDay": false,
     "label": "Retard > 10'"
   },
   {
     "id": "lVDcNgOuIHfmfljSx9Vd",
     "cost": 2,
-    "defaultMatch": false,
+    "matchDay": false,
     "label": "Oubli"
   },
   {
     "id": "loQfMZrYuoifKvS7Cvxu",
     "cost": 3,
-    "defaultMatch": false,
+    "matchDay": false,
     "label": "Radinerie"
   },
   {
     "id": "nDe1tvnRY3O5a4qlb3CQ",
     "cost": 2,
-    "defaultMatch": false,
+    "matchDay": false,
     "label": "Homme du match"
   },
   {
     "id": "pSVnwSZUEaWlk7VCDmMc",
     "cost": 5,
-    "defaultMatch": false,
+    "matchDay": false,
     "label": "Retard < 15'"
   }
 ]
@@ -103,7 +103,7 @@ async function importrules() {
     batch.set(ruleRef, {
       uid: rule.id,
       cost: rule.cost,
-      defaultMatch: rule.defaultMatch,
+      matchDay: rule.matchDay,
       label: rule.label,
       active : true
     });
