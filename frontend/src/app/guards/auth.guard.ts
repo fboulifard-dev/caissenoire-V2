@@ -17,8 +17,8 @@ export const authGuard: CanActivateFn = async () => {
 
   try {
     const status: any = await firstValueFrom(api.getActiveParticipation());
-    if (status.participating !== true || status.notificationsEnabled === null) {
-      return router.createUrlTree(['/participation']);
+    if (status.participating !== true) {
+      return router.createUrlTree(['/saisons']);
     }
   } catch {
     return true;

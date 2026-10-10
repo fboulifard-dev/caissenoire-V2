@@ -141,8 +141,17 @@ router.get('/', async (req, res) => {
   try {
     const snapshot = await getDb().collection('seasons').get();
     const seasons = await Promise.all(snapshot.docs.map(async doc => {
-      const player = await doc.ref.collection('players').doc(req.user.uid).get();
-      return { id: doc.id, ...doc.data(), player: player.exists ? player.data() : null };
+      const [player, participation] = await Promise.all([
+        doc.ref.collection('players').doc(req.user.uid).get(),
+        doc.ref.collection('participationResponses').doc(req.user.uid).get()
+      ]);
+      return {
+        id: doc.id,
+        ...doc.data(),
+        player: player.exists ? player.data() : null,
+        participationAnswered: participation.exists,
+        participationResponse: participation.exists ? participation.data().participating : null
+      };
     }));
     seasons.sort((first, second) => String(second.id).localeCompare(String(first.id), 'fr', { numeric: true }));
     // res.json(seasons.filter(season => season.player));

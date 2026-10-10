@@ -19,13 +19,17 @@
     <div *ngIf="!loading" class="season-cards">
       <ion-card
         *ngFor="let season of seasons"
-        button="true"
+        [button]="!(season.active && season.participationAnswered && season.participationResponse === false)"
         (click)="openSeason(season)"
-        [class.inactive-season]="!season.active">
+        [class.inactive-season]="!season.active"
+        [class.unavailable-season]="season.active && season.participationAnswered && season.participationResponse === false">
         <ion-card-content>
           <h2>{{ season.name || (season.active ? 'Saison active' : 'Saison archivée') }}</h2>
           <ion-badge [color]="season.active ? 'success' : 'medium'">
-            {{ season.active ? 'Active' : 'Lecture seule' }}
+            {{ season.active ? 'Active' : 'Terminée' }}
+          </ion-badge>
+          <ion-badge *ngIf="season.active" [color]="season.participationResponse === true ? 'success' : season.participationResponse === false ? 'danger' : 'warning'">
+            {{ season.participationResponse === true ? 'Participation : oui' : season.participationResponse === false ? 'Participation : non' : 'Participation : à confirmer' }}
           </ion-badge>
           <ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon>
         </ion-card-content>

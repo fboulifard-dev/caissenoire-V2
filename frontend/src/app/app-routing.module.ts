@@ -4,14 +4,9 @@ import { authGuard, verifiedAuthGuard } from './guards/auth.guard';
 
 const routes: Routes = [
   {
-    path: 'participation',
-    loadChildren: () => import('./participation/participation.module').then(m => m.ParticipationPageModule),
-    canActivate: [verifiedAuthGuard]
-  },
-  {
     path: 'saisons',
     loadChildren: () => import('./seasons/seasons.module').then(m => m.SeasonsPageModule),
-    canActivate: [authGuard]
+    canActivate: [verifiedAuthGuard]
   },
   {
     path: 'saisons/:seasonId/operation/paiements',
