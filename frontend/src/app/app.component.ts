@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { NavController } from '@ionic/angular';
 import { AuthService } from './services/auth.service';
 
 @Component({
@@ -11,7 +12,8 @@ import { AuthService } from './services/auth.service';
 export class AppComponent {
   constructor(
     public authService: AuthService,
-    private router: Router
+    private router: Router,
+    private navController: NavController
   ) {}
 
   getUserName(user: any): string {
@@ -34,6 +36,6 @@ export class AppComponent {
 
   async logout() {
     await this.authService.signOut();
-    await this.router.navigate(['/login']);
+    await this.navController.navigateRoot('/login');
   }
 }

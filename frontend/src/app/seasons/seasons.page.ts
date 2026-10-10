@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { ModalController } from '@ionic/angular';
+import { ModalController, NavController } from '@ionic/angular';
 import { ParticipationPage } from '../participation/participation.page';
 import { ApiService } from '../services/api.service';
 import { AuthService } from '../services/auth.service';
@@ -24,7 +24,8 @@ export class SeasonsPage implements OnInit {
     private api: ApiService,
     private auth: AuthService,
     private router: Router,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private navController: NavController
   ) {}
 
   ngOnInit() {
@@ -68,6 +69,6 @@ export class SeasonsPage implements OnInit {
 
   async logout() {
     await this.auth.signOut();
-    this.router.navigate(['/login']);
+    await this.navController.navigateRoot('/login');
   }
 }
