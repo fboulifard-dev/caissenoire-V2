@@ -1,3 +1,4 @@
+<ion-content>
 <section align=center>
     <p align="right" >
       <ion-button fill="clear"  routerLink="/signup">
@@ -11,6 +12,7 @@
   
 
   <section class="ion-padding season-content">
+
     <p >
       <ion-text color="secondary">
         Choisir une saison
@@ -23,8 +25,10 @@
         (click)="openSeason(season)"
         [class.inactive-season]="!season.active"
         [class.unavailable-season]="season.active && season.participationAnswered && season.participationResponse === false">
+        <ion-card-header>
+            <p>{{ season.name || (season.active ? 'Saison active' : 'Saison archivée') }}</p>
+        </ion-card-header>
         <ion-card-content>
-          <h2>{{ season.name || (season.active ? 'Saison active' : 'Saison archivée') }}</h2>
           <ion-badge [color]="season.active ? 'success' : 'medium'">
             {{ season.active ? 'Active' : 'Terminée' }}
           </ion-badge>
@@ -45,3 +49,4 @@
       </ion-button>
       <ion-text color="medium" class="app-version">v{{ appVersion }}</ion-text>
   </section>
+</ion-content>
