@@ -99,26 +99,40 @@ router.post('/participation/active/notifications', async (req, res) => {
 
 router.post('/notification-token', async (req, res) => {
   try {
-    const { seasonId, token } = req.body;
-    if (typeof token !== 'string' || !token.trim() || typeof seasonId !== 'string') {
-      return res.status(400).json({ error: 'A valid notification token and season are required' });
+    const { token } = req.body;
+    if (typeof token !== 'string' || !token.trim()) {
+      return res.status(400).json({ error: 'A valid notification token is required' });
     }
 
     const season = await getActiveSeason();
-    if (season.id !== seasonId) {
-      return res.status(403).json({ error: 'Notification token season does not match the active season' });
-    }
-    const response = await getDb().collection('seasons').doc(season.id)
-      .collection('participationResponses').doc(req.user.uid).get();
-    if (!response.exists || response.data().participating !== true || response.data().notificationsEnabled !== true) {
-      return res.status(403).json({ error: 'Notification consent is required' });
+    const db = getDb();
+    const seasonRef = db.collection('seasons').doc(season.id);
+    const playerRef = seasonRef.collection('players').doc(req.user.uid);
+    const responseRef = seasonRef.collection('participationResponses').doc(req.user.uid);
+    const [player, response] = await Promise.all([playerRef.get(), responseRef.get()]);
+    if (!player.exists) {
+      return res.status(403).json({ error: 'A player profile in the active season is required' });
     }
 
-    await getDb().collection('notificationTokens').doc(token.trim()).set({
-      userId: req.user.uid,
-      seasonId: season.id,
-      updatedAt: new Date().toISOString()
-    }, { merge: true });
+    const normalizedToken = token.trim();
+    const now = new Date().toISOString();
+    const notificationTokenRef = db.collection('notificationTokens').doc(normalizedToken);
+    const batch = db.batch();
+    const oldToken = player.data().fcmToken;
+    const isParticipating = response.exists && response.data().participating === true;
+    if (oldToken && oldToken !== normalizedToken) {
+      batch.delete(db.collection('notificationTokens').doc(oldToken));
+    }
+    batch.set(playerRef, { fcmToken: normalizedToken, fcmTokenUpdatedAt: now }, { merge: true });
+    if (isParticipating) {
+      batch.set(responseRef, { notificationsEnabled: true, updatedAt: now }, { merge: true });
+      batch.set(notificationTokenRef, {
+        userId: req.user.uid,
+        seasonId: season.id,
+        updatedAt: now
+      }, { merge: true });
+    }
+    await batch.commit();
     res.status(204).end();
   } catch (err) {
     res.status(err.status || 500).json({ error: err.message });
