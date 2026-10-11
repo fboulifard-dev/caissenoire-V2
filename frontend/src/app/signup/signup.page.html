@@ -32,28 +32,55 @@
   <ion-item>
         <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
     <ion-input
-      type="password"
+      [type]="showPassword ? 'text' : 'password'"
       name="password"
       [(ngModel)]="password"
       #passwordModel="ngModel"
       placeholder="Mot de passe"
+      autocomplete="new-password"
       required>
     </ion-input>
+    <ion-button slot="end" fill="clear" type="button" [attr.aria-label]="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" [attr.aria-pressed]="showPassword" (click)="showPassword = !showPassword">
+      <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+    </ion-button>
   </ion-item>
-  <p class="field-error" *ngIf="(passwordModel.dirty || passwordModel.touched) && password.length < 6">
-    Le mot de passe doit contenir au moins 6 caractères.
-  </p>
+  <div class="password-requirements" role="list" aria-label="Règles du mot de passe">
+    <p [class.met]="hasMinimumPasswordLength" role="listitem">
+      <ion-icon [name]="hasMinimumPasswordLength ? 'checkmark-circle' : 'ellipse-outline'" aria-hidden="true"></ion-icon>
+      Au moins 10 caractères
+    </p>
+    <p [class.met]="hasPasswordUppercase" role="listitem">
+      <ion-icon [name]="hasPasswordUppercase ? 'checkmark-circle' : 'ellipse-outline'" aria-hidden="true"></ion-icon>
+      Une lettre majuscule
+    </p>
+    <p [class.met]="hasPasswordLowercase" role="listitem">
+      <ion-icon [name]="hasPasswordLowercase ? 'checkmark-circle' : 'ellipse-outline'" aria-hidden="true"></ion-icon>
+      Une lettre minuscule
+    </p>
+    <p [class.met]="hasPasswordNumber" role="listitem">
+      <ion-icon [name]="hasPasswordNumber ? 'checkmark-circle' : 'ellipse-outline'" aria-hidden="true"></ion-icon>
+      Un chiffre
+    </p>
+    <p [class.met]="hasPasswordSpecialCharacter" role="listitem">
+      <ion-icon [name]="hasPasswordSpecialCharacter ? 'checkmark-circle' : 'ellipse-outline'" aria-hidden="true"></ion-icon>
+      Un caractère spécial
+    </p>
+  </div>
 
   <ion-item>
     <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
     <ion-input
-      type="password"
+      [type]="showConfirmPassword ? 'text' : 'password'"
       name="confirmPassword"
       [(ngModel)]="confirmPassword"
       #confirmPasswordModel="ngModel"
       placeholder="Confirmation du mot de passe"
+      autocomplete="new-password"
       required>
     </ion-input>
+    <ion-button slot="end" fill="clear" type="button" [attr.aria-label]="showConfirmPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" [attr.aria-pressed]="showConfirmPassword" (click)="showConfirmPassword = !showConfirmPassword">
+      <ion-icon [name]="showConfirmPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+    </ion-button>
   </ion-item>
   <p class="field-error" *ngIf="(confirmPasswordModel.dirty || confirmPasswordModel.touched) && password !== confirmPassword">
     Les mots de passe ne correspondent pas.

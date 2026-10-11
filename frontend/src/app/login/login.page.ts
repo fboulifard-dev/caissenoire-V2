@@ -11,6 +11,7 @@ import { Router } from '@angular/router';
 export class LoginPage {
   email = '';
   password = '';
+  showPassword = false;
   loading = false;
   resetMode = false;
   resetSent = false;
