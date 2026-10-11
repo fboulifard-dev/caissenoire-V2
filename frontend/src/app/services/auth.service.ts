@@ -38,13 +38,13 @@ export class AuthService {
     }
   }
 
-  async getAccessToken(): Promise<string | null> {
+  async getAccessToken(forceRefresh = false): Promise<string | null> {
     const user = this.auth.currentUser;
     if (!user) {
       return null;
     }
 
-    return user.getIdToken();
+    return user.getIdToken(forceRefresh);
   }
 
   signInEmail(email: string, password: string) {
