@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
+import { catchError, forkJoin, of } from 'rxjs';
 import { ApiService } from '../services/api.service';
 
 @Component({
@@ -18,6 +19,11 @@ export class FinesPage implements OnInit {
   playerName = '';
   seasonYear = '';
   readOnly = false;
+  ruleIcons: Record<string, string> = {};
+
+  get totalFineAmount(): number {
+    return this.fines.reduce((total, fine) => total + this.parseAmount(fine.amount), 0);
+  }
 
   constructor(
     private api: ApiService,
@@ -33,11 +39,27 @@ export class FinesPage implements OnInit {
 
   ionViewWillEnter() {
     this.loading = true;
-    this.api.getSeasonFines(this.seasonId, this.playerId || undefined).subscribe((data: any) => {
-      this.fines = data || [];
-      this.fineGroups = this.groupByCreationDate(this.fines);
-      this.loading = false;
-    }, () => (this.loading = false));
+    forkJoin({
+      fines: this.api.getSeasonFines(this.seasonId, this.playerId || undefined),
+      rules: this.api.getSeasonRules(this.seasonId).pipe(catchError(() => of([])))
+    }).subscribe({
+      next: ({ fines, rules }: any) => {
+        this.ruleIcons = {};
+        (rules || []).forEach((rule: any) => {
+          if (rule.id && typeof rule.icon === 'string') {
+            this.ruleIcons[rule.id] = rule.icon;
+          }
+        });
+        this.fines = fines || [];
+        this.fineGroups = this.groupByCreationDate(this.fines);
+        this.loading = false;
+      },
+      error: () => (this.loading = false)
+    });
+  }
+
+  getRuleIcon(ruleId: string | undefined): string {
+    return ruleId ? this.ruleIcons[ruleId] || 'help-circle-outline' : 'help-circle-outline';
   }
 
   private ensureSeasonUrl() {
@@ -113,11 +135,24 @@ export class FinesPage implements OnInit {
   }
 
   formatGroupTotal(total: number): string {
+    return this.formatCurrency(total);
+  }
+
+  formatCurrency(amount: number): string {
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
       currency: 'EUR',
       maximumFractionDigits: 0
-    }).format(total);
+    }).format(amount);
+  }
+
+  playerDisplayName(fine: any): string {
+    return fine.playerName
+      || `${fine.playerFirstName || ''} ${fine.playerLastName || ''}`.trim()
+      || fine.name
+      || fine.email
+      || fine.playerId
+      || 'Joueur inconnu';
   }
 
   private creationDateKey(value: unknown): string {

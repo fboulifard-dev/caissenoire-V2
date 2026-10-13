@@ -428,8 +428,12 @@ router.get('/:seasonId/rules', requireSeason, async (req, res) => {
 
 router.post('/:seasonId/rules', requireSeason, requireAdmin, async (req, res) => {
   const { cost, matchDay, label } = req.body;
+  const icon = typeof req.body.icon === 'string' ? req.body.icon.trim() : 'alert-circle-outline';
   if (!Number.isFinite(Number(cost)) || typeof matchDay !== 'boolean' || !label) {
     return res.status(400).json({ error: 'Invalid rule' });
+  }
+  if (!/^[a-z0-9-]{1,64}$/.test(icon)) {
+    return res.status(400).json({ error: 'Invalid rule icon' });
   }
 
   try {
@@ -437,6 +441,7 @@ router.post('/:seasonId/rules', requireSeason, requireAdmin, async (req, res) =>
       cost: Number(cost),
       matchDay,
       label: String(label).trim(),
+      icon,
       createdAt: new Date().toISOString(),
       createdBy: req.user.uid
     });
@@ -448,14 +453,20 @@ router.post('/:seasonId/rules', requireSeason, requireAdmin, async (req, res) =>
 
 router.put('/:seasonId/rules/:id', requireSeason, requireAdmin, async (req, res) => {
   const { cost, matchDay, label, active } = req.body;
+  const icon = typeof req.body.icon === 'string' ? req.body.icon.trim() : undefined;
   if (!Number.isFinite(Number(cost)) || typeof matchDay !== 'boolean' || !label) {
     return res.status(400).json({ error: 'Invalid rule' });
   }
+  if (icon !== undefined && !/^[a-z0-9-]{1,64}$/.test(icon)) {
+    return res.status(400).json({ error: 'Invalid rule icon' });
+  }
   try {
-    await getDb().collection('seasons').doc(req.season.id).collection('rules').doc(req.params.id).set({
+    const update = {
       cost: Number(cost), matchDay, label: String(label).trim(), active: active !== false,
       updatedAt: new Date().toISOString(), updatedBy: req.user.uid
-    }, { merge: true });
+    };
+    if (icon !== undefined) update.icon = icon;
+    await getDb().collection('seasons').doc(req.season.id).collection('rules').doc(req.params.id).set(update, { merge: true });
     res.json({ id: req.params.id });
   } catch (err) {
     res.status(500).json({ error: err.message });

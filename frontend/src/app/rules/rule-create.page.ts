@@ -11,9 +11,26 @@ export class RuleCreatePage {
   rule = {
     label: '',
     cost: 0,
+    icon: 'alert-circle-outline',
     matchDay: false,
     active: true
   };
+  iconOptions = [
+    { name: 'leaf-outline', label: 'Propreté' },
+    { name: 'chatbubbles-outline', label: 'Contestation' },
+    { name: 'time-outline', label: 'Retard' },
+    { name: 'dice-outline', label: 'Jeu' },
+    { name: 'stopwatch-outline', label: 'Chronomètre' },
+    { name: 'tennisball-outline', label: 'Sport' },
+    { name: 'shirt-outline', label: 'Équipement' },
+    { name: 'walk-outline', label: 'Déplacement' },
+    { name: 'calendar-number-outline', label: 'Calendrier' },
+    { name: 'file-tray-stacked-outline', label: 'Oubli' },
+    { name: 'cash-outline', label: 'Paiement' },
+    { name: 'medal-outline', label: 'Performance' },
+    { name: 'thermometer-outline', label: 'Température' },
+    { name: 'alert-circle-outline', label: 'Autre' }
+  ];
   seasonId = '';
   saving = false;
   error = '';
@@ -46,6 +63,7 @@ export class RuleCreatePage {
     this.api.createRule({
       label: this.rule.label.trim(),
       cost: Number(this.rule.cost),
+      icon: this.rule.icon,
       matchDay: this.rule.matchDay,
       active: true
     }, this.seasonId).subscribe({

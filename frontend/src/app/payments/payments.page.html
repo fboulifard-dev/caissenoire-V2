@@ -1,61 +1,80 @@
-<ion-header>
+<ion-header class="ledger-header">
   <ion-toolbar color="primary">
     <ion-buttons slot="start">
       <ion-back-button [defaultHref]="seasonId ? '/saisons/' + seasonId : '/saisons'"></ion-back-button>
     </ion-buttons>
-    <ion-title>{{ seasonYear ? 'Paiements - ' + seasonYear : 'Paiements' }}</ion-title>
-    
+    <ion-title>{{ seasonYear || 'Paiements' }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
-
-  <div *ngIf="!loading">
-    <section *ngFor="let group of paymentGroups" class="date-group">
-      <h2 class="date-group-title">{{ group.label }}</h2>
-      <ion-card>
-        <ion-card-content class="content-list">
-          <ion-list>
-            <ion-item-sliding *ngFor="let p of group.items; let last = last">
-            <ion-item class="list-card" [lines]="last ? 'none' : 'inset'">
-                <ion-thumbnail slot="start" *ngIf="p.imageData">
-                  <img [src]="p.imageData" alt="Justificatif du paiement" />
-                </ion-thumbnail>
-                <ion-label>
-                  <h3>{{ p.playerFirstName + ' ' + p.playerLastName || p.playerId || 'Inconnu' }}</h3>
-                  <p *ngIf="p.comment">{{ p.comment || '' }}</p>
-                </ion-label>
-                <ion-note slot="end">{{ (p.amount || 0) | currency:'EUR':'symbol':'1.0-0' }}</ion-note>
-              </ion-item>
-              <ion-item-options side="start">
-                <ion-item-option color="danger" (click)="deletePayment(p)" [disabled]="readOnly" aria-label="Supprimer le paiement">
-                  <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
-                </ion-item-option>
-              </ion-item-options>
-              <ion-item-options side="end">
-                <ion-item-option color="primary" (click)="editPayment(p)" [disabled]="readOnly" aria-label="Modifier le paiement">
-                  <ion-icon name="create-outline" slot="icon-only"></ion-icon>
-                </ion-item-option>
-              </ion-item-options>
-            </ion-item-sliding>
-          </ion-list>
-        </ion-card-content>
-      </ion-card>
+<ion-content class="ledger-content">
+  <main class="ledger-shell">
+    <section *ngIf="!loading" class="ledger-overview payment-overview">
+      <div>
+        <span class="ledger-eyebrow">TOTAL ENCAISSÉ</span>
+        <h1>Paiements</h1>
+        <p>{{ payments.length }} paiement{{ payments.length === 1 ? '' : 's' }} sur la saison</p>
+      </div>
+      <strong>{{ formatGroupTotal(totalPaymentAmount) }}</strong>
     </section>
-  </div>
-  <ion-list *ngIf="loading" class="list-skeleton" aria-label="Chargement des paiements">
-    <ion-item *ngFor="let item of [1, 2, 3, 4, 5]">
-      <ion-thumbnail slot="start">
-        <ion-skeleton-text [animated]="true"></ion-skeleton-text>
-      </ion-thumbnail>
-      <ion-label>
-        <h2><ion-skeleton-text [animated]="true" style="width: 45%"></ion-skeleton-text></h2>
-        <p><ion-skeleton-text [animated]="true" style="width: 85%"></ion-skeleton-text></p>
-      </ion-label>
-      <ion-note slot="end"><ion-skeleton-text [animated]="true" style="width: 58px"></ion-skeleton-text></ion-note>
-    </ion-item>
-  </ion-list>
-    <section style="height: 150px;"></section>
+
+    <div *ngIf="!loading && paymentGroups.length" class="ledger-groups">
+      <section *ngFor="let group of paymentGroups" class="date-group">
+        <header class="date-group-title">
+          <div>
+            <strong>{{ group.label }}</strong>
+            <small>{{ group.items.length }} paiement{{ group.items.length === 1 ? '' : 's' }}</small>
+          </div>
+          <strong>{{ formatGroupTotal(group.total) }}</strong>
+        </header>
+        <div class="ledger-rows">
+          <ion-item-sliding *ngFor="let p of group.items">
+            <ion-item class="ledger-row payment-row" lines="none">
+              <span slot="start" class="ledger-row-icon payment-row-icon">
+                <ion-icon name="arrow-down-circle-outline" aria-hidden="true"></ion-icon>
+              </span>
+              <ion-label class="ledger-row-copy">
+                <h2>{{ playerDisplayName(p) }}</h2>
+                <p *ngIf="p.comment" class="ledger-comment">{{ p.comment }}</p>
+              </ion-label>
+              <ion-thumbnail slot="end" *ngIf="p.imageData" class="ledger-photo">
+                <img [src]="p.imageData" alt="Justificatif du paiement" />
+              </ion-thumbnail>
+              <ion-note slot="end" class="ledger-amount payment-row-amount">
+                <strong>{{ (p.amount || 0) | currency:'EUR':'symbol':'1.0-0' }}</strong>
+              </ion-note>
+            </ion-item>
+            <ion-item-options side="start">
+              <ion-item-option color="danger" (click)="deletePayment(p)" [disabled]="readOnly" aria-label="Supprimer le paiement">
+                <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
+              </ion-item-option>
+            </ion-item-options>
+            <ion-item-options side="end">
+              <ion-item-option color="primary" (click)="editPayment(p)" [disabled]="readOnly" aria-label="Modifier le paiement">
+                <ion-icon name="create-outline" slot="icon-only"></ion-icon>
+              </ion-item-option>
+            </ion-item-options>
+          </ion-item-sliding>
+        </div>
+      </section>
+    </div>
+
+    <section *ngIf="!loading && !payments.length" class="ledger-empty">
+      <ion-icon name="wallet-outline" aria-hidden="true"></ion-icon>
+      <h2>Aucun paiement</h2>
+      <p>Les paiements de la saison apparaîtront ici.</p>
+    </section>
+
+    <ion-list *ngIf="loading" class="list-skeleton" aria-label="Chargement des paiements">
+      <ion-item *ngFor="let item of [1, 2, 3, 4, 5]">
+        <ion-label>
+          <h2><ion-skeleton-text [animated]="true" style="width: 45%"></ion-skeleton-text></h2>
+          <p><ion-skeleton-text [animated]="true" style="width: 85%"></ion-skeleton-text></p>
+        </ion-label>
+        <ion-note slot="end"><ion-skeleton-text [animated]="true" style="width: 58px"></ion-skeleton-text></ion-note>
+      </ion-item>
+    </ion-list>
+  </main>
 
   <ion-fab slot="fixed" vertical="bottom" horizontal="center">
     <ion-fab-button *ngIf="!readOnly" [routerLink]="seasonId ? ['/saisons', seasonId, 'operation', 'paiements', 'create'] : null" aria-label="Créer un paiement">

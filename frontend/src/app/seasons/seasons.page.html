@@ -1,52 +1,63 @@
-<ion-content>
-<section align=center>
-    <p align="right" >
-      <ion-button fill="clear"  routerLink="/signup">
-          {{userName}}
-        </ion-button>
-    </p>
-
-      
-    <img class="logo" align=center src="assets/image/logo-asptt-grande.png" alt="ASPTT" />
-  </section>
-  
-
-  <section class="ion-padding season-content">
-
-    <p >
-      <ion-text color="secondary">
-        Choisir une saison
-      </ion-text>
-      </p>
-    <div *ngIf="!loading" class="season-cards">
-      <ion-card
-        *ngFor="let season of seasons"
-        [button]="!(season.active && season.participationAnswered && season.participationResponse === false)"
-        (click)="openSeason(season)"
-        [class.inactive-season]="!season.active"
-        [class.unavailable-season]="season.active && season.participationAnswered && season.participationResponse === false">
-        <ion-card-header>
-            <p>{{ season.name || (season.active ? 'Saison active' : 'Saison archivée') }}</p>
-        </ion-card-header>
-        <ion-card-content>
-          <ion-badge [color]="season.active ? 'success' : 'medium'">
-            {{ season.active ? 'Active' : 'Terminée' }}
-          </ion-badge>
-          <ion-badge *ngIf="season.active" [color]="season.participationResponse === true ? 'success' : season.participationResponse === false ? 'danger' : 'warning'">
-            {{ season.participationResponse === true ? 'Participation : oui' : season.participationResponse === false ? 'Participation : non' : 'Participation : à confirmer' }}
-          </ion-badge>
-          <ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon>
-        </ion-card-content>
-      </ion-card>
-    </div>
-    <ion-spinner *ngIf="loading"></ion-spinner>
-    <ion-text color="danger" *ngIf="error"><p>{{ error }}</p></ion-text>
-    </section>
-    <section class="ion-padding">
-      <ion-button expand="block" color="danger" class="logout-button" (click)="logout()">
-        <ion-icon name="log-out-outline" slot="start"></ion-icon>
-        Déconnexion
+<ion-content class="seasons-content">
+  <main class="seasons-shell">
+    <header class="seasons-heading">
+      <div class="seasons-brand">
+        <img src="assets/image/logo-asptt-grande.png" alt="ASPTT" />
+        <div>
+          <span class="seasons-eyebrow">CAISSE NOIRE</span>
+          <h1>Mes saisons</h1>
+          <p>Bonjour {{ userName }}</p>
+        </div>
+      </div>
+      <ion-button fill="clear" class="logout-icon" (click)="logout()" aria-label="Déconnexion" title="Déconnexion">
+        <ion-icon name="log-out-outline" slot="icon-only"></ion-icon>
       </ion-button>
-      <ion-text color="medium" class="app-version">v{{ appVersion }}</ion-text>
-  </section>
+    </header>
+
+    <div *ngIf="loading" class="season-loading"><ion-spinner name="crescent"></ion-spinner></div>
+    <ion-text color="danger" *ngIf="error"><p class="season-error">{{ error }}</p></ion-text>
+
+    <ng-container *ngIf="!loading">
+      <section *ngIf="activeSeason" class="season-section">
+        <div class="season-section-heading">
+          <span>EN COURS</span>
+        </div>
+        <button
+          type="button"
+          class="season-entry active-entry"
+          [disabled]="activeSeason.participationAnswered && activeSeason.participationResponse === false"
+          (click)="openSeason(activeSeason)">
+          <span class="season-entry-main">
+            <strong>{{ activeSeason.name || 'Saison active' }}</strong>
+            <span>{{ activeSeason.participationResponse === true ? 'Vous participez' : activeSeason.participationResponse === false ? 'Participation refusée' : 'Participation à confirmer' }}</span>
+          </span>
+          <span class="season-entry-action">
+            <ion-icon [name]="activeSeason.participationResponse === false ? 'lock-closed-outline' : 'arrow-forward-outline'" aria-hidden="true"></ion-icon>
+          </span>
+        </button>
+      </section>
+
+      <section *ngIf="archivedSeasons.length" class="season-section archive-section">
+        <div class="season-section-heading">
+          <span>ARCHIVES</span>
+          <span>{{ archivedSeasons.length }} saison{{ archivedSeasons.length > 1 ? 's' : '' }}</span>
+        </div>
+        <button type="button" class="season-entry archived-entry" *ngFor="let season of archivedSeasons" (click)="openSeason(season)">
+          <span class="season-entry-main">
+            <strong>{{ season.name || 'Saison archivée' }}</strong>
+            <span>Consulter les résultats</span>
+          </span>
+          <span class="archive-year">{{ season.id }}</span>
+          <ion-icon name="chevron-forward-outline" aria-hidden="true"></ion-icon>
+        </button>
+      </section>
+
+      <div *ngIf="!seasons.length" class="empty-seasons">
+        <ion-icon name="calendar-outline" aria-hidden="true"></ion-icon>
+        <p>Aucune saison disponible.</p>
+      </div>
+    </ng-container>
+
+    <footer class="seasons-footer">v{{ appVersion }}</footer>
+  </main>
 </ion-content>

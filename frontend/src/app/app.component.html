@@ -7,13 +7,7 @@
   <ion-footer *ngIf="isSeasonPage" class="floating-season-navigation">
     <ion-toolbar>
       <ion-buttons class="season-navigation" role="navigation" aria-label="Navigation de la saison">
-        <ion-button routerLink="/saisons" routerLinkActive="season-navigation-active" #seasonsNav="routerLinkActive" [routerLinkActiveOptions]="{ exact: true }" aria-label="Retour à la liste des saisons">
-          <span class="season-navigation-content">
-            <ion-icon *ngIf="seasonsNav.isActive" name="albums"></ion-icon>
-            <ion-icon *ngIf="!seasonsNav.isActive" name="albums-outline"></ion-icon>
-            <span>Saisons</span>
-          </span>
-        </ion-button>
+        
         <ion-button [routerLink]="['/saisons', currentSeasonId]" routerLinkActive="season-navigation-active" #homeNav="routerLinkActive" [routerLinkActiveOptions]="{ exact: true }" aria-label="Synthèse de la saison">
           <span class="season-navigation-content">
             <ion-icon *ngIf="homeNav.isActive" name="home"></ion-icon>

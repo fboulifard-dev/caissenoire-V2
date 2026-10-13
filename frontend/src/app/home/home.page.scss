@@ -1,208 +1,351 @@
-.top-toolbar {
-  --background: #121212;
-  --color: #ffffff;
+.dashboard-header ion-toolbar {
+  --background: var(--background-color-app);
+  --min-height: 68px;
+  --padding-start: 20px;
+  --padding-end: 16px;
 }
 
-.profile-button {
-  --color: #ffffff;
-  margin-right: 8px;
-}
-
-.profile-popover {
-  --background: #ffffff;
-}
-
-.profile-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 16px 8px;
-}
-
-.profile-icon {
-  font-size: 2rem;
-  color: rgb(16, 92, 17);
-}
-
-ion-card {
-  margin-top: 24px;
-}
-
-.summary-section h2 {
-  margin: 24px 0 0;
-  font-size: 1.15rem;
-}
-
-.summary-section > ion-segment {
-  margin-bottom: 8px;
-}
-
-.summary-cards {
+.dashboard-header ion-title {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0px;
-  container-type: inline-size;
+  gap: 2px;
+  padding-inline: 0;
 }
 
-.summary-cards ion-card {
-  margin: 4px;
-  min-width: 0;
-  position: relative;
+.toolbar-eyebrow,
+.section-kicker {
+  color: #64736a;
+  font-size: 0.67rem;
+  font-weight: 700;
+  line-height: 1.2;
 }
 
-.home-card-action {
-  position: absolute;
-  right: 10px;
-  bottom: 10px;
-
-  margin: 0;
-  --padding-start: 0;
-  --padding-end: 0;
-  --padding-top: 0;
-  --padding-bottom: 0;
-  --box-shadow: none;
+.toolbar-season {
+  color: #173d2b;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
-.home-card-action ion-icon {
-  color: var(--ion-color-primary)
+.dashboard-content {
+  --background: var(--background-color-app);
+}
 
+.dashboard-shell {
+  width: min(100%, 560px);
+  margin: 0 auto;
+  padding: 14px 18px 30px;
+}
+
+.welcome-line {
+  margin: 2px 0 18px;
+}
+
+.welcome-line p {
+  margin: 0 0 3px;
+  color: #183f2d;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.welcome-line span {
+  color: #69766f;
+  font-size: 0.9rem;
+}
+
+.summary-filter {
+  margin-bottom: 16px;
+  --background: #e7ebe7;
+  border-radius: 8px;
 }
 
 .player-summary-header {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  margin-bottom: 16px;
+  margin: -4px 0 16px;
 }
 
 .player-summary-header ion-select {
-  min-width: 180px;
+  width: 100%;
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid #d8e0d9;
+  border-radius: 8px;
+  background: #fff;
 }
 
-.selected-player-name {
-  margin: 8px 0 0;
-  color: var(--ion-color-medium);
+.balance-panel {
+  display: grid;
+  gap: 15px;
+  min-height: 178px;
+  padding: 20px;
+  border-radius: 8px;
+  background: #173f2d;
+  color: #fff;
 }
 
-.payments-summary-card {
-  --background: #ffffff;
-  color: #1d3557;
+.fine-feature {
+  background: #98443a;
 }
 
-.payments-summary-card ion-card-subtitle,
-.payments-summary-card ion-card-title {
-  color: #1d3557;
+.fine-feature .balance-heading .section-kicker {
+  color: #f4d9d5;
 }
 
-.payments-summary-card ion-card-content {
+.fine-feature .balance-amount {
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 3.1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.fine-feature .balance-footer > span {
+  color: #f4d9d5;
+}
+
+.fine-feature .balance-footer ion-button {
+  --color: #fff;
+}
+
+.balance-heading,
+.balance-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
 }
 
-.payments-summary-card ion-card-title,
-.fines-summary-card ion-card-title,
-.balance-summary-card ion-card-title,
-.classment-summary-card ion-card-title {
+.balance-heading .section-kicker {
+  color: #c4d5c9;
+}
+
+.balance-heading ion-icon {
+  font-size: 1.35rem;
+}
+
+.balance-amount {
+  display: block;
   overflow-wrap: anywhere;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 2.35rem;
+  font-weight: 500;
+  line-height: 1.05;
 }
 
-.payments-summary {
+.balance-footer > span {
+  color: #d6e2da;
+  font-size: 0.85rem;
+}
+
+.balance-footer ion-button {
+  --color: #fff;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  margin: 0 -8px 0 0;
+  font-size: 0.82rem;
+}
+
+.balance-credit {
+  background: #e5f2e8;
+  color: #174d32;
+}
+
+.balance-credit .section-kicker,
+.balance-credit .balance-footer > span {
+  color: #426b52;
+}
+
+.balance-credit .balance-footer ion-button {
+  --color: #174d32;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 12px 0 28px;
+}
+
+.metric-tile {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 9px;
+  min-width: 0;
+  min-height: 106px;
+  padding: 13px;
+  border: 1px solid #e1e6e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #23372b;
+  text-decoration: none;
+}
+
+.metric-icon {
+  display: grid;
+  grid-row: span 2;
+  place-items: center;
+  width: 34px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #e7f3e9;
+  color: #287348;
+  font-size: 1.1rem;
+}
+
+.balance-tile {
+  position: relative;
+  padding-right: 42px;
+}
+
+.balance-iban-button {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  --color: #567361;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  margin: 0;
+}
+
+.balance-credit-tile .metric-icon {
+  background: #e7f3e9;
+  color: #287348;
+}
+
+.metric-label {
+  overflow: hidden;
+  color: #69766f;
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.metric-tile strong {
+  overflow-wrap: anywhere;
+  font-size: 1.12rem;
+  line-height: 1.2;
+}
+
+.metric-tile small {
+  grid-column: 2;
+  color: #78847c;
+  font-size: 0.7rem;
+}
+
+.section-heading {
   display: flex;
-  gap: 32px;
+  align-items: end;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.section-heading h2 {
+  margin: 3px 0 0;
+  color: #20362a;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.section-heading ion-button {
+  --color: #286541;
+  --padding-start: 4px;
+  --padding-end: 0;
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.activity-list {
+  border-top: 1px solid #dfe5df;
+}
+
+.activity-row {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 11px;
+  min-height: 70px;
+  border-bottom: 1px solid #dfe5df;
+}
+
+.activity-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #e7f3e9;
+  color: #287348;
+  font-size: 1.2rem;
+}
+
+.fine-activity .activity-icon {
+  background: #fff0ec;
+  color: #b84d3e;
+}
+
+.activity-copy {
+  display: grid;
+  gap: 4px;
   min-width: 0;
 }
 
-.payments-summary div {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.activity-copy strong,
+.activity-copy span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.payments-summary strong {
-  font-size: 1.5rem;
-  overflow-wrap: anywhere;
+.activity-copy strong {
+  color: #263a2e;
+  font-size: 0.88rem;
 }
 
-.payments-summary span {
-  font-size: 0.85rem;
-  opacity: 0.8;
+.activity-copy span {
+  color: #748078;
+  font-size: 0.75rem;
 }
 
-.payments-summary-card ion-icon {
-  font-size: 1.5rem;
+.activity-amount {
+  color: #277046;
+  font-size: 0.82rem;
+  white-space: nowrap;
 }
 
-.fines-summary-card {
-  --background: #ffffff;
-  color: #7f1d1d;
+.fine-activity .activity-amount {
+  color: #b84d3e;
 }
 
-.fines-summary-card ion-card-subtitle,
-.fines-summary-card ion-card-title {
-  color: #7f1d1d;
-}
-
-.fines-summary-card ion-card-content {
+.activity-empty,
+.activity-loading {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  justify-content: center;
+  gap: 9px;
+  min-height: 96px;
+  color: #748078;
+  font-size: 0.88rem;
 }
 
-.balance-summary-card {
-  --background: #ffffff;
-  color: #57491d;
+.activity-empty ion-icon {
+  font-size: 1.2rem;
 }
 
-h2 {
-  margin: 0;
-  font-size: 1.3rem;
-}
-
-@media (max-width: 350px) {
-  .summary-cards {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-}
-
-@container (max-width: 420px) {
-  .payments-summary-card ion-card-title,
-  .fines-summary-card ion-card-title,
-  .balance-summary-card ion-card-title,
-  .classment-summary-card ion-card-title,
-  .iban-summary-card ion-card-title {
-    font-size: 1rem;
+@media (max-width: 360px) {
+  .dashboard-shell {
+    padding-inline: 14px;
   }
 
-  .payments-summary {
-    gap: 16px;
+  .balance-amount {
+    font-size: 2rem;
   }
 
-  .payments-summary strong {
-    font-size: 1.25rem;
-  }
-}
-
-@container (max-width: 300px) {
-  .payments-summary-card ion-card-content,
-  .fines-summary-card ion-card-content {
-    gap: 8px;
+  .metric-tile {
+    grid-template-columns: 30px minmax(0, 1fr);
+    column-gap: 7px;
+    padding: 10px;
   }
 
-  .payments-summary {
-    gap: 12px;
-  }
-
-  .payments-summary strong {
-    font-size: 1.1rem;
-  }
-
-  .payments-summary span {
-    font-size: 0.75rem;
+  .metric-icon {
+    width: 30px;
   }
 }
