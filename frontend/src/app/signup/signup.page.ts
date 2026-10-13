@@ -12,6 +12,8 @@ export class SignupPage {
   email = '';
   password = '';
   confirmPassword = '';
+  showPassword = false;
+  showConfirmPassword = false;
   loading = false;
   error = '';
 
@@ -19,9 +21,37 @@ export class SignupPage {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email.trim());
   }
 
+  get hasMinimumPasswordLength(): boolean {
+    return this.password.length >= 10;
+  }
+
+  get hasPasswordUppercase(): boolean {
+    return /[A-Z]/.test(this.password);
+  }
+
+  get hasPasswordLowercase(): boolean {
+    return /[a-z]/.test(this.password);
+  }
+
+  get hasPasswordNumber(): boolean {
+    return /[0-9]/.test(this.password);
+  }
+
+  get hasPasswordSpecialCharacter(): boolean {
+    return /[^A-Za-z0-9]/.test(this.password);
+  }
+
+  get isPasswordValid(): boolean {
+    return this.hasMinimumPasswordLength
+      && this.hasPasswordUppercase
+      && this.hasPasswordLowercase
+      && this.hasPasswordNumber
+      && this.hasPasswordSpecialCharacter;
+  }
+
   get canCreateAccount(): boolean {
     return this.isEmailValid
-      && this.password.length >= 6
+      && this.isPasswordValid
       && this.password === this.confirmPassword;
   }
 

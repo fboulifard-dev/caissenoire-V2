@@ -9,4 +9,28 @@
   font-size: 0.85rem;
 }
 
+.password-requirements {
+  display: grid;
+  gap: 4px;
+  margin: 0 8px 16px;
+  color: var(--ion-color-medium);
+  font-size: 0.85rem;
+}
+
+.password-requirements p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.password-requirements ion-icon {
+  flex: 0 0 auto;
+  font-size: 1rem;
+}
+
+.password-requirements .met {
+  color: var(--ion-color-success);
+}
+
 

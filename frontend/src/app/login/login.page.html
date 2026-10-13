@@ -23,7 +23,10 @@
 
       <ion-item>
         <ion-icon name="lock-closed-outline" slot="start" ></ion-icon>
-        <ion-input type="password" [(ngModel)]="password" placeholder="Mot de passe"></ion-input>
+        <ion-input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" placeholder="Mot de passe" autocomplete="current-password"></ion-input>
+        <ion-button slot="end" fill="clear" type="button" [attr.aria-label]="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" [attr.aria-pressed]="showPassword" (click)="showPassword = !showPassword">
+          <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+        </ion-button>
       </ion-item>
 
       <ion-button expand="block" (click)="signInEmail()" [disabled]="loading || !canSignInEmail" >Connexion</ion-button>
