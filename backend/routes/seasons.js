@@ -118,12 +118,11 @@ router.post('/notification-token', async (req, res) => {
     const now = new Date().toISOString();
     const notificationTokenRef = db.collection('notificationTokens').doc(normalizedToken);
     const batch = db.batch();
-    const oldToken = player.data().fcmToken;
     const isParticipating = response.exists && response.data().participating === true;
-    if (oldToken && oldToken !== normalizedToken) {
-      batch.delete(db.collection('notificationTokens').doc(oldToken));
-    }
-    batch.set(playerRef, { fcmToken: normalizedToken, fcmTokenUpdatedAt: now }, { merge: true });
+    batch.set(playerRef, {
+      fcmTokens: admin.firestore.FieldValue.arrayUnion(normalizedToken),
+      fcmTokenUpdatedAt: now
+    }, { merge: true });
     if (isParticipating) {
       batch.set(responseRef, { notificationsEnabled: true, updatedAt: now }, { merge: true });
       batch.set(notificationTokenRef, {
