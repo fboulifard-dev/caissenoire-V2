@@ -20,6 +20,14 @@ export class SeasonsPage implements OnInit {
   userName = 'Utilisateur';
   appVersion = environment.name ? `${APP_VERSION}-${environment.name}` : APP_VERSION;
 
+  get activeSeason(): any | undefined {
+    return this.seasons.find(season => season.active);
+  }
+
+  get archivedSeasons(): any[] {
+    return this.seasons.filter(season => !season.active);
+  }
+
   constructor(
     private api: ApiService,
     private auth: AuthService,

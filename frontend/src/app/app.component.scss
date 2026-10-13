@@ -1,28 +1,25 @@
 .floating-season-navigation {
 	position: fixed;
-	left: 12px;
-	right: 12px;
-	bottom: calc(12px + env(safe-area-inset-bottom));
+	left: 0;
+	right: 0;
+	bottom: 0;
 	width: auto;
-	background: transparent;
-	box-shadow: none;
+	padding-bottom: env(safe-area-inset-bottom);
+	background: #fff;
+	box-shadow: 0 -4px 18px rgba(28, 49, 35, 0.08);
 	z-index: 10;
 }
 
 ion-app > ion-content {
-	--padding-bottom: 96px;
+	--padding-bottom: calc(76px + env(safe-area-inset-bottom));
 }
 
 .floating-season-navigation ion-toolbar {
-	--background: rgba(255, 255, 255, 0.82);
+	--background: #fff;
 	--color: var(--ion-color-primary);
 	--border-width: 0;
-	--min-height: 64px;
-	border: 1px solid rgba(var(--ion-color-primary-rgb), 0.14);
-	border-radius: 18px;
-	box-shadow: 0 8px 24px rgba(31, 41, 31, 0.14);
-	backdrop-filter: blur(16px);
-	-webkit-backdrop-filter: blur(16px);
+	--min-height: 66px;
+	border-top: 1px solid #e4e9e4;
 }
 
 .season-navigation {
@@ -34,8 +31,8 @@ ion-app > ion-content {
 
 .season-navigation ion-button {
 	flex: 1;
-	--padding-top: 6px;
-	--padding-bottom: 6px;
+	--padding-top: 5px;
+	--padding-bottom: 5px;
 	--padding-start: 2px;
 	--padding-end: 2px;
 	font-size: 0.7rem;
@@ -65,7 +62,7 @@ ion-app > ion-content {
 }
 
 .season-navigation ion-button.season-navigation-active {
-	--color: var(--ion-color-primary);
-	--background: rgba(var(--ion-color-primary-rgb), 0.1);
+	--color: #174d32;
+	--background: #edf5ef;
 	font-weight: 600;
 }

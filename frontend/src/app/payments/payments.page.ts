@@ -11,7 +11,7 @@ import { ApiService } from '../services/api.service';
 })
 export class PaymentsPage implements OnInit {
   payments: any[] = [];
-  paymentGroups: { date: string; label: string; items: any[] }[] = [];
+  paymentGroups: { date: string; label: string; total: number; items: any[] }[] = [];
   creators: any[] = [];
   selectedCreator = '';
   loading = true;
@@ -20,6 +20,10 @@ export class PaymentsPage implements OnInit {
   playerName = '';
   readOnly = false;
   seasonYear = '';
+
+  get totalPaymentAmount(): number {
+    return this.payments.reduce((total, payment) => total + this.parseAmount(payment.amount), 0);
+  }
 
   constructor(
     private api: ApiService,
@@ -80,11 +84,11 @@ export class PaymentsPage implements OnInit {
     }
   }
 
-  private groupByCreationDate(items: any[]): { date: string; label: string; items: any[] }[] {
+  private groupByCreationDate(items: any[]): { date: string; label: string; total: number; items: any[] }[] {
     const groups = new Map<string, any[]>();
 
     items.forEach(item => {
-      const date = this.creationDateKey(item.createdAt);
+      const date = this.creationDateKey(item.date || item.createdAt);
       const group = groups.get(date) || [];
       group.push(item);
       groups.set(date, group);
@@ -95,8 +99,45 @@ export class PaymentsPage implements OnInit {
       .map(([date, groupedItems]) => ({
         date,
         label: this.creationDateLabel(date),
+        total: groupedItems.reduce((sum, item) => sum + this.parseAmount(item.amount), 0),
         items: groupedItems
       }));
+  }
+
+  formatGroupTotal(total: number): string {
+    return this.formatCurrency(total);
+  }
+
+  private formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'EUR',
+      maximumFractionDigits: 0
+    }).format(amount);
+  }
+
+  playerDisplayName(payment: any): string {
+    return payment.playerName
+      || `${payment.playerFirstName || ''} ${payment.playerLastName || ''}`.trim()
+      || payment.playerId
+      || 'Joueur inconnu';
+  }
+
+  private parseAmount(amount: unknown): number {
+    if (typeof amount === 'number') {
+      return amount;
+    }
+
+    if (typeof amount !== 'string') {
+      return 0;
+    }
+
+    const normalizedAmount = amount
+      .replace(/\s/g, '')
+      .replace(',', '.')
+      .replace(/[^\d.-]/g, '');
+    const parsedAmount = Number.parseFloat(normalizedAmount);
+    return Number.isFinite(parsedAmount) ? parsedAmount : 0;
   }
 
   private creationDateKey(value: unknown): string {

@@ -1,16 +1,28 @@
-<ion-header >
-  <ion-toolbar color="primary">
-    <ion-title>{{ seasonYear ? seasonYear : 'Synthèse' }}</ion-title>
-
-    
+<ion-header class="dashboard-header">
+  <ion-toolbar>
+    <ion-title>
+      <span class="toolbar-season">{{ seasonYear || 'Synthèse' }}</span>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button routerLink="/saisons" fill="clear" aria-label="Changer de saison" title="Changer de saison">
+        <ion-icon name="swap-horizontal-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
+<ion-content class="dashboard-content">
+  <main class="dashboard-shell">
+    <section class="welcome-line">
+      <div>
+        <p>Bonjour {{ firstName }}</p>
+        <span>Voici la situation de votre caisse.</span>
+      </div>
+    </section>
 
-<ion-content class="ion-padding">
-  <section class="summary-section">
     <ion-segment
       [value]="summaryView"
+      class="summary-filter"
       (ionChange)="onSummaryViewChanged($event)">
       <ion-segment-button value="common">
         <ion-label>Commune</ion-label>
@@ -23,83 +35,7 @@
       </ion-segment-button>
     </ion-segment>
 
-    
-
-    <div class="summary-cards">
-      <ion-card button="true" [routerLink]="seasonId ? ['/saisons', seasonId, 'operation', 'paiements'] : null" [queryParams]="summaryView === 'common' ? null : { joueur: selectedPlayerId }" class="payments-summary-card">
-      <ion-card-header><ion-card-title>{{summaryView === 'common' ? paymentCount : playerPaymentCount}} Paiements</ion-card-title></ion-card-header>
-      <ion-card-content>
-        <ion-spinner *ngIf="summaryLoading" name="crescent"></ion-spinner>
-        <div *ngIf="!summaryLoading" class="payments-summary">
-          <div><strong>{{ summaryView === 'common' ? formatPaymentTotal() : formatPlayerPaymentTotal() }}</strong><span>Payé</span></div>
-        </div>
-      </ion-card-content>
-      <ion-button class="home-card-action" [routerLink]="seasonId ? ['/saisons', seasonId] : ['/home']" aria-label="Retour à l'accueil" fill="clear">
-        <ion-icon name="arrow-forward" aria-hidden="true" size="small"></ion-icon>
-      </ion-button>
-      </ion-card>
-
-      <ion-card button="true" [routerLink]="seasonId ? ['/saisons', seasonId, 'operation', 'amendes'] : null" [queryParams]="summaryView === 'common' ? null : { joueur: selectedPlayerId }" class="fines-summary-card">
-      <ion-card-header><ion-card-title>{{summaryView === 'common' ? fineCount : playerFineCount }} Amendes</ion-card-title></ion-card-header>
-      <ion-card-content>
-        <ion-spinner *ngIf="summaryLoading" name="crescent"></ion-spinner>
-        <div *ngIf="!summaryLoading" class="payments-summary">
-          <div><strong>{{ summaryView === 'common' ? formatFineTotal() : formatPlayerFineTotal() }}</strong><span>Total</span></div>
-        </div>
-      </ion-card-content>
-      <ion-button class="home-card-action" [routerLink]="seasonId ? ['/saisons', seasonId] : ['/home']" aria-label="Retour à l'accueil" fill="clear">
-        <ion-icon name="arrow-forward" aria-hidden="true" size="small"></ion-icon>
-      </ion-button>
-      </ion-card>
-
-      <ion-card class="balance-summary-card">
-      <ion-card-header><ion-card-title>Balance</ion-card-title></ion-card-header>
-      <ion-card-content>
-        <ion-spinner *ngIf="summaryLoading" name="crescent"></ion-spinner>
-        <div *ngIf="!summaryLoading" class="payments-summary">
-          <div><strong>{{ summaryView === 'common' ? formatAmountDue() : formatPlayerAmountDue() }}</strong><span>Dû</span></div>
-        </div>
-      </ion-card-content>
-      </ion-card>
-
-      <ion-card *ngIf="summaryView !== 'common'" button="true" [routerLink]="seasonId ? ['/saisons', seasonId, 'classement'] : null"  class="classment-summary-card">
-      <ion-card-header><ion-card-title>Classement</ion-card-title></ion-card-header>
-      <ion-card-content>
-        <ion-spinner *ngIf="summaryLoading" name="crescent"></ion-spinner>
-        <div *ngIf="!summaryLoading" class="payments-summary">
-          <div><strong>{{ formatPlayerRank() }}</strong><span>Position</span></div>
-        </div>
-      </ion-card-content>
-      <ion-button class="home-card-action" [routerLink]="seasonId ? ['/saisons', seasonId] : ['/home']" aria-label="Retour à l'accueil" fill="clear">
-        <ion-icon name="arrow-forward" aria-hidden="true" size="small"></ion-icon>
-      </ion-button>
-      </ion-card>
-
-      <ion-card *ngIf="summaryView == 'common'" button="true" [routerLink]="seasonId ? ['/saisons', seasonId, 'regles'] : null" class="classment-summary-card">
-      <ion-card-header><ion-card-title>Règles</ion-card-title></ion-card-header>
-      <ion-card-content>
-        <ion-spinner *ngIf="summaryLoading" name="crescent"></ion-spinner>
-        <div *ngIf="!summaryLoading" class="payments-summary">
-          <div><strong>{{ rulesCount }}</strong><span>Nb</span></div>
-        </div>
-      </ion-card-content>
-      <ion-button class="home-card-action" [routerLink]="seasonId ? ['/saisons', seasonId] : ['/home']" aria-label="Retour à l'accueil" fill="clear">
-        <ion-icon name="arrow-forward" aria-hidden="true" size="small"></ion-icon>
-      </ion-button>
-      </ion-card>
-
-      <ion-card button="true" class="iban-summary-card" (click)="copyIban()" aria-label="Copier l’IBAN">
-        <ion-card-header><ion-card-title>IBAN</ion-card-title></ion-card-header>
-        <ion-card-content>
-          <div>{{ iban }}</div>
-        </ion-card-content>
-      </ion-card>
-    </div>
-  </section>
-
-  
-
-  <div *ngIf="summaryView === 'selected'" class="player-summary-header">
+    <div *ngIf="summaryView === 'selected'" class="player-summary-header">
       <ion-select
         *ngIf="players.length"
         label="Joueur"
@@ -112,5 +48,81 @@
         </ion-select-option>
       </ion-select>
     </div>
+
+    <section class="balance-panel fine-feature">
+      <div class="balance-heading">
+        <span class="section-kicker">TOTAL DES AMENDES</span>
+        <ion-icon name="alert-circle-outline" aria-hidden="true"></ion-icon>
+      </div>
+      <ion-spinner *ngIf="summaryLoading" name="crescent"></ion-spinner>
+      <strong *ngIf="!summaryLoading" class="balance-amount">{{ summaryView === 'common' ? formatFineTotal() : formatPlayerFineTotal() }}</strong>
+      <div class="balance-footer">
+        <span>
+          {{ summaryView === 'common' ? fineCount : playerFineCount }}
+          amende{{ (summaryView === 'common' ? fineCount : playerFineCount) === 1 ? '' : 's' }}
+          attribuée{{ (summaryView === 'common' ? fineCount : playerFineCount) === 1 ? '' : 's' }}
+        </span>
+        <ion-button fill="clear" [routerLink]="['/saisons', seasonId, 'operation', 'amendes']" [queryParams]="fineQueryParams" aria-label="Voir les amendes" title="Voir les amendes">
+          Détail
+          <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
+        </ion-button>
+      </div>
+    </section>
+
+    <section class="metric-grid" aria-label="Totaux financiers">
+      <a class="metric-tile payment-tile" [routerLink]="['/saisons', seasonId, 'operation', 'paiements']">
+        <span class="metric-icon"><ion-icon name="arrow-down-outline" aria-hidden="true"></ion-icon></span>
+        <span class="metric-label">Paiements</span>
+        <ion-spinner *ngIf="summaryLoading" name="crescent"></ion-spinner>
+        <strong *ngIf="!summaryLoading">{{ summaryView === 'common' ? formatPaymentTotal() : formatPlayerPaymentTotal() }}</strong>
+        <small>{{ summaryView === 'common' ? paymentCount : playerPaymentCount }} opérations</small>
+      </a>
+      <div class="metric-tile balance-tile" [class.balance-credit-tile]="currentAmountDue < 0">
+        <span class="metric-icon"><ion-icon name="wallet-outline" aria-hidden="true"></ion-icon></span>
+        <span class="metric-label">{{ currentAmountDue > 0 ? 'Reste à payer' : currentAmountDue < 0 ? 'En votre faveur' : 'Solde' }}</span>
+        <ion-spinner *ngIf="summaryLoading" name="crescent"></ion-spinner>
+        <strong *ngIf="!summaryLoading">{{ formatCurrentAmountDue() }}</strong>
+        <small>{{ currentAmountDue > 0 ? 'À régler' : currentAmountDue < 0 ? 'Crédit disponible' : 'À jour' }}</small>
+        <ion-button class="balance-iban-button" fill="clear" (click)="copyIban()" [disabled]="!iban" aria-label="Copier l’IBAN" title="Copier l’IBAN">
+          <ion-icon name="copy-outline" slot="icon-only" aria-hidden="true"></ion-icon>
+        </ion-button>
+      </div>
+    </section>
+
+    <section class="activity-section">
+      <header class="section-heading">
+        <div>
+          <span class="section-kicker">LE FIL DE LA CAISSE</span>
+          <h2>Activité récente</h2>
+        </div>
+        <ion-button fill="clear" [routerLink]="['/saisons', seasonId, 'operation']" [queryParams]="fineQueryParams" aria-label="Voir toutes les opérations">
+          Tout voir
+          <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
+        </ion-button>
+      </header>
+
+      <div *ngIf="activityLoading" class="activity-loading">
+        <ion-spinner name="crescent"></ion-spinner>
+      </div>
+      <div *ngIf="!activityLoading && recentActivities.length === 0" class="activity-empty">
+        <ion-icon name="file-tray-outline" aria-hidden="true"></ion-icon>
+        <p>Aucune opération pour le moment.</p>
+      </div>
+      <div *ngIf="!activityLoading && recentActivities.length" class="activity-list">
+        <article *ngFor="let activity of recentActivities" class="activity-row" [class.fine-activity]="activity.kind === 'fine'">
+          <span class="activity-icon">
+            <ion-icon [name]="activity.kind === 'fine' ? 'alert-circle-outline' : 'arrow-down-circle-outline'" aria-hidden="true"></ion-icon>
+          </span>
+          <div class="activity-copy">
+            <strong>{{ activity.title }}</strong>
+            <span>{{ activity.playerName }} · {{ formatActivityDate(activity.date) }}</span>
+          </div>
+          <strong class="activity-amount">
+            {{ activity.kind === 'fine' ? '+' : '−' }}{{ formatActivityAmount(activity.amount) }}
+          </strong>
+        </article>
+      </div>
+    </section>
+  </main>
 
 </ion-content>

@@ -4,9 +4,10 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js",
+    "dev": "node --watch index.js",
     "seed": "node seed.js",
-    "validate-users": "node batchs/validateUsers.js"
+    "validate-users": "node batchs/validateUsers.js",
+    "backfill-rule-icons": "node batchs/backfillRuleIcons.js"
   },
   "dependencies": {
     "@capacitor/app": "8.1.1",

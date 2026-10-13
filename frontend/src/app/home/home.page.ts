@@ -1,8 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NavController, ToastController } from '@ionic/angular';
+import { forkJoin } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { ApiService } from '../services/api.service';
+
+interface RecentActivity {
+  id: string;
+  kind: 'payment' | 'fine';
+  title: string;
+  playerName: string;
+  amount: number;
+  date: string;
+}
 
 @Component({
   selector: 'app-home',
@@ -29,6 +39,8 @@ export class HomePage implements OnInit {
   rulesCount = 0;
   playersCount = 0;
   summaryLoading = true;
+  activityLoading = true;
+  recentActivities: RecentActivity[] = [];
   seasonId = '';
   seasonYear = '';
   connectedPlayerId = '';
@@ -111,10 +123,12 @@ export class HomePage implements OnInit {
         this.iban = season.iban
         this.loadPlayers(season.id);
         this.loadPaymentSummary(season.id);
+        this.loadRecentActivity(season.id);
       },
       error: () => {
         this.loadPlayers(seasonId);
         this.loadPaymentSummary(seasonId);
+        this.loadRecentActivity(seasonId);
       }
     });
   }
@@ -152,11 +166,62 @@ export class HomePage implements OnInit {
     });
   }
 
+  private loadRecentActivity(seasonId: string) {
+    const playerId = this.getActivityPlayerId();
+    this.activityLoading = true;
+    forkJoin({
+      payments: this.api.getSeasonPayments(seasonId, playerId),
+      fines: this.api.getSeasonFines(seasonId, playerId)
+    }).subscribe({
+      next: ({ payments, fines }) => {
+        const paymentActivities = (Array.isArray(payments) ? payments : []).map((payment: any) =>
+          this.toRecentActivity(payment, 'payment')
+        );
+        const fineActivities = (Array.isArray(fines) ? fines : []).map((fine: any) =>
+          this.toRecentActivity(fine, 'fine')
+        );
+
+        this.recentActivities = [...paymentActivities, ...fineActivities]
+          .sort((first, second) => new Date(second.date).getTime() - new Date(first.date).getTime())
+          .slice(0, 5);
+        this.activityLoading = false;
+      },
+      error: () => {
+        this.recentActivities = [];
+        this.activityLoading = false;
+      }
+    });
+  }
+
+  private getActivityPlayerId(): string | undefined {
+    if (this.summaryView === 'common') {
+      return undefined;
+    }
+
+    return this.summaryView === 'connected' ? this.connectedPlayerId : this.selectedPlayerId;
+  }
+
+  private toRecentActivity(item: any, kind: RecentActivity['kind']): RecentActivity {
+    const playerName = item.playerName
+      || `${item.playerFirstName || ''} ${item.playerLastName || ''}`.trim()
+      || (item.playerId ? this.playerName(item.playerId) : 'Saison');
+
+    return {
+      id: item.id,
+      kind,
+      title: kind === 'fine' ? item.ruleLabel || 'Amende' : 'Paiement reçu',
+      playerName,
+      amount: this.parseAmount(item.amount),
+      date: item.date || item.createdAt || ''
+    };
+  }
+
   onPlayerChanged() {
     this.summaryView = 'selected';
     if (this.seasonId) {
       this.summaryLoading = true;
       this.loadPaymentSummary(this.seasonId);
+      this.loadRecentActivity(this.seasonId);
     }
   }
 
@@ -164,7 +229,21 @@ export class HomePage implements OnInit {
     const view = event.detail.value;
     if (view === 'common' || view === 'connected' || view === 'selected') {
       this.summaryView = view;
+      if (this.seasonId) {
+        this.loadRecentActivity(this.seasonId);
+      }
     }
+  }
+
+  get fineQueryParams(): { joueur: string } | null {
+    if (this.summaryView === 'common') {
+      return null;
+    }
+
+    const playerId = this.summaryView === 'connected'
+      ? this.connectedPlayerId
+      : this.selectedPlayerId;
+    return playerId ? { joueur: playerId } : null;
   }
 
   async copyIban() {
@@ -233,6 +312,27 @@ export class HomePage implements OnInit {
 
   formatPlayerFineTotal(): string {
     return this.formatCurrency(this.playerFineTotal);
+  }
+
+  get currentAmountDue(): number {
+    return this.summaryView === 'common' ? this.amountDue : this.playerAmountDue;
+  }
+
+  formatCurrentAmountDue(): string {
+    return this.formatCurrency(this.currentAmountDue);
+  }
+
+  formatActivityAmount(amount: number): string {
+    return this.formatCurrency(Math.abs(amount));
+  }
+
+  formatActivityDate(value: string): string {
+    const date = new Date(value);
+    if (!Number.isFinite(date.getTime())) {
+      return '';
+    }
+
+    return new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(date);
   }
 
   formatPlayerRank(): string {

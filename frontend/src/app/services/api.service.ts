@@ -103,13 +103,13 @@ export class ApiService {
     );
   }
 
-  createRule(rule: { label: string; cost: number; matchDay: boolean; active: boolean }, seasonId: string) {
+  createRule(rule: { label: string; cost: number; icon: string; matchDay: boolean; active: boolean }, seasonId: string) {
     return this.getHeadersWithToken().pipe(
       switchMap((headers) => this.http.post(`${environment.apiUrl}/api/seasons/${seasonId}/rules`, rule, { headers, params: { seasonId } }))
     );
   }
 
-  updateRule(id: string, rule: { label: string; cost: number; matchDay: boolean; active: boolean }, seasonId: string) {
+  updateRule(id: string, rule: { label: string; cost: number; icon?: string; matchDay: boolean; active: boolean }, seasonId: string) {
     return this.getHeadersWithToken().pipe(
       switchMap((headers) => this.http.put(`${environment.apiUrl}/api/seasons/${seasonId}/rules/${id}`, rule, { headers, params: { seasonId } }))
     );

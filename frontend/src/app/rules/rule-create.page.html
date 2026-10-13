@@ -21,6 +21,15 @@
       </ion-item>
 
       <ion-item>
+        <ion-icon slot="start" [name]="rule.icon" aria-hidden="true"></ion-icon>
+        <ion-select label="Icône" labelPlacement="stacked" name="icon" [(ngModel)]="rule.icon" interface="popover">
+          <ion-select-option *ngFor="let option of iconOptions" [value]="option.name">
+            {{ option.label }}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
         <ion-input
           type="number"
           label="Montant"
