@@ -1,42 +1,44 @@
 <ion-content class="ranking-content">
-  <div class="ranking-page">
+  <main class="ranking-page">
     <section class="ranking-intro">
-      <h1>Qui fait monter la caisse ?</h1>
-      <p>Les joueurs sont classés selon le montant cumulé de leurs amendes.</p>
+      <span class="ranking-eyebrow">SAISON {{ seasonId }}</span>
+      <h1>Classement</h1>
+      <p>Amendes cumulées par joueur</p>
     </section>
 
-    <ion-card class="total-card" *ngIf="!loading">
-      <ion-card-content>
-        <div>
-          <p class="card-label">Total des amendes</p>
-          <strong>{{ totalFines | currency:'EUR':'symbol':'1.0-0' }}</strong>
-          <span>dans la caisse</span>
-        </div>
-        <ion-icon name="cash-outline" aria-hidden="true"></ion-icon>
-      </ion-card-content>
-    </ion-card>
+    <section class="total-card" *ngIf="!loading">
+      <div class="total-copy">
+        <span class="card-label">TOTAL DES AMENDES</span>
+        <strong>{{ totalFines | currency:'EUR':'symbol':'1.0-0' }}</strong>
+        <span>{{ ranking.length }} joueur{{ ranking.length === 1 ? '' : 's' }} classé{{ ranking.length === 1 ? '' : 's' }}</span>
+      </div>
+      <span class="total-icon"><ion-icon name="cash-outline" aria-hidden="true"></ion-icon></span>
+    </section>
 
     <section class="ranking-section" *ngIf="!loading && ranking.length">
       <div class="section-heading">
-        <h2>Classement</h2>
-        <span>{{ ranking.length }} joueur{{ ranking.length > 1 ? 's' : '' }}</span>
+        <h2>Par joueur</h2>
+        <span>{{ ranking.length }}</span>
       </div>
 
       <ion-list class="ranking-list">
         <ion-item *ngFor="let player of ranking; let position = index" lines="none" class="ranking-row" [routerLink]="seasonId ? ['/saisons', seasonId, 'operation', 'amendes'] : null" [queryParams]="{ joueur: player.playerId }">
-            <div class="rank-number" [class.top-rank]="position < 3">{{ position + 1 }}</div>
-            <ion-label>
-              <div class="player-heading">
-                <h3>{{ player.name }}{{ player.uid }}</h3>
-                <strong>{{ player.finesTotal | currency:'EUR':'symbol':'1.0-0' }}</strong>
-              </div>
-              <div class="share-track" role="progressbar" [attr.aria-valuenow]="finesShare(player)" aria-valuemin="0" aria-valuemax="100" [attr.aria-label]="'Part des amendes de ' + player.name">
-                <span [style.width.%]="finesShare(player)"></span>
-              </div>
-              <div class="player-meta">
-                <span>{{ finesShare(player) | number:'1.0-0' }} % de la caisse</span>
-              </div>
-            </ion-label>
+          <span class="rank-number" [class.top-rank]="position < 3" [class.first-rank]="position === 0">
+            <ion-icon *ngIf="position < 3" [name]="position === 0 ? 'trophy-outline' : 'medal-outline'" aria-hidden="true"></ion-icon>
+            <span *ngIf="position >= 3">{{ position + 1 }}</span>
+          </span>
+          <ion-label>
+            <div class="player-heading">
+              <h3>{{ player.name || player.playerId }}</h3>
+              <strong>{{ player.finesTotal | currency:'EUR':'symbol':'1.0-0' }}</strong>
+            </div>
+            <div class="share-track" role="progressbar" [attr.aria-valuenow]="finesShare(player)" aria-valuemin="0" aria-valuemax="100" [attr.aria-label]="'Part des amendes de ' + (player.name || player.playerId)">
+              <span [style.width.%]="finesShare(player)"></span>
+            </div>
+            <div class="player-meta">
+              <span>{{ finesShare(player) | number:'1.0-0' }} % du total</span>
+            </div>
+          </ion-label>
         </ion-item>
       </ion-list>
     </section>
@@ -44,9 +46,9 @@
     <div class="empty-state" *ngIf="!loading && !ranking.length">
       <ion-icon name="podium-outline" aria-hidden="true"></ion-icon>
       <h2>Pas encore de classement</h2>
-      <p>Les amendes apparaîtront ici dès leur création.</p>
+      <p>Le classement apparaîtra dès la première amende.</p>
     </div>
-  </div>
+  </main>
 
   <ion-list *ngIf="loading" class="list-skeleton" aria-label="Chargement du classement">
     <ion-item *ngFor="let item of [1, 2, 3, 4, 5]">
@@ -56,5 +58,4 @@
       </ion-label>
     </ion-item>
   </ion-list>
-  <section style="height: 150px;"></section>
 </ion-content>

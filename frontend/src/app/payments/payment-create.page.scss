@@ -32,5 +32,9 @@ ion-text p {
   object-fit: cover;
 }
 ion-list, form {
-  background : none
+  background: transparent;
+}
+
+.payment-amount-card strong {
+  color: #247145;
 }

@@ -36,12 +36,12 @@ export class RulesPage implements OnInit {
   }
 
   disableRule(rule: any) {
-    this.api.updateRule(rule.id, { label: rule.label, cost: Number(rule.cost), matchDay: !!rule.matchDay, active: false }, this.seasonId)
+    this.api.updateRule(rule.id, { label: rule.label, cost: Number(rule.cost), icon: rule.icon, matchDay: !!rule.matchDay, active: false }, this.seasonId)
       .subscribe(() => rule.active = false);
   }
 
   enableRule(rule: any) {
-    this.api.updateRule(rule.id, { label: rule.label, cost: Number(rule.cost), matchDay: !!rule.matchDay, active: true }, this.seasonId)
+    this.api.updateRule(rule.id, { label: rule.label, cost: Number(rule.cost), icon: rule.icon, matchDay: !!rule.matchDay, active: true }, this.seasonId)
       .subscribe(() => rule.active = true);
   }
 

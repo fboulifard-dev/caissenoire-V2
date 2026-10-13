@@ -1,48 +1,21 @@
-/* Styles for fines page */
-
-.date-group-title {
-	margin: 16px 0 8px;
-	padding: 8px 12px 0 12px;
-	position: sticky;
-	top: 0;
-	z-index: 5;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	gap: 12px;
-	font-size: 0.8rem;
-	font-weight: 600;
-	color: var(--ion-color-primary);
-	background-color : var(--background-color-app)
+.fine-overview > strong {
+  color: #a74436;
 }
 
-.date-group ion-list {
-	margin-top: 0;
-
+.fine-row-icon {
+  background: #fff0ec;
+  color: #b84d3e;
 }
 
-.content-list {
-	padding: 0;
+.fine-row-amount strong {
+  color: #a74436;
 }
 
-.list-card {
-	margin: 6px 12px;
-	background: #ffffff;
-
+.fine-row-amount {
+  align-items: center;
 }
 
-ion-card, ion-card-content, ion-list, ion-item, ion-item-sliding {
-	background: #ffffff !important;
-	--background: #ffffff !important;
-}
-
-.fine-amount {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 4px;
-}
-
-.fine-amount ion-icon {
-	font-size: 1.25rem;
+.fine-row-amount ion-icon {
+  color: #69766f;
+  font-size: 1rem;
 }
