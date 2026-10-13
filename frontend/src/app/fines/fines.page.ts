@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
-import { catchError, forkJoin, of } from 'rxjs';
+import { catchError, forkJoin, of, Subscription } from 'rxjs';
 import { ApiService } from '../services/api.service';
 
 @Component({
@@ -10,7 +10,7 @@ import { ApiService } from '../services/api.service';
   styleUrls: ['./fines.page.scss'],
   standalone: false,
 })
-export class FinesPage implements OnInit {
+export class FinesPage implements OnInit, OnDestroy {
   fines: any[] = [];
   fineGroups: { date: string; label: string; total: number; items: any[] }[] = [];
   loading = true;
@@ -20,6 +20,9 @@ export class FinesPage implements OnInit {
   seasonYear = '';
   readOnly = false;
   ruleIcons: Record<string, string> = {};
+  private isActive = false;
+  private querySubscription?: Subscription;
+  private dataSubscription?: Subscription;
 
   get totalFineAmount(): number {
     return this.fines.reduce((total, fine) => total + this.parseAmount(fine.amount), 0);
@@ -35,21 +38,50 @@ export class FinesPage implements OnInit {
   ngOnInit() {
     this.ensureSeasonUrl();
     this.playerId = this.route.snapshot.queryParamMap.get('joueur') || '';
+    this.querySubscription = this.route.queryParamMap.subscribe(params => {
+      const playerId = params.get('joueur') || '';
+      if (playerId === this.playerId) return;
+
+      this.playerId = playerId;
+      if (this.isActive) this.loadFines();
+    });
   }
 
   ionViewWillEnter() {
+    this.isActive = true;
+    this.ensureSeasonUrl();
+    this.playerId = this.route.snapshot.queryParamMap.get('joueur') || '';
+    this.loadFines();
+  }
+
+  ionViewWillLeave() {
+    this.isActive = false;
+  }
+
+  ngOnDestroy() {
+    this.querySubscription?.unsubscribe();
+    this.dataSubscription?.unsubscribe();
+  }
+
+  private loadFines() {
     this.loading = true;
-    forkJoin({
+    this.dataSubscription?.unsubscribe();
+    this.dataSubscription = forkJoin({
       fines: this.api.getSeasonFines(this.seasonId, this.playerId || undefined),
-      rules: this.api.getSeasonRules(this.seasonId).pipe(catchError(() => of([])))
+      rules: this.api.getSeasonRules(this.seasonId).pipe(catchError(() => of([]))),
+      players: this.playerId ? this.api.getSeasonPlayers(this.seasonId).pipe(catchError(() => of([]))) : of([])
     }).subscribe({
-      next: ({ fines, rules }: any) => {
+      next: ({ fines, rules, players }: any) => {
         this.ruleIcons = {};
         (rules || []).forEach((rule: any) => {
           if (rule.id && typeof rule.icon === 'string') {
             this.ruleIcons[rule.id] = rule.icon;
           }
         });
+        const player = (players || []).find((item: any) => item.id === this.playerId);
+        this.playerName = player
+          ? `${player.firstName || ''} ${player.lastName || ''}`.trim() || player.name || player.email || ''
+          : '';
         this.fines = fines || [];
         this.fineGroups = this.groupByCreationDate(this.fines);
         this.loading = false;

@@ -92,6 +92,10 @@ export class FineCreatePage {
     return this.rules.find((rule: any) => rule.id === this.fine.ruleId) || null;
   }
 
+  get selectedRuleIcon(): string {
+    return this.getSelectedRule()?.icon || 'alert-circle-outline';
+  }
+
   onRuleChanged() {
     const selectedRule = this.getSelectedRule();
     const baseCost = Number(selectedRule?.cost ?? 0) || 0;

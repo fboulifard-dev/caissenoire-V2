@@ -1,10 +1,3 @@
-.dashboard-header ion-toolbar {
-  --background: var(--background-color-app);
-  --min-height: 68px;
-  --padding-start: 20px;
-  --padding-end: 16px;
-}
-
 .dashboard-header ion-title {
   display: grid;
   gap: 2px;
@@ -25,14 +18,10 @@
   font-weight: 700;
 }
 
-.dashboard-content {
-  --background: var(--background-color-app);
-}
-
 .dashboard-shell {
   width: min(100%, 560px);
   margin: 0 auto;
-  padding: 14px 18px 30px;
+  padding: 14px 18px calc(116px + env(safe-area-inset-bottom));
 }
 
 .welcome-line {
@@ -82,11 +71,7 @@
 }
 
 .fine-feature {
-  background: #98443a;
-}
-
-.fine-feature .balance-heading .section-kicker {
-  color: #f4d9d5;
+  background: #173f2d;
 }
 
 .fine-feature .balance-amount {
@@ -94,14 +79,6 @@
   font-size: 3.1rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-}
-
-.fine-feature .balance-footer > span {
-  color: #f4d9d5;
-}
-
-.fine-feature .balance-footer ion-button {
-  --color: #fff;
 }
 
 .balance-heading,
@@ -140,20 +117,6 @@
   --padding-end: 8px;
   margin: 0 -8px 0 0;
   font-size: 0.82rem;
-}
-
-.balance-credit {
-  background: #e5f2e8;
-  color: #174d32;
-}
-
-.balance-credit .section-kicker,
-.balance-credit .balance-footer > span {
-  color: #426b52;
-}
-
-.balance-credit .balance-footer ion-button {
-  --color: #174d32;
 }
 
 .metric-grid {
@@ -197,17 +160,12 @@
 
 .balance-iban-button {
   position: absolute;
-  top: 4px;
+  bottom: 4px;
   right: 4px;
   --color: #567361;
   --padding-start: 8px;
   --padding-end: 8px;
   margin: 0;
-}
-
-.balance-credit-tile .metric-icon {
-  background: #e7f3e9;
-  color: #287348;
 }
 
 .metric-label {
