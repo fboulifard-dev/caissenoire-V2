@@ -19,13 +19,21 @@ export class FinesPage implements OnInit, OnDestroy {
   playerName = '';
   seasonYear = '';
   readOnly = false;
+  rules: any[] = [];
+  selectedRuleId = '';
   ruleIcons: Record<string, string> = {};
   private isActive = false;
   private querySubscription?: Subscription;
   private dataSubscription?: Subscription;
 
   get totalFineAmount(): number {
-    return this.fines.reduce((total, fine) => total + this.parseAmount(fine.amount), 0);
+    return this.filteredFines.reduce((total, fine) => total + this.parseAmount(fine.amount), 0);
+  }
+
+  get filteredFines(): any[] {
+    return this.selectedRuleId
+      ? this.fines.filter(fine => fine.ruleId === this.selectedRuleId)
+      : this.fines;
   }
 
   constructor(
@@ -72,8 +80,9 @@ export class FinesPage implements OnInit, OnDestroy {
       players: this.playerId ? this.api.getSeasonPlayers(this.seasonId).pipe(catchError(() => of([]))) : of([])
     }).subscribe({
       next: ({ fines, rules, players }: any) => {
+        this.rules = rules || [];
         this.ruleIcons = {};
-        (rules || []).forEach((rule: any) => {
+        this.rules.forEach((rule: any) => {
           if (rule.id && typeof rule.icon === 'string') {
             this.ruleIcons[rule.id] = rule.icon;
           }
@@ -83,7 +92,7 @@ export class FinesPage implements OnInit, OnDestroy {
           ? `${player.firstName || ''} ${player.lastName || ''}`.trim() || player.name || player.email || ''
           : '';
         this.fines = fines || [];
-        this.fineGroups = this.groupByCreationDate(this.fines);
+        this.fineGroups = this.groupByCreationDate(this.filteredFines);
         this.loading = false;
       },
       error: () => (this.loading = false)
@@ -92,6 +101,10 @@ export class FinesPage implements OnInit, OnDestroy {
 
   getRuleIcon(ruleId: string | undefined): string {
     return ruleId ? this.ruleIcons[ruleId] || 'help-circle-outline' : 'help-circle-outline';
+  }
+
+  onRuleFilterChanged() {
+    this.fineGroups = this.groupByCreationDate(this.filteredFines);
   }
 
   private ensureSeasonUrl() {
@@ -119,7 +132,7 @@ export class FinesPage implements OnInit, OnDestroy {
             this.api.deleteFine(this.seasonId, fine.id).subscribe({
               next: () => {
                 this.fines = this.fines.filter(item => item.id !== fine.id);
-                this.fineGroups = this.groupByCreationDate(this.fines);
+                this.fineGroups = this.groupByCreationDate(this.filteredFines);
               }
             });
           }
