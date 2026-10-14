@@ -197,11 +197,11 @@ export class ApiService {
     );
   }
 
-  registerDeviceToken(seasonId: string, token: string) {
+  registerDeviceToken(token: string) {
     return this.getHeadersWithToken().pipe(
       switchMap((headers) => this.http.post(
         `${environment.apiUrl}/api/seasons/notification-token`,
-        { seasonId, token },
+        { token },
         { headers }
       ))
     );
