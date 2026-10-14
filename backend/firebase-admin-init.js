@@ -7,20 +7,34 @@ const defaultStorageBuckets = {
   'asptt-nantes-hb': 'asptt-nantes-hb.appspot.com'
 };
 
+function getFirebaseConfig() {
+  try {
+    return process.env.FIREBASE_CONFIG ? JSON.parse(process.env.FIREBASE_CONFIG) : {};
+  } catch {
+    return {};
+  }
+}
+
 function firebaseOptions(projectId, credential) {
-  const storageBucket = process.env.FIREBASE_STORAGE_BUCKET || defaultStorageBuckets[projectId];
+  const firebaseConfig = getFirebaseConfig();
+  const resolvedProjectId = projectId || firebaseConfig.projectId;
+  const storageBucket = process.env.FIREBASE_STORAGE_BUCKET
+    || firebaseConfig.storageBucket
+    || defaultStorageBuckets[resolvedProjectId];
   return {
     ...(credential ? { credential } : {}),
-    ...(projectId ? { projectId } : {}),
+    ...(resolvedProjectId ? { projectId: resolvedProjectId } : {}),
     ...(storageBucket ? { storageBucket } : {})
   };
 }
 
 function initFirebase() {
   if (!admin.apps.length) {
+    const firebaseConfig = getFirebaseConfig();
     const projectId = process.env.FIREBASE_PROJECT_ID
       || process.env.GOOGLE_CLOUD_PROJECT
-      || process.env.GCLOUD_PROJECT;
+      || process.env.GCLOUD_PROJECT
+      || firebaseConfig.projectId;
     const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
     const privateKey = process.env.FIREBASE_PRIVATE_KEY;
 
@@ -56,7 +70,11 @@ function getDb() {
 
 function getStorageBucket() {
   if (!admin.apps.length) throw new Error('Firebase not initialized');
-  const bucketName = admin.app().options.storageBucket;
+  const app = admin.app();
+  const bucketName = app.options.storageBucket
+    || process.env.FIREBASE_STORAGE_BUCKET
+    || getFirebaseConfig().storageBucket
+    || defaultStorageBuckets[app.options.projectId];
   if (!bucketName) throw new Error('FIREBASE_STORAGE_BUCKET is not configured');
   return admin.storage().bucket(bucketName);
 }
