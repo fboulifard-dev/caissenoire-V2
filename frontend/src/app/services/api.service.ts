@@ -159,7 +159,7 @@ export class ApiService {
     ruleId: string;
     amount?: number;
     comment?: string;
-    photo?: string;
+    photo?: string | null;
     matchDay?: boolean;
   }) {
     return this.getHeadersWithToken().pipe(
@@ -183,7 +183,7 @@ export class ApiService {
     ruleId: string;
     amount?: number;
     comment?: string;
-    photo?: string;
+    photo?: string | null;
     matchDay?: boolean;
   }) {
     return this.getHeadersWithToken().pipe(
