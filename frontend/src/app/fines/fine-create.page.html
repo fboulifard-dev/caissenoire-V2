@@ -1,19 +1,17 @@
-<ion-header>
-  <ion-toolbar color="primary">
-    <ion-buttons slot="start">
-      <ion-back-button [defaultHref]="seasonId ? '/saisons/' + seasonId + '/amendes' : '/saisons'"></ion-back-button>
-    </ion-buttons>
-    <ion-title>{{ editing ? 'Modifier l’amende' : 'Nouvelle amende' }}</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content class="operation-form-content">
+  <main class="operation-form-shell">
+    <header class="operation-form-heading">
+      <h1>{{ editing ? 'Modifier l’amende' : 'Nouvelle amende' }}</h1>
+    </header>
 
-<ion-content class="ion-padding">
-  <form #fineForm="ngForm" (ngSubmit)="submit()">
-    <ion-list>
+    <form #fineForm="ngForm" (ngSubmit)="submit()">
+      <h2 class="operation-section-title">Informations</h2>
+      <ion-list class="operation-fields">
       <ion-item>
         <ion-icon name="calendar-outline" slot="start"></ion-icon>
         <ion-input
           type="date"
+          label="Date"
           labelPlacement="stacked"
           name="date"
           [(ngModel)]="fine.date"
@@ -52,8 +50,9 @@
       </ion-item>
 
       <ion-item>
-        <ion-icon name="alert-circle-outline" slot="start"></ion-icon>
+        <ion-icon [name]="selectedRuleIcon" slot="start" aria-hidden="true"></ion-icon>
         <ion-select
+          label="Règle"
           labelPlacement="stacked"
           name="ruleId"
           [(ngModel)]="fine.ruleId"
@@ -71,6 +70,7 @@
         <ion-icon name="cash-outline" slot="start"></ion-icon>
         <ion-input
           type="number"
+          label="Montant"
           labelPlacement="stacked"
           name="amount"
           [(ngModel)]="fine.amount"
@@ -82,7 +82,7 @@
       </ion-item>
 
       <ion-item>
-        <ion-icon name="football-outline" slot="start"></ion-icon>
+        <ion-icon name="football-outline" slot="start" aria-hidden="true"></ion-icon>
         <ion-toggle
           slot="end"
           [(ngModel)]="fine.matchDay"
@@ -93,6 +93,7 @@
         <ion-label slot="start">Jour de match</ion-label>
       </ion-item>
 
+      <h2 class="operation-section-title media-section-title">Compléments</h2>
       <ion-item>
         <ion-textarea
           label="Commentaire"
@@ -102,37 +103,48 @@
         </ion-textarea>
       </ion-item>
 
-      <ion-item lines="none" class="image-picker">
+      <ion-item lines="none" class="image-picker operation-photo-picker">
         <ion-label>
           <strong>Photo</strong>
-          <p>Ajoutez une image de l’amende (facultatif).</p>
+          <p>JPG, PNG ou WebP · 5 Mo maximum</p>
         </ion-label>
         <input
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/png,image/webp"
           (change)="onImageSelected($event)" />
       </ion-item>
 
-      <ion-thumbnail *ngIf="fine.photo" class="image-preview">
-        <img [src]="fine.photo" alt="Aperçu de l’amende" />
+      <ion-thumbnail *ngIf="photoPreviewUrl || fine.photo" class="image-preview">
+        <img [src]="photoPreviewUrl || fine.photo" alt="Aperçu de l’amende" />
       </ion-thumbnail>
     </ion-list>
 
-    <ion-text color="danger" *ngIf="imageError">
+    <ion-text color="danger" *ngIf="imageError" role="alert">
       <p>{{ imageError }}</p>
     </ion-text>
 
-    <ion-text color="danger" *ngIf="error">
+    <ion-text color="danger" *ngIf="error" role="alert">
       <p>{{ error }}</p>
     </ion-text>
 
-    <ion-button
-      expand="block"
-      type="submit"
-      [disabled]="fineForm.invalid || saving">
-      <ion-spinner *ngIf="saving" name="crescent"></ion-spinner>
-      <span *ngIf="!saving">{{ editing ? 'Modifier' : 'Créer' }}</span>
-    </ion-button>
-  </form>
-  <section style="height: 150px;"></section>
+    <div class="operation-actions">
+      <ion-button
+        class="operation-cancel"
+        fill="outline"
+        type="button"
+        [routerLink]="['/saisons', seasonId, 'operation', 'amendes']"
+        [disabled]="saving">
+        Annuler
+      </ion-button>
+      <ion-button
+        class="operation-submit"
+        expand="block"
+        type="submit"
+        [disabled]="fineForm.invalid || saving">
+        <ion-spinner *ngIf="saving" name="crescent"></ion-spinner>
+        <span *ngIf="!saving">{{ editing ? 'Enregistrer les modifications' : 'Enregistrer l’amende' }}</span>
+      </ion-button>
+    </div>
+    </form>
+  </main>
 </ion-content>

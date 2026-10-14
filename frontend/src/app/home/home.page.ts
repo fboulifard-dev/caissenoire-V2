@@ -1,13 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NavController, ToastController } from '@ionic/angular';
-import { forkJoin } from 'rxjs';
+import { catchError, forkJoin, of } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { ApiService } from '../services/api.service';
 
 interface RecentActivity {
   id: string;
   kind: 'payment' | 'fine';
+  icon: string;
   title: string;
   playerName: string;
   amount: number;
@@ -171,14 +172,21 @@ export class HomePage implements OnInit {
     this.activityLoading = true;
     forkJoin({
       payments: this.api.getSeasonPayments(seasonId, playerId),
-      fines: this.api.getSeasonFines(seasonId, playerId)
+      fines: this.api.getSeasonFines(seasonId, playerId),
+      rules: this.api.getSeasonRules(seasonId).pipe(catchError(() => of([])))
     }).subscribe({
-      next: ({ payments, fines }) => {
+      next: ({ payments, fines, rules }: any) => {
+        const ruleIcons = new Map<string, string>();
+        (rules || []).forEach((rule: any) => {
+          if (rule.id && typeof rule.icon === 'string') {
+            ruleIcons.set(rule.id, rule.icon);
+          }
+        });
         const paymentActivities = (Array.isArray(payments) ? payments : []).map((payment: any) =>
           this.toRecentActivity(payment, 'payment')
         );
         const fineActivities = (Array.isArray(fines) ? fines : []).map((fine: any) =>
-          this.toRecentActivity(fine, 'fine')
+          this.toRecentActivity(fine, 'fine', ruleIcons.get(fine.ruleId))
         );
 
         this.recentActivities = [...paymentActivities, ...fineActivities]
@@ -201,7 +209,7 @@ export class HomePage implements OnInit {
     return this.summaryView === 'connected' ? this.connectedPlayerId : this.selectedPlayerId;
   }
 
-  private toRecentActivity(item: any, kind: RecentActivity['kind']): RecentActivity {
+  private toRecentActivity(item: any, kind: RecentActivity['kind'], ruleIcon?: string): RecentActivity {
     const playerName = item.playerName
       || `${item.playerFirstName || ''} ${item.playerLastName || ''}`.trim()
       || (item.playerId ? this.playerName(item.playerId) : 'Saison');
@@ -209,6 +217,7 @@ export class HomePage implements OnInit {
     return {
       id: item.id,
       kind,
+      icon: kind === 'fine' ? ruleIcon || 'help-circle-outline' : 'cash-outline',
       title: kind === 'fine' ? item.ruleLabel || 'Amende' : 'Paiement reçu',
       playerName,
       amount: this.parseAmount(item.amount),

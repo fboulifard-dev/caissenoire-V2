@@ -11,7 +11,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="dashboard-content">
+<ion-content>
   <main class="dashboard-shell">
     <section class="welcome-line">
       <div>
@@ -77,12 +77,12 @@
         <strong *ngIf="!summaryLoading">{{ summaryView === 'common' ? formatPaymentTotal() : formatPlayerPaymentTotal() }}</strong>
         <small>{{ summaryView === 'common' ? paymentCount : playerPaymentCount }} opérations</small>
       </a>
-      <div class="metric-tile balance-tile" [class.balance-credit-tile]="currentAmountDue < 0">
+      <div class="metric-tile balance-tile">
         <span class="metric-icon"><ion-icon name="wallet-outline" aria-hidden="true"></ion-icon></span>
         <span class="metric-label">{{ currentAmountDue > 0 ? 'Reste à payer' : currentAmountDue < 0 ? 'En votre faveur' : 'Solde' }}</span>
         <ion-spinner *ngIf="summaryLoading" name="crescent"></ion-spinner>
         <strong *ngIf="!summaryLoading">{{ formatCurrentAmountDue() }}</strong>
-        <small>{{ currentAmountDue > 0 ? 'À régler' : currentAmountDue < 0 ? 'Crédit disponible' : 'À jour' }}</small>
+        <small>IBAN</small>
         <ion-button class="balance-iban-button" fill="clear" (click)="copyIban()" [disabled]="!iban" aria-label="Copier l’IBAN" title="Copier l’IBAN">
           <ion-icon name="copy-outline" slot="icon-only" aria-hidden="true"></ion-icon>
         </ion-button>
@@ -111,7 +111,7 @@
       <div *ngIf="!activityLoading && recentActivities.length" class="activity-list">
         <article *ngFor="let activity of recentActivities" class="activity-row" [class.fine-activity]="activity.kind === 'fine'">
           <span class="activity-icon">
-            <ion-icon [name]="activity.kind === 'fine' ? 'alert-circle-outline' : 'arrow-down-circle-outline'" aria-hidden="true"></ion-icon>
+            <ion-icon [name]="activity.icon" aria-hidden="true"></ion-icon>
           </span>
           <div class="activity-copy">
             <strong>{{ activity.title }}</strong>

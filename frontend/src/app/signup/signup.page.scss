@@ -1,32 +1,31 @@
-.back-to-login {
-  --color: var(--ion-color-primary);
-  text-transform: none;
-}
-
 .field-error {
-  margin: -4px 8px 12px;
-  color: var(--ion-color-danger);
+  margin: -3px 4px 10px;
+  color: #b4473b;
   font-size: 0.85rem;
+  line-height: 1.35;
 }
 
 .password-requirements {
   display: grid;
-  gap: 4px;
-  margin: 0 8px 16px;
-  color: var(--ion-color-medium);
-  font-size: 0.85rem;
+  gap: 5px;
+  margin: -2px 4px 12px;
+  padding: 11px 12px;
+  border-radius: 8px;
+  background: #edf2ed;
+  color: #69766f;
+  font-size: 0.78rem;
 }
 
 .password-requirements p {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   margin: 0;
 }
 
 .password-requirements ion-icon {
   flex: 0 0 auto;
-  font-size: 1rem;
+  font-size: 0.95rem;
 }
 
 .password-requirements .met {

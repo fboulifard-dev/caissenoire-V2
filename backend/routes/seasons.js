@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { getDb } = require('../firebase-admin-init');
+const { randomUUID } = require('crypto');
+const admin = require('firebase-admin');
+const { getDb, getStorageBucket } = require('../firebase-admin-init');
 const { verifyToken } = require('../middleware/auth');
 const { getActiveSeason, requireSeason, requireAdmin } = require('../middleware/season');
 const { notifyPlayer } = require('../services/notifications');
@@ -368,6 +370,46 @@ router.get('/:seasonId/fines', requireSeason, async (req, res) => {
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+const parseFinePhoto = express.raw({ type: 'image/*', limit: '5mb' });
+
+router.post('/:seasonId/fines/photo', requireSeason, requireAdmin, (req, res, next) => {
+  parseFinePhoto(req, res, error => {
+    if (error) {
+      const statusCode = error.status === 413 ? 413 : 400;
+      return res.status(statusCode).json({
+        error: statusCode === 413 ? 'Photo limit is 5 MB' : 'Invalid photo upload'
+      });
+    }
+    if (!Buffer.isBuffer(req.body) || req.body.length === 0) {
+      return res.status(400).json({ error: 'A photo is required' });
+    }
+    if (req.get('content-type')?.split(';')[0] !== 'image/jpeg') {
+      return res.status(415).json({ error: 'Only JPEG photos are accepted' });
+    }
+    next();
+  });
+}, async (req, res) => {
+  try {
+    const bucket = getStorageBucket();
+    const objectPath = `seasons/${req.season.id}/fine-photos/${req.user.uid}/${randomUUID()}.jpg`;
+    const downloadToken = randomUUID();
+    await bucket.file(objectPath).save(req.body, {
+      resumable: false,
+      metadata: {
+        contentType: 'image/jpeg',
+        cacheControl: 'private, max-age=3600',
+        metadata: { firebaseStorageDownloadTokens: downloadToken }
+      }
+    });
+
+    const photoUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(objectPath)}?alt=media&token=${downloadToken}`;
+    res.status(201).json({ photo: photoUrl });
+  } catch (err) {
+    console.error('Fine photo upload failed:', err.message);
+    res.status(500).json({ error: 'Impossible d’enregistrer la photo.' });
   }
 });
 

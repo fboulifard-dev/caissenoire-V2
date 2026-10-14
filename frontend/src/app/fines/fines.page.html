@@ -1,24 +1,10 @@
-<ion-header class="ledger-header">
-  <ion-toolbar color="primary">
-    <ion-buttons slot="start">
-      <ion-back-button [defaultHref]="seasonId ? '/saisons/' + seasonId : '/saisons'"></ion-back-button>
-    </ion-buttons>
-    <ion-title>{{ seasonYear || 'Amendes' }}</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content class="ledger-content">
   <main class="ledger-shell">
-    <ion-item *ngIf="playerName" class="ledger-player-filter" lines="none">
-      <ion-icon name="person-outline" slot="start" aria-hidden="true"></ion-icon>
-      <ion-label>{{ playerName }}</ion-label>
-    </ion-item>
-
     <section *ngIf="!loading" class="ledger-overview fine-overview">
       <div>
-        <span class="ledger-eyebrow">TOTAL ATTRIBUÉ</span>
-        <h1>Amendes</h1>
-        <p>{{ fines.length }} amende{{ fines.length === 1 ? '' : 's' }} sur la saison</p>
+        <span class="ledger-eyebrow">{{ playerId ? 'AMENDES DU JOUEUR' : 'TOTAL ATTRIBUÉ' }}</span>
+        <h1>{{ playerId ? (playerName || 'Joueur') : 'Amendes' }}</h1>
+        <p>{{ fines.length }} amende{{ fines.length === 1 ? '' : 's' }} {{ playerId ? 'pour ce joueur' : 'sur la saison' }}</p>
       </div>
       <strong>{{ formatCurrency(totalFineAmount) }}</strong>
     </section>
@@ -40,12 +26,18 @@
               </span>
               <ion-label class="ledger-row-copy">
                 <h2>{{ f.ruleLabel || 'Amende' }}</h2>
-                <p>{{ playerDisplayName(f) }}</p>
+                <p *ngIf="!playerId">{{ playerDisplayName(f) }}</p>
                 <p *ngIf="f.comment" class="ledger-comment">{{ f.comment }}</p>
               </ion-label>
-              <ion-thumbnail slot="end" *ngIf="f.photo" class="ledger-photo">
-                <img [src]="f.photo" alt="Justificatif de l’amende" />
-              </ion-thumbnail>
+              <button
+                *ngIf="f.photo"
+                type="button"
+                slot="end"
+                class="fine-photo-trigger"
+                (click)="openFinePhoto(f.photo)"
+                aria-label="Agrandir le justificatif de l’amende">
+                <img [src]="f.photo" alt="" />
+              </button>
               <ion-note slot="end" class="ledger-amount fine-row-amount">
                 <ion-icon *ngIf="f.matchDay" name="football-outline" aria-label="Jour de match"></ion-icon>
                 <strong>{{ (f.amount || 0) | currency:'EUR':'symbol':'1.0-0' }}</strong>
@@ -89,3 +81,21 @@
     </ion-fab-button>
   </ion-fab>
 </ion-content>
+
+<ion-modal class="fine-photo-modal" [isOpen]="isFinePhotoOpen" (didDismiss)="closeFinePhoto()" aria-label="Photo du justificatif">
+  <ng-template>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Justificatif</ion-title>
+        <ion-buttons slot="end">
+          <ion-button fill="clear" (click)="closeFinePhoto()" aria-label="Fermer la photo">
+            <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="fine-photo-viewer">
+      <img [src]="selectedFinePhoto" alt="Photo du justificatif de l’amende" />
+    </ion-content>
+  </ng-template>
+</ion-modal>

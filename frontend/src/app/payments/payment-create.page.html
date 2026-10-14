@@ -1,19 +1,17 @@
-<ion-header>
-  <ion-toolbar color="primary">
-    <ion-buttons slot="start">
-      <ion-back-button [defaultHref]="seasonId ? '/saisons/' + seasonId + '/paiements' : '/saisons'"></ion-back-button>
-    </ion-buttons>
-    <ion-title>{{ editing ? 'Modifier le paiement' : 'Nouveau paiement' }}</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content class="operation-form-content">
+  <main class="operation-form-shell">
+    <header class="operation-form-heading">
+      <h1>{{ editing ? 'Modifier le paiement' : 'Nouveau paiement' }}</h1>
+    </header>
 
-<ion-content class="ion-padding">
-  <form #paymentForm="ngForm" (ngSubmit)="submit()">
-    <ion-list>
+    <form #paymentForm="ngForm" (ngSubmit)="submit()">
+      <h2 class="operation-section-title">Informations</h2>
+      <ion-list class="operation-fields">
       <ion-item>
         <ion-icon name="calendar-outline" slot="start"></ion-icon>
         <ion-input
           type="date"
+          label="Date"
           labelPlacement="stacked"
           name="date"
           [(ngModel)]="payment.date"
@@ -27,6 +25,7 @@
         <ion-input
           type="text"
           inputmode="decimal"
+          label="Montant"
           labelPlacement="stacked"
           name="amount"
           min="0"
@@ -40,6 +39,7 @@
       <ion-item>
         <ion-icon name="person-outline" slot="start"></ion-icon>
         <ion-select
+          label="Joueur"
           labelPlacement="stacked"
           name="playerId"
           [(ngModel)]="payment.playerId"
@@ -61,19 +61,30 @@
         </ion-textarea>
       </ion-item>
 
-    </ion-list>
+      </ion-list>
 
-    <ion-text color="danger" *ngIf="error">
+    <ion-text color="danger" *ngIf="error" role="alert">
       <p>{{ error }}</p>
     </ion-text>
 
-    <ion-button
-      expand="block"
-      type="submit"
-      [disabled]="paymentForm.invalid || saving">
-      <ion-spinner *ngIf="saving" name="crescent"></ion-spinner>
-      <span *ngIf="!saving">{{ editing ? 'Modifier' : 'Créer' }}</span>
-    </ion-button>
-  </form>
-  <section style="height: 150px;"></section>
+    <div class="operation-actions">
+      <ion-button
+        class="operation-cancel"
+        fill="outline"
+        type="button"
+        [routerLink]="['/saisons', seasonId, 'operation', 'paiements']"
+        [disabled]="saving">
+        Annuler
+      </ion-button>
+      <ion-button
+        class="operation-submit"
+        expand="block"
+        type="submit"
+        [disabled]="paymentForm.invalid || saving">
+        <ion-spinner *ngIf="saving" name="crescent"></ion-spinner>
+        <span *ngIf="!saving">{{ editing ? 'Enregistrer les modifications' : 'Enregistrer le paiement' }}</span>
+      </ion-button>
+    </div>
+    </form>
+  </main>
 </ion-content>

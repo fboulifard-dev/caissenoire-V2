@@ -1,19 +1,10 @@
-<ion-header class="ledger-header">
-  <ion-toolbar color="primary">
-    <ion-buttons slot="start">
-      <ion-back-button [defaultHref]="seasonId ? '/saisons/' + seasonId : '/saisons'"></ion-back-button>
-    </ion-buttons>
-    <ion-title>{{ seasonYear || 'Paiements' }}</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content class="ledger-content">
   <main class="ledger-shell">
     <section *ngIf="!loading" class="ledger-overview payment-overview">
       <div>
-        <span class="ledger-eyebrow">TOTAL ENCAISSÉ</span>
-        <h1>Paiements</h1>
-        <p>{{ payments.length }} paiement{{ payments.length === 1 ? '' : 's' }} sur la saison</p>
+        <span class="ledger-eyebrow">{{ playerId ? 'PAIEMENTS DU JOUEUR' : 'TOTAL ENCAISSÉ' }}</span>
+        <h1>{{ playerId ? (playerName || 'Joueur') : 'Paiements' }}</h1>
+        <p>{{ payments.length }} paiement{{ payments.length === 1 ? '' : 's' }} {{ playerId ? 'pour ce joueur' : 'sur la saison' }}</p>
       </div>
       <strong>{{ formatGroupTotal(totalPaymentAmount) }}</strong>
     </section>
@@ -34,7 +25,7 @@
                 <ion-icon name="arrow-down-circle-outline" aria-hidden="true"></ion-icon>
               </span>
               <ion-label class="ledger-row-copy">
-                <h2>{{ playerDisplayName(p) }}</h2>
+                <h2 *ngIf="!playerId">{{ playerDisplayName(p) }}</h2>
                 <p *ngIf="p.comment" class="ledger-comment">{{ p.comment }}</p>
               </ion-label>
               <ion-thumbnail slot="end" *ngIf="p.imageData" class="ledger-photo">
