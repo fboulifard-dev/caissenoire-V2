@@ -19,7 +19,7 @@ export class PaymentsPage implements OnInit, OnDestroy {
   seasonId = '';
   playerId = '';
   playerName = '';
-  readOnly = false;
+  isAdmin = false;
   seasonYear = '';
   private isActive = false;
   private querySubscription?: Subscription;
@@ -69,9 +69,13 @@ export class PaymentsPage implements OnInit, OnDestroy {
     this.dataSubscription?.unsubscribe();
     this.dataSubscription = forkJoin({
       payments: this.api.getSeasonPayments(this.seasonId, this.playerId || undefined),
-      players: this.playerId ? this.api.getSeasonPlayers(this.seasonId).pipe(catchError(() => of([]))) : of([])
+      players: this.playerId ? this.api.getSeasonPlayers(this.seasonId).pipe(catchError(() => of([]))) : of([]),
+      season: this.api.getSeason(this.seasonId).pipe(catchError(() => of(null)))
     }).subscribe({
-      next: ({ payments, players }: any) => {
+      next: ({ payments, players, season }: any) => {
+        this.isAdmin = Array.isArray(season?.player?.roles)
+          && season.player.roles.includes('ADMIN')
+          && season.readOnly !== true;
         const player = (players || []).find((item: any) => item.id === this.playerId);
         this.playerName = player
           ? `${player.firstName || ''} ${player.lastName || ''}`.trim() || player.name || player.email || ''

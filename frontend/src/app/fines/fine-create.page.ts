@@ -32,6 +32,7 @@ export class FineCreatePage implements OnDestroy {
   seasonId = '';
   fineId = '';
   editing = false;
+  isAdmin = false;
 
   constructor(
     private api: ApiService,
@@ -41,6 +42,13 @@ export class FineCreatePage implements OnDestroy {
     this.ensureSeasonUrl();
     this.fineId = this.route.snapshot.paramMap.get('fineId') || '';
     this.editing = Boolean(this.fineId);
+    this.api.getSeason(this.seasonId).subscribe({
+      next: (season: any) => {
+        this.isAdmin = Array.isArray(season?.player?.roles)
+          && season.player.roles.includes('ADMIN')
+          && season.readOnly !== true;
+      }
+    });
     this.loadSelectableData();
     if (this.editing) {
       this.loadFine();
@@ -130,7 +138,7 @@ export class FineCreatePage implements OnDestroy {
   }
 
   async submit() {
-    if (this.saving) {
+    if (this.saving || !this.isAdmin) {
       return;
     }
 

@@ -43,13 +43,13 @@
                 <strong>{{ (f.amount || 0) | currency:'EUR':'symbol':'1.0-0' }}</strong>
               </ion-note>
             </ion-item>
-            <ion-item-options side="start">
-              <ion-item-option color="danger" (click)="deleteFine(f)" [disabled]="readOnly" aria-label="Supprimer l’amende">
+            <ion-item-options *ngIf="isAdmin" side="start">
+              <ion-item-option color="danger" (click)="deleteFine(f)" aria-label="Supprimer l’amende">
                 <ion-icon name="trash-outline" slot="icon-only"></ion-icon>
               </ion-item-option>
             </ion-item-options>
-            <ion-item-options side="end">
-              <ion-item-option color="primary" (click)="editFine(f)" [disabled]="readOnly" aria-label="Modifier l’amende">
+            <ion-item-options *ngIf="isAdmin" side="end">
+              <ion-item-option color="primary" (click)="editFine(f)" aria-label="Modifier l’amende">
                 <ion-icon name="create-outline" slot="icon-only"></ion-icon>
               </ion-item-option>
             </ion-item-options>
@@ -76,7 +76,7 @@
   </main>
 
   <ion-fab slot="fixed" vertical="bottom" horizontal="center">
-    <ion-fab-button *ngIf="!readOnly" [routerLink]="seasonId ? ['/saisons', seasonId, 'operation', 'amendes', 'create'] : null" aria-label="Créer une amende">
+    <ion-fab-button *ngIf="isAdmin" [routerLink]="seasonId ? ['/saisons', seasonId, 'operation', 'amendes', 'create'] : null" aria-label="Créer une amende">
       <ion-icon name="add"></ion-icon>
     </ion-fab-button>
   </ion-fab>

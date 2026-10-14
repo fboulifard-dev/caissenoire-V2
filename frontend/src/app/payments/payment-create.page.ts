@@ -21,6 +21,7 @@ export class PaymentCreatePage {
   seasonId = '';
   paymentId = '';
   editing = false;
+  isAdmin = false;
 
   constructor(
     private api: ApiService,
@@ -30,6 +31,13 @@ export class PaymentCreatePage {
     this.ensureSeasonUrl();
     this.paymentId = this.route.snapshot.paramMap.get('paymentId') || '';
     this.editing = Boolean(this.paymentId);
+    this.api.getSeason(this.seasonId).subscribe({
+      next: (season: any) => {
+        this.isAdmin = Array.isArray(season?.player?.roles)
+          && season.player.roles.includes('ADMIN')
+          && season.readOnly !== true;
+      }
+    });
     this.api.getSeasonPlayers(this.seasonId).subscribe({
       next: (players: any) => (this.users = players || []),
       error: () => (this.error = 'Impossible de charger les joueurs.')
@@ -68,7 +76,7 @@ export class PaymentCreatePage {
   }
 
   submit() {
-    if (this.saving) {
+    if (this.saving || !this.isAdmin) {
       return;
     }
 

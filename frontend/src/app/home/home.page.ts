@@ -49,6 +49,9 @@ export class HomePage implements OnInit {
   players: any[] = [];
   summaryView: 'common' | 'connected' | 'selected' = 'common';
   iban = '';
+  readOnly = false;
+  isAdmin = false;
+
 
   constructor(
     private auth: AuthService,
@@ -122,6 +125,9 @@ export class HomePage implements OnInit {
         this.lastName = season.player?.lastName || this.lastName;
         this.userName = `${this.firstName} ${this.lastName}`.trim();
         this.iban = season.iban
+        this.isAdmin = Array.isArray(season.player?.roles)
+          && season.player.roles.includes('ADMIN')
+          && season.readOnly !== true;
         this.loadPlayers(season.id);
         this.loadPaymentSummary(season.id);
         this.loadRecentActivity(season.id);
@@ -217,7 +223,7 @@ export class HomePage implements OnInit {
     return {
       id: item.id,
       kind,
-      icon: kind === 'fine' ? ruleIcon || 'help-circle-outline' : 'cash-outline',
+      icon: kind === 'fine' ? ruleIcon || 'help-circle-outline' : 'arrow-down-circle-outline',
       title: kind === 'fine' ? item.ruleLabel || 'Amende' : 'Paiement reçu',
       playerName,
       amount: this.parseAmount(item.amount),

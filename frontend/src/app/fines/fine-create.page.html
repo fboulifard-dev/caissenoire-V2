@@ -118,7 +118,7 @@
         <img [src]="photoPreviewUrl || fine.photo" alt="Aperçu de l’amende" />
       </ion-thumbnail>
       <ion-button
-        *ngIf="editing && (photoPreviewUrl || fine.photo)"
+        *ngIf="isAdmin && editing && (photoPreviewUrl || fine.photo)"
         class="remove-photo-button"
         fill="clear"
         color="danger"
@@ -148,6 +148,7 @@
         Annuler
       </ion-button>
       <ion-button
+        *ngIf="isAdmin"
         class="operation-submit"
         expand="block"
         type="submit"

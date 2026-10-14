@@ -125,4 +125,10 @@
     </section>
   </main>
 
+    <ion-fab slot="fixed" vertical="bottom" horizontal="center">
+    <ion-fab-button *ngIf="isAdmin" [routerLink]="seasonId ? ['/saisons', seasonId, 'operation', 'amendes', 'create'] : null" aria-label="Créer une amende">
+      <ion-icon name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
 </ion-content>

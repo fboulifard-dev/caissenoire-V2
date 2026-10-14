@@ -18,7 +18,7 @@ export class FinesPage implements OnInit, OnDestroy {
   playerId = '';
   playerName = '';
   seasonYear = '';
-  readOnly = false;
+  isAdmin = false;
   rules: any[] = [];
   selectedRuleId = '';
   ruleIcons: Record<string, string> = {};
@@ -79,9 +79,13 @@ export class FinesPage implements OnInit, OnDestroy {
     this.dataSubscription = forkJoin({
       fines: this.api.getSeasonFines(this.seasonId, this.playerId || undefined),
       rules: this.api.getSeasonRules(this.seasonId).pipe(catchError(() => of([]))),
-      players: this.playerId ? this.api.getSeasonPlayers(this.seasonId).pipe(catchError(() => of([]))) : of([])
+      players: this.playerId ? this.api.getSeasonPlayers(this.seasonId).pipe(catchError(() => of([]))) : of([]),
+      season: this.api.getSeason(this.seasonId).pipe(catchError(() => of(null)))
     }).subscribe({
-      next: ({ fines, rules, players }: any) => {
+      next: ({ fines, rules, players, season }: any) => {
+        this.isAdmin = Array.isArray(season?.player?.roles)
+          && season.player.roles.includes('ADMIN')
+          && season.readOnly !== true;
         this.rules = rules || [];
         this.ruleIcons = {};
         this.rules.forEach((rule: any) => {
