@@ -1,5 +1,38 @@
 const admin = require('firebase-admin');
-const { getDb } = require('../firebase-admin-init');
+const { getDb, getStorageBucket } = require('../firebase-admin-init');
+
+function getManagedPhoto(photoUrl, seasonId) {
+  if (typeof photoUrl !== 'string' || !photoUrl) return null;
+
+  try {
+    const bucket = getStorageBucket();
+    const url = new URL(photoUrl);
+    const objectPrefix = `/v0/b/${bucket.name}/o/`;
+    if (url.hostname !== 'firebasestorage.googleapis.com' || !url.pathname.startsWith(objectPrefix)) return null;
+
+    const objectPath = decodeURIComponent(url.pathname.slice(objectPrefix.length));
+    return objectPath.startsWith(`seasons/${seasonId}/fine-photos/`)
+      ? { bucket, objectPath }
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+async function deleteFinePhotoIfUnused(seasonId, photoUrl) {
+  const managedPhoto = getManagedPhoto(photoUrl, seasonId);
+  if (!managedPhoto) return;
+
+  const references = await getDb().collection('seasons').doc(seasonId)
+    .collection('fines').where('photo', '==', photoUrl).limit(1).get();
+  if (!references.empty) return;
+
+  try {
+    await managedPhoto.bucket.file(managedPhoto.objectPath).delete({ ignoreNotFound: true });
+  } catch (error) {
+    console.error('Fine photo cleanup failed:', error.message);
+  }
+}
 
 /**
  * 
@@ -108,8 +141,14 @@ async function createFine(saisonId, fine, playersId) {
 async function updateFine(saisonId, fine) {
   const db = getDb();
   const id = fine.id;
+  const fineRef = db.collection('seasons').doc(saisonId).collection('fines').doc(id);
+  const existingFine = await fineRef.get();
+  const previousPhoto = existingFine.data()?.photo;
   fine.updatedAt = new Date().toISOString();
-  await db.collection('seasons').doc(saisonId).collection('fines').doc(id).set(fine, { merge: true });
+  await fineRef.set(fine, { merge: true });
+  if (previousPhoto && Object.prototype.hasOwnProperty.call(fine, 'photo') && previousPhoto !== fine.photo) {
+    await deleteFinePhotoIfUnused(saisonId, previousPhoto);
+  }
 }
 
 /**
@@ -119,7 +158,13 @@ async function updateFine(saisonId, fine) {
  */
 async function deleteFine(saisonId, fineId) {
   const db = getDb();
-  await db.collection('seasons').doc(saisonId).collection('fines').doc(fineId).delete();
+  const fineRef = db.collection('seasons').doc(saisonId).collection('fines').doc(fineId);
+  const existingFine = await fineRef.get();
+  const photoUrl = existingFine.data()?.photo;
+  await fineRef.delete();
+  if (photoUrl) {
+    await deleteFinePhotoIfUnused(saisonId, photoUrl);
+  }
 }
 
 module.exports = { getFines, createFine, updateFine, deleteFine };

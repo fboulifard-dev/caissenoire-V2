@@ -27,6 +27,7 @@ export class FineCreatePage implements OnDestroy {
   saving = false;
   imageError = '';
   photoPreviewUrl = '';
+  photoRemoved = false;
   error = '';
   seasonId = '';
   fineId = '';
@@ -94,6 +95,7 @@ export class FineCreatePage implements OnDestroy {
           matchDay: Boolean(existingFine.matchDay),
         };
         this.photoPreviewUrl = this.fine.photo;
+        this.photoRemoved = false;
       },
       error: () => (this.error = 'Impossible de charger cette amende.')
     });
@@ -162,7 +164,7 @@ export class FineCreatePage implements OnDestroy {
         ruleId: this.fine.ruleId,
         amount: Number(this.fine.amount),
         comment: this.fine.comment,
-        photo: this.fine.photo || undefined,
+        photo: this.photoRemoved ? null : this.fine.photo || undefined,
         matchDay: this.fine.matchDay,
       };
       const saveRequest = this.editing
@@ -209,10 +211,21 @@ export class FineCreatePage implements OnDestroy {
       }
       this.pendingPhoto = compressedPhoto;
       this.photoPreviewUrl = URL.createObjectURL(compressedPhoto);
+      this.photoRemoved = false;
     } catch {
       this.imageError = 'Impossible de charger cette image.';
       input.value = '';
     }
+  }
+
+  removePhoto() {
+    if (this.photoPreviewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(this.photoPreviewUrl);
+    }
+    this.photoPreviewUrl = '';
+    this.pendingPhoto = null;
+    this.fine.photo = '';
+    this.photoRemoved = true;
   }
 
   private compressImage(file: File): Promise<Blob> {

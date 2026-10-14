@@ -27,6 +27,15 @@
   object-fit: cover;
 }
 
+.remove-photo-button {
+  display: flex;
+  width: fit-content;
+  margin: 0 auto 12px;
+  --padding-start: 10px;
+  --padding-end: 10px;
+  font-size: 0.84rem;
+}
+
 .fine-amount-card {
   background: #fff7f5;
   border-color: #efd9d5;
