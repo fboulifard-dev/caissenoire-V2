@@ -106,16 +106,16 @@
       <ion-item lines="none" class="image-picker operation-photo-picker">
         <ion-label>
           <strong>Photo</strong>
-          <p>Ajoutez une image de l’amende (facultatif).</p>
+          <p>JPG, PNG ou WebP · 5 Mo maximum</p>
         </ion-label>
         <input
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/png,image/webp"
           (change)="onImageSelected($event)" />
       </ion-item>
 
-      <ion-thumbnail *ngIf="fine.photo" class="image-preview">
-        <img [src]="fine.photo" alt="Aperçu de l’amende" />
+      <ion-thumbnail *ngIf="photoPreviewUrl || fine.photo" class="image-preview">
+        <img [src]="photoPreviewUrl || fine.photo" alt="Aperçu de l’amende" />
       </ion-thumbnail>
     </ion-list>
 

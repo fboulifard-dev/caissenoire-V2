@@ -22,6 +22,8 @@ export class FinesPage implements OnInit, OnDestroy {
   rules: any[] = [];
   selectedRuleId = '';
   ruleIcons: Record<string, string> = {};
+  selectedFinePhoto = '';
+  isFinePhotoOpen = false;
   private isActive = false;
   private querySubscription?: Subscription;
   private dataSubscription?: Subscription;
@@ -105,6 +107,16 @@ export class FinesPage implements OnInit, OnDestroy {
 
   onRuleFilterChanged() {
     this.fineGroups = this.groupByCreationDate(this.filteredFines);
+  }
+
+  openFinePhoto(photo: string) {
+    this.selectedFinePhoto = photo;
+    this.isFinePhotoOpen = true;
+  }
+
+  closeFinePhoto() {
+    this.isFinePhotoOpen = false;
+    this.selectedFinePhoto = '';
   }
 
   private ensureSeasonUrl() {

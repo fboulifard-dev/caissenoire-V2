@@ -167,6 +167,16 @@ export class ApiService {
     );
   }
 
+  uploadFinePhoto(seasonId: string, photo: Blob) {
+    return this.getHeadersWithToken().pipe(
+      switchMap(headers => this.http.post<{ photo: string }>(
+        `${environment.apiUrl}/api/seasons/${seasonId}/fines/photo`,
+        photo,
+        { headers: headers.set('Content-Type', photo.type || 'image/jpeg') }
+      ))
+    );
+  }
+
   updateFine(seasonId: string, fineId: string, fine: {
     date: string;
     playerId: string;
