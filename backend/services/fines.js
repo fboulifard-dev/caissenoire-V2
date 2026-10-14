@@ -125,7 +125,7 @@ async function createFine(saisonId, fine, playersId) {
       };
       const ref = finesRef.doc();
       batch.set(ref, payload);
-      return { id: ref.id, playerId: selectedId, amount: payload.amount };
+      return { id: ref.id, playerId: selectedId, amount: payload.amount, ruleLabel: payload.ruleLabel };
     });
     await batch.commit();
     

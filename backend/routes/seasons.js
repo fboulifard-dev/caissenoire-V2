@@ -427,7 +427,7 @@ router.post('/:seasonId/fines',requireSeason, requireAdmin, async (req, res) => 
         await notifyPlayer(
           req.season.id,
           createdFine.playerId,
-          'Nouvelle amende',
+          `${createdFine.ruleLabel}`,
           `Une amende de ${Number(createdFine.amount).toFixed(2)} EUR vous a été attribuée.`,
           { type: 'fine', fineId: createdFine.id }
         );
