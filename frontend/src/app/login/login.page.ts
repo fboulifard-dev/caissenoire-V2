@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
+import { ApiService } from '../services/api.service';
+import { PushNotificationsService } from '../services/push-notifications.service';
 
 @Component({
   selector: 'app-login',
@@ -57,7 +60,12 @@ export class LoginPage {
     }
   }
 
-  constructor(private auth: AuthService, private router: Router) {
+  constructor(
+    private auth: AuthService,
+    private router: Router,
+    private api: ApiService,
+    private pushNotifications: PushNotificationsService
+  ) {
     if (this.auth.isLoggedIn()) {
       this.router.navigate(['/saisons']);
     }
@@ -68,6 +76,7 @@ export class LoginPage {
       this.loading = true;
       const {user} = await this.auth.signInEmail(this.email, this.password);
       if(user.emailVerified) {
+      await this.registerPushToken();
       this.router.navigate(['/saisons']);
       } else {
         alert("Votre email n'est pas vérifier. Veuillez vérifier votre boîte mail pour activer votre compte.")
@@ -83,6 +92,7 @@ export class LoginPage {
     try {
       this.loading = true;
       await this.auth.signInGoogle();
+      await this.registerPushToken();
       this.router.navigate(['/saisons']);
     } catch (err) {
       alert('Google login failed');
@@ -95,11 +105,23 @@ export class LoginPage {
     try {
       this.loading = true;
       await this.auth.signInAppleWeb();
+      await this.registerPushToken();
       this.router.navigate(['/saisons']);
     } catch (err) {
       alert('Apple login failed');
     } finally {
       this.loading = false;
+    }
+  }
+
+  private async registerPushToken() {
+    try {
+      const token = await this.pushNotifications.requestPermissionAndGetToken();
+      if (token) {
+        await firstValueFrom(this.api.registerDeviceToken(token));
+      }
+    } catch {
+      // Notification permission and registration must not block login.
     }
   }
 }

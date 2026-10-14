@@ -1,99 +1,113 @@
-  <section align=center>
-    <p align="right" >
-      <ion-button fill="clear"  routerLink="/login">
-          Se connecter
-        </ion-button>
-    </p>
+<ion-content class="auth-content">
+  <main class="auth-shell">
+    <nav class="auth-topbar" aria-label="Navigation du compte">
+      <span>Déjà membre ?</span>
+      <ion-button fill="clear" routerLink="/login">Se connecter</ion-button>
+    </nav>
 
-      
-    <img class="logo" align=center src="assets/image/logo-asptt-grande.png" alt="ASPTT" />
-  </section>
-  <section class="ion-padding">
-    <p >
-      <ion-text color="secondary">
-        Créer un compte
+    <header class="auth-brand">
+      <img class="auth-logo" src="assets/image/logo-asptt-grande.png" alt="ASPTT Nantes Handball" />
+      <div>
+        <span>ASPTT NANTES HB</span>
+        <strong>CAISSE NOIRE</strong>
+      </div>
+    </header>
+
+    <section class="auth-form">
+      <div class="auth-intro">
+        <h1>Créer un compte</h1>
+        <p>Quelques informations pour accéder à votre caisse.</p>
+      </div>
+
+      <div class="auth-fields">
+        <ion-item>
+          <ion-icon name="person-outline" slot="start" aria-hidden="true"></ion-icon>
+          <ion-input
+            type="email"
+            name="email"
+            [(ngModel)]="email"
+            #emailModel="ngModel"
+            label="Adresse e-mail"
+            labelPlacement="stacked"
+            autocomplete="email"
+            required>
+          </ion-input>
+        </ion-item>
+        <p class="field-error" *ngIf="(emailModel.dirty || emailModel.touched) && !isEmailValid">
+          {{ email.trim() ? 'Saisissez une adresse email valide.' : 'L’adresse email est obligatoire.' }}
+        </p>
+
+        <ion-item>
+          <ion-icon name="lock-closed-outline" slot="start" aria-hidden="true"></ion-icon>
+          <ion-input
+            [type]="showPassword ? 'text' : 'password'"
+            name="password"
+            [(ngModel)]="password"
+            #passwordModel="ngModel"
+            label="Mot de passe"
+            labelPlacement="stacked"
+            autocomplete="new-password"
+            required>
+          </ion-input>
+          <ion-button slot="end" fill="clear" type="button" [attr.aria-label]="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" [attr.aria-pressed]="showPassword" (click)="showPassword = !showPassword">
+            <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+          </ion-button>
+        </ion-item>
+        <p class="field-error" *ngIf="(passwordModel.dirty || passwordModel.touched) && !isPasswordValid">
+          Le mot de passe ne respecte pas encore toutes les règles.
+        </p>
+        <div class="password-requirements" role="list" aria-label="Règles du mot de passe">
+          <p [class.met]="hasMinimumPasswordLength" role="listitem">
+            <ion-icon [name]="hasMinimumPasswordLength ? 'checkmark-circle' : 'ellipse-outline'" aria-hidden="true"></ion-icon>
+            Au moins 10 caractères
+          </p>
+          <p [class.met]="hasPasswordUppercase" role="listitem">
+            <ion-icon [name]="hasPasswordUppercase ? 'checkmark-circle' : 'ellipse-outline'" aria-hidden="true"></ion-icon>
+            Une lettre majuscule
+          </p>
+          <p [class.met]="hasPasswordLowercase" role="listitem">
+            <ion-icon [name]="hasPasswordLowercase ? 'checkmark-circle' : 'ellipse-outline'" aria-hidden="true"></ion-icon>
+            Une lettre minuscule
+          </p>
+          <p [class.met]="hasPasswordNumber" role="listitem">
+            <ion-icon [name]="hasPasswordNumber ? 'checkmark-circle' : 'ellipse-outline'" aria-hidden="true"></ion-icon>
+            Un chiffre
+          </p>
+          <p [class.met]="hasPasswordSpecialCharacter" role="listitem">
+            <ion-icon [name]="hasPasswordSpecialCharacter ? 'checkmark-circle' : 'ellipse-outline'" aria-hidden="true"></ion-icon>
+            Un caractère spécial
+          </p>
+        </div>
+
+        <ion-item>
+          <ion-icon name="lock-closed-outline" slot="start" aria-hidden="true"></ion-icon>
+          <ion-input
+            [type]="showConfirmPassword ? 'text' : 'password'"
+            name="confirmPassword"
+            [(ngModel)]="confirmPassword"
+            #confirmPasswordModel="ngModel"
+            label="Confirmer le mot de passe"
+            labelPlacement="stacked"
+            autocomplete="new-password"
+            required>
+          </ion-input>
+          <ion-button slot="end" fill="clear" type="button" [attr.aria-label]="showConfirmPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" [attr.aria-pressed]="showConfirmPassword" (click)="showConfirmPassword = !showConfirmPassword">
+            <ion-icon [name]="showConfirmPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
+          </ion-button>
+        </ion-item>
+        <p class="field-error" *ngIf="(confirmPasswordModel.dirty || confirmPasswordModel.touched) && password !== confirmPassword">
+          Les mots de passe ne correspondent pas.
+        </p>
+      </div>
+
+      <ion-text color="danger" *ngIf="error">
+        <p class="auth-error" role="alert">{{ error }}</p>
       </ion-text>
-    </p>
-  <ion-item>
-    <ion-icon name="person-outline" slot="start"></ion-icon>
-    <ion-input
-      type="email"
-      name="email"
-      [(ngModel)]="email"
-      #emailModel="ngModel"
-      placeholder="Email"
-      required>
-    </ion-input>
-  </ion-item>
-  <p class="field-error" *ngIf="(emailModel.dirty || emailModel.touched) && !isEmailValid">
-    {{ email.trim() ? 'Saisissez une adresse email valide.' : 'L’adresse email est obligatoire.' }}
-  </p>
 
-  <ion-item>
-        <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
-    <ion-input
-      [type]="showPassword ? 'text' : 'password'"
-      name="password"
-      [(ngModel)]="password"
-      #passwordModel="ngModel"
-      placeholder="Mot de passe"
-      autocomplete="new-password"
-      required>
-    </ion-input>
-    <ion-button slot="end" fill="clear" type="button" [attr.aria-label]="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" [attr.aria-pressed]="showPassword" (click)="showPassword = !showPassword">
-      <ion-icon [name]="showPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
-    </ion-button>
-  </ion-item>
-  <div class="password-requirements" role="list" aria-label="Règles du mot de passe">
-    <p [class.met]="hasMinimumPasswordLength" role="listitem">
-      <ion-icon [name]="hasMinimumPasswordLength ? 'checkmark-circle' : 'ellipse-outline'" aria-hidden="true"></ion-icon>
-      Au moins 10 caractères
-    </p>
-    <p [class.met]="hasPasswordUppercase" role="listitem">
-      <ion-icon [name]="hasPasswordUppercase ? 'checkmark-circle' : 'ellipse-outline'" aria-hidden="true"></ion-icon>
-      Une lettre majuscule
-    </p>
-    <p [class.met]="hasPasswordLowercase" role="listitem">
-      <ion-icon [name]="hasPasswordLowercase ? 'checkmark-circle' : 'ellipse-outline'" aria-hidden="true"></ion-icon>
-      Une lettre minuscule
-    </p>
-    <p [class.met]="hasPasswordNumber" role="listitem">
-      <ion-icon [name]="hasPasswordNumber ? 'checkmark-circle' : 'ellipse-outline'" aria-hidden="true"></ion-icon>
-      Un chiffre
-    </p>
-    <p [class.met]="hasPasswordSpecialCharacter" role="listitem">
-      <ion-icon [name]="hasPasswordSpecialCharacter ? 'checkmark-circle' : 'ellipse-outline'" aria-hidden="true"></ion-icon>
-      Un caractère spécial
-    </p>
-  </div>
-
-  <ion-item>
-    <ion-icon name="lock-closed-outline" slot="start"></ion-icon>
-    <ion-input
-      [type]="showConfirmPassword ? 'text' : 'password'"
-      name="confirmPassword"
-      [(ngModel)]="confirmPassword"
-      #confirmPasswordModel="ngModel"
-      placeholder="Confirmation du mot de passe"
-      autocomplete="new-password"
-      required>
-    </ion-input>
-    <ion-button slot="end" fill="clear" type="button" [attr.aria-label]="showConfirmPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" [attr.aria-pressed]="showConfirmPassword" (click)="showConfirmPassword = !showConfirmPassword">
-      <ion-icon [name]="showConfirmPassword ? 'eye-off-outline' : 'eye-outline'"></ion-icon>
-    </ion-button>
-  </ion-item>
-  <p class="field-error" *ngIf="(confirmPasswordModel.dirty || confirmPasswordModel.touched) && password !== confirmPassword">
-    Les mots de passe ne correspondent pas.
-  </p>
-
-  <ion-text color="danger" *ngIf="error">
-    <p>{{ error }}</p>
-  </ion-text>
-
-  <ion-button expand="block" (click)="createAccount()" [disabled]="loading || !canCreateAccount">
-    Créer
-  </ion-button>
-  </section>
-  <section>
-    <ion-button expand="block" fill="clear"></ion-button>
-  </section>
+      <ion-button class="auth-primary" expand="block" (click)="createAccount()" [disabled]="loading || !canCreateAccount">
+        <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
+        <span *ngIf="!loading">Créer mon compte</span>
+      </ion-button>
+    </section>
+  </main>
+</ion-content>

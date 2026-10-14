@@ -159,11 +159,21 @@ export class ApiService {
     ruleId: string;
     amount?: number;
     comment?: string;
-    photo?: string;
+    photo?: string | null;
     matchDay?: boolean;
   }) {
     return this.getHeadersWithToken().pipe(
       switchMap((headers) => this.http.post(`${environment.apiUrl}/api/seasons/${seasonId}/fines`, fine, { headers }))
+    );
+  }
+
+  uploadFinePhoto(seasonId: string, photo: Blob) {
+    return this.getHeadersWithToken().pipe(
+      switchMap(headers => this.http.post<{ photo: string }>(
+        `${environment.apiUrl}/api/seasons/${seasonId}/fines/photo`,
+        photo,
+        { headers: headers.set('Content-Type', photo.type || 'image/jpeg') }
+      ))
     );
   }
 
@@ -173,7 +183,7 @@ export class ApiService {
     ruleId: string;
     amount?: number;
     comment?: string;
-    photo?: string;
+    photo?: string | null;
     matchDay?: boolean;
   }) {
     return this.getHeadersWithToken().pipe(
@@ -187,11 +197,11 @@ export class ApiService {
     );
   }
 
-  registerDeviceToken(seasonId: string, token: string) {
+  registerDeviceToken(token: string) {
     return this.getHeadersWithToken().pipe(
       switchMap((headers) => this.http.post(
         `${environment.apiUrl}/api/seasons/notification-token`,
-        { seasonId, token },
+        { token },
         { headers }
       ))
     );

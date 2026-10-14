@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../services/api.service';
 
 @Component({
@@ -8,7 +9,9 @@ import { ApiService } from '../services/api.service';
   styleUrls: ['./fine-create.page.scss'],
   standalone: false,
 })
-export class FineCreatePage {
+export class FineCreatePage implements OnDestroy {
+  private readonly maxPhotoSize = 5 * 1024 * 1024;
+  private pendingPhoto: Blob | null = null;
   fine = {
     date: new Date().toISOString().slice(0, 10),
     playerId: '',
@@ -23,6 +26,8 @@ export class FineCreatePage {
   rules: any[] = [];
   saving = false;
   imageError = '';
+  photoPreviewUrl = '';
+  photoRemoved = false;
   error = '';
   seasonId = '';
   fineId = '';
@@ -39,6 +44,12 @@ export class FineCreatePage {
     this.loadSelectableData();
     if (this.editing) {
       this.loadFine();
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.photoPreviewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(this.photoPreviewUrl);
     }
   }
 
@@ -83,6 +94,8 @@ export class FineCreatePage {
           photo: existingFine.photo || '',
           matchDay: Boolean(existingFine.matchDay),
         };
+        this.photoPreviewUrl = this.fine.photo;
+        this.photoRemoved = false;
       },
       error: () => (this.error = 'Impossible de charger cette amende.')
     });
@@ -116,7 +129,7 @@ export class FineCreatePage {
     this.fine.amount = isMatchDay ? baseCost * 2 : baseCost;
   }
 
-  submit() {
+  async submit() {
     if (this.saving) {
       return;
     }
@@ -135,24 +148,34 @@ export class FineCreatePage {
 
     this.saving = true;
     this.error = '';
-    const commonFineData = {
-      date: this.fine.date,
-      ruleId: this.fine.ruleId,
-      amount: Number(this.fine.amount),
-      comment: this.fine.comment,
-      photo: this.fine.photo || undefined,
-      matchDay: this.fine.matchDay,
-    };
-    const saveRequest = this.editing
-      ? this.api.updateFine(this.seasonId, this.fineId, { ...commonFineData, playerId: this.fine.playerId })
-      : this.api.createFine(this.seasonId, { ...commonFineData, playerIds });
-    saveRequest.subscribe({
-      next: () => this.router.navigate(['/saisons', this.seasonId,'operation', 'amendes']),
-      error: () => {
-        this.error = `Impossible de ${this.editing ? 'modifier' : 'créer'} l’amende. Réessayez.`;
-        this.saving = false;
+    try {
+      if (this.pendingPhoto) {
+        const uploadedPhoto = await firstValueFrom(this.api.uploadFinePhoto(this.seasonId, this.pendingPhoto));
+        this.fine.photo = uploadedPhoto.photo;
+        if (this.photoPreviewUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(this.photoPreviewUrl);
+        }
+        this.photoPreviewUrl = uploadedPhoto.photo;
+        this.pendingPhoto = null;
       }
-    });
+
+      const commonFineData = {
+        date: this.fine.date,
+        ruleId: this.fine.ruleId,
+        amount: Number(this.fine.amount),
+        comment: this.fine.comment,
+        photo: this.photoRemoved ? null : this.fine.photo || undefined,
+        matchDay: this.fine.matchDay,
+      };
+      const saveRequest = this.editing
+        ? this.api.updateFine(this.seasonId, this.fineId, { ...commonFineData, playerId: this.fine.playerId })
+        : this.api.createFine(this.seasonId, { ...commonFineData, playerIds });
+      await firstValueFrom(saveRequest);
+      await this.router.navigate(['/saisons', this.seasonId, 'operation', 'amendes']);
+    } catch {
+      this.error = `Impossible de ${this.editing ? 'modifier' : 'créer'} l’amende. Réessayez.`;
+      this.saving = false;
+    }
   }
 
   async onImageSelected(event: Event) {
@@ -170,15 +193,42 @@ export class FineCreatePage {
       return;
     }
 
+    if (file.size > this.maxPhotoSize) {
+      this.imageError = 'La photo ne doit pas dépasser 5 Mo.';
+      input.value = '';
+      return;
+    }
+
     try {
-      this.fine.photo = await this.compressImage(file);
+      const compressedPhoto = await this.compressImage(file);
+      if (compressedPhoto.size > this.maxPhotoSize) {
+        this.imageError = 'La photo compressée dépasse la limite de 5 Mo.';
+        input.value = '';
+        return;
+      }
+      if (this.photoPreviewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(this.photoPreviewUrl);
+      }
+      this.pendingPhoto = compressedPhoto;
+      this.photoPreviewUrl = URL.createObjectURL(compressedPhoto);
+      this.photoRemoved = false;
     } catch {
       this.imageError = 'Impossible de charger cette image.';
       input.value = '';
     }
   }
 
-  private compressImage(file: File): Promise<string> {
+  removePhoto() {
+    if (this.photoPreviewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(this.photoPreviewUrl);
+    }
+    this.photoPreviewUrl = '';
+    this.pendingPhoto = null;
+    this.fine.photo = '';
+    this.photoRemoved = true;
+  }
+
+  private compressImage(file: File): Promise<Blob> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onerror = () => reject(reader.error);
@@ -199,7 +249,13 @@ export class FineCreatePage {
           }
 
           context.drawImage(image, 0, 0, canvas.width, canvas.height);
-          resolve(canvas.toDataURL('image/jpeg', 0.8));
+          canvas.toBlob(blob => {
+            if (blob) {
+              resolve(blob);
+            } else {
+              reject(new Error('Image compression failed'));
+            }
+          }, 'image/jpeg', 0.8);
         };
         image.src = reader.result as string;
       };

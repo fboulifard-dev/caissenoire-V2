@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { ApiService } from '../services/api.service';
+import { firstValueFrom } from 'rxjs';
+import { PushNotificationsService } from '../services/push-notifications.service';
 
 @Component({
   selector: 'app-participation',
@@ -16,7 +18,8 @@ export class ParticipationPage implements OnInit {
 
   constructor(
     private api: ApiService,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private pushNotifications: PushNotificationsService
   ) {}
 
   ngOnInit() {
@@ -43,6 +46,9 @@ export class ParticipationPage implements OnInit {
       next: (status: any) => {
         this.status = { ...this.status, ...status };
         this.saving = false;
+        if (participating) {
+          void this.registerPushToken();
+        }
         void this.modalController.dismiss({ answered: true, participating });
       },
       error: () => {
@@ -54,5 +60,16 @@ export class ParticipationPage implements OnInit {
 
   closeModal() {
     return this.modalController.dismiss({ answered: false, participating: null });
+  }
+
+  private async registerPushToken() {
+    try {
+      const token = await this.pushNotifications.getTokenIfPermissionGranted();
+      if (token) {
+        await firstValueFrom(this.api.registerDeviceToken(token));
+      }
+    } catch {
+      // Notification registration must not block participation.
+    }
   }
 }

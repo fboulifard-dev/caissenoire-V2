@@ -111,7 +111,7 @@
       <div *ngIf="!activityLoading && recentActivities.length" class="activity-list">
         <article *ngFor="let activity of recentActivities" class="activity-row" [class.fine-activity]="activity.kind === 'fine'">
           <span class="activity-icon">
-            <ion-icon [name]="activity.kind === 'fine' ? 'alert-circle-outline' : 'arrow-down-circle-outline'" aria-hidden="true"></ion-icon>
+            <ion-icon [name]="activity.icon" aria-hidden="true"></ion-icon>
           </span>
           <div class="activity-copy">
             <strong>{{ activity.title }}</strong>

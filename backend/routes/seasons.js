@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { getDb } = require('../firebase-admin-init');
+const { randomUUID } = require('crypto');
+const admin = require('firebase-admin');
+const { getDb, getStorageBucket } = require('../firebase-admin-init');
 const { verifyToken } = require('../middleware/auth');
 const { getActiveSeason, requireSeason, requireAdmin } = require('../middleware/season');
 const { notifyPlayer } = require('../services/notifications');
@@ -99,26 +101,39 @@ router.post('/participation/active/notifications', async (req, res) => {
 
 router.post('/notification-token', async (req, res) => {
   try {
-    const { seasonId, token } = req.body;
-    if (typeof token !== 'string' || !token.trim() || typeof seasonId !== 'string') {
-      return res.status(400).json({ error: 'A valid notification token and season are required' });
+    const { token } = req.body;
+    if (typeof token !== 'string' || !token.trim()) {
+      return res.status(400).json({ error: 'A valid notification token is required' });
     }
 
     const season = await getActiveSeason();
-    if (season.id !== seasonId) {
-      return res.status(403).json({ error: 'Notification token season does not match the active season' });
-    }
-    const response = await getDb().collection('seasons').doc(season.id)
-      .collection('participationResponses').doc(req.user.uid).get();
-    if (!response.exists || response.data().participating !== true || response.data().notificationsEnabled !== true) {
-      return res.status(403).json({ error: 'Notification consent is required' });
+    const db = getDb();
+    const seasonRef = db.collection('seasons').doc(season.id);
+    const playerRef = seasonRef.collection('players').doc(req.user.uid);
+    const responseRef = seasonRef.collection('participationResponses').doc(req.user.uid);
+    const [player, response] = await Promise.all([playerRef.get(), responseRef.get()]);
+    if (!player.exists) {
+      return res.status(403).json({ error: 'A player profile in the active season is required' });
     }
 
-    await getDb().collection('notificationTokens').doc(token.trim()).set({
-      userId: req.user.uid,
-      seasonId: season.id,
-      updatedAt: new Date().toISOString()
+    const normalizedToken = token.trim();
+    const now = new Date().toISOString();
+    const notificationTokenRef = db.collection('notificationTokens').doc(normalizedToken);
+    const batch = db.batch();
+    const isParticipating = response.exists && response.data().participating === true;
+    batch.set(playerRef, {
+      fcmTokens: admin.firestore.FieldValue.arrayUnion(normalizedToken),
+      fcmTokenUpdatedAt: now
     }, { merge: true });
+    if (isParticipating) {
+      batch.set(responseRef, { notificationsEnabled: true, updatedAt: now }, { merge: true });
+      batch.set(notificationTokenRef, {
+        userId: req.user.uid,
+        seasonId: season.id,
+        updatedAt: now
+      }, { merge: true });
+    }
+    await batch.commit();
     res.status(204).end();
   } catch (err) {
     res.status(err.status || 500).json({ error: err.message });
@@ -355,6 +370,46 @@ router.get('/:seasonId/fines', requireSeason, async (req, res) => {
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+const parseFinePhoto = express.raw({ type: 'image/*', limit: '5mb' });
+
+router.post('/:seasonId/fines/photo', requireSeason, requireAdmin, (req, res, next) => {
+  parseFinePhoto(req, res, error => {
+    if (error) {
+      const statusCode = error.status === 413 ? 413 : 400;
+      return res.status(statusCode).json({
+        error: statusCode === 413 ? 'Photo limit is 5 MB' : 'Invalid photo upload'
+      });
+    }
+    if (!Buffer.isBuffer(req.body) || req.body.length === 0) {
+      return res.status(400).json({ error: 'A photo is required' });
+    }
+    if (req.get('content-type')?.split(';')[0] !== 'image/jpeg') {
+      return res.status(415).json({ error: 'Only JPEG photos are accepted' });
+    }
+    next();
+  });
+}, async (req, res) => {
+  try {
+    const bucket = getStorageBucket();
+    const objectPath = `seasons/${req.season.id}/fine-photos/${req.user.uid}/${randomUUID()}.jpg`;
+    const downloadToken = randomUUID();
+    await bucket.file(objectPath).save(req.body, {
+      resumable: false,
+      metadata: {
+        contentType: 'image/jpeg',
+        cacheControl: 'private, max-age=3600',
+        metadata: { firebaseStorageDownloadTokens: downloadToken }
+      }
+    });
+
+    const photoUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(objectPath)}?alt=media&token=${downloadToken}`;
+    res.status(201).json({ photo: photoUrl });
+  } catch (err) {
+    console.error('Fine photo upload failed:', err.message);
+    res.status(500).json({ error: 'Impossible d’enregistrer la photo.' });
   }
 });
 

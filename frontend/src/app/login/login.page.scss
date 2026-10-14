@@ -1,40 +1,38 @@
-/* Styles for login page */
-.signup-link {
-	margin-top: -4px;
-	--color: var(--ion-color-primary);
-	text-transform: none;
+.auth-text-button {
+	--color: #41634d;
+	margin: 6px 0 0;
+	font-size: 0.85rem;
 }
 
-.password-reset h2 {
-	font-size: 1.25rem;
-}
-
-.reset-description,
-.reset-message {
-	line-height: 1.5;
-}
-
-.reset-message {
-	margin: 12px 0;
-}
-
-
-
-.login-divider {
+.auth-divider {
 	display: flex;
 	align-items: center;
 	gap: 12px;
-	margin: 20px 0 12px;
-	color: var(--ion-color-medium);
-	font-size: 0.85rem;
+	margin: 22px 0 14px;
+	color: #78847c;
+	font-size: 0.76rem;
 	text-transform: uppercase;
 }
 
-.login-divider::before,
-.login-divider::after {
-	content: '';
-	flex: 1;
+.auth-divider::before,
+.auth-divider::after {
 	height: 1px;
-	background: rgba(var(--ion-color-primary-rgb), 0.25);
-	
+	flex: 1;
+	background: #dce5dd;
+	content: '';
+}
+
+.auth-provider {
+	--border-radius: 8px;
+	--border-color: #d3ddd4;
+	--color: #334a3a;
+	--min-height: 50px;
+	margin: 0;
+}
+
+.reset-message {
+	margin: 8px 2px 16px;
+	color: #4c6554;
+	font-size: 0.84rem;
+	line-height: 1.5;
 }
