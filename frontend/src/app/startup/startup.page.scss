@@ -1,0 +1,73 @@
+.startup-content {
+  --background: #f2f5f0;
+}
+
+.startup-shell {
+  box-sizing: border-box;
+  display: grid;
+  min-height: 100%;
+  place-content: center;
+  justify-items: center;
+  padding: 32px 24px;
+  background-image: radial-gradient(#c8d4c8 0.7px, transparent 0.7px);
+  background-size: 18px 18px;
+}
+
+.startup-brand {
+  display: grid;
+  justify-items: center;
+  color: #1f3427;
+  text-align: center;
+}
+
+.startup-brand img {
+  width: min(58vw, 220px);
+  height: min(58vw, 220px);
+  object-fit: contain;
+  margin-bottom: 24px;
+}
+
+.startup-club {
+  color: #637267;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.startup-brand h1 {
+  margin: 8px 0 0;
+  font-size: 1.65rem;
+  font-weight: 800;
+}
+
+.startup-version {
+  margin: 10px 0 0;
+  color: #637267;
+  font-size: 0.82rem;
+}
+
+.startup-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 42px;
+  color: #4f6657;
+  font-size: 0.88rem;
+}
+
+.startup-status ion-spinner {
+  width: 20px;
+  height: 20px;
+  color: #41634d;
+}
+
+.startup-error {
+  max-width: 320px;
+  margin-top: 28px;
+  text-align: center;
+}
+
+.startup-error p {
+  color: #8c342d;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}

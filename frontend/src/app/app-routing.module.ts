@@ -4,6 +4,11 @@ import { authGuard, verifiedAuthGuard } from './guards/auth.guard';
 
 const routes: Routes = [
   {
+    path: '',
+    loadChildren: () => import('./startup/startup.module').then(m => m.StartupPageModule),
+    pathMatch: 'full'
+  },
+  {
     path: 'saisons',
     loadChildren: () => import('./seasons/seasons.module').then(m => m.SeasonsPageModule),
     canActivate: [verifiedAuthGuard]
@@ -74,11 +79,6 @@ const routes: Routes = [
   {
     path: 'operation',
     redirectTo: 'operation/amendes',
-    pathMatch: 'full'
-  },
-  {
-    path: '',
-    redirectTo: 'login',
     pathMatch: 'full'
   },
 ];
