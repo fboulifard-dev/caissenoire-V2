@@ -177,6 +177,32 @@
   overflow-wrap: anywhere;
 }
 
+.ranking-player {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-top: 1px solid #e8ede8;
+}
+
+.ranking-position {
+  display: grid;
+  flex: 0 0 28px;
+  width: 28px;
+  aspect-ratio: 1;
+  place-items: center;
+  color: #41634d;
+  background: #edf5ef;
+  border-radius: 50%;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.ranking-player-content {
+  flex: 1;
+  min-width: 0;
+}
+
 .rule-row-heading > span {
   flex: 0 0 auto;
   color: #25372b;

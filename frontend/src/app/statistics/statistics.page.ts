@@ -9,6 +9,13 @@ interface RuleStatistics {
   amount: number;
 }
 
+interface PlayerStatistics {
+  id: string;
+  name: string;
+  count: number;
+  amount: number;
+}
+
 interface DailyFines {
   date: string;
   count: number;
@@ -27,7 +34,9 @@ export class StatisticsPage {
   loading = true;
   error = '';
   metric: 'count' | 'amount' = 'amount';
+  rankingMode: 'players' | 'rules' = 'players';
   fines: any[] = [];
+  players: PlayerStatistics[] = [];
   rules: RuleStatistics[] = [];
   totalFineCount = 0;
   totalFineAmount = 0;
@@ -62,6 +71,13 @@ export class StatisticsPage {
     }
   }
 
+  onRankingModeChanged(event: CustomEvent) {
+    const value = (event.detail as { value?: string }).value;
+    if (value === 'players' || value === 'rules') {
+      this.rankingMode = value;
+    }
+  }
+
   ruleShare(rule: RuleStatistics): number {
     if (this.totalFineAmount > 0) {
       return rule.amount / this.totalFineAmount * 100;
@@ -71,6 +87,17 @@ export class StatisticsPage {
 
   ruleBarWidth(rule: RuleStatistics): number {
     return Math.max(2, this.ruleShare(rule));
+  }
+
+  playerShare(player: PlayerStatistics): number {
+    if (this.totalFineAmount > 0) {
+      return Math.min(100, player.amount / this.totalFineAmount * 100);
+    }
+    return this.totalFineCount ? player.count / this.totalFineCount * 100 : 0;
+  }
+
+  playerBarWidth(player: PlayerStatistics): number {
+    return Math.max(2, this.playerShare(player));
   }
 
   formatCurrency(amount: number): string {
@@ -93,6 +120,7 @@ export class StatisticsPage {
         this.fines = Array.isArray(fines) ? fines : [];
         this.totalFineCount = this.fines.length;
         this.totalFineAmount = this.fines.reduce((total, fine) => total + this.parseAmount(fine.amount), 0);
+        this.buildPlayerStatistics();
         this.buildRuleStatistics();
         this.buildTrend();
         this.loading = false;
@@ -102,6 +130,26 @@ export class StatisticsPage {
         this.loading = false;
       }
     });
+  }
+
+  private buildPlayerStatistics() {
+    const grouped = new Map<string, PlayerStatistics>();
+
+    this.fines.forEach(fine => {
+      const id = String(fine.playerId || fine.playerName || 'unknown');
+      const name = fine.playerName
+        || [fine.playerFirstName, fine.playerLastName].filter(Boolean).join(' ')
+        || fine.playerId
+        || 'Joueur inconnu';
+      const existing = grouped.get(id) || { id, name, count: 0, amount: 0 };
+      existing.count += 1;
+      existing.amount += this.parseAmount(fine.amount);
+      grouped.set(id, existing);
+    });
+
+    this.players = Array.from(grouped.values()).sort((first, second) =>
+      second.amount - first.amount || second.count - first.count || first.name.localeCompare(second.name, 'fr')
+    );
   }
 
   private buildRuleStatistics() {

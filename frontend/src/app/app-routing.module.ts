@@ -40,8 +40,8 @@ const routes: Routes = [
   },
   {
     path: 'saisons/:seasonId/classement',
-    loadChildren: () => import('./ranking/ranking.module').then(m => m.RankingPageModule),
-    canActivate: [authGuard]
+    redirectTo: 'saisons/:seasonId/statistiques',
+    pathMatch: 'full'
   },
   {
     path: 'saisons/:seasonId/statistiques',
