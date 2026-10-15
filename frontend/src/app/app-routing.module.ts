@@ -39,11 +39,6 @@ const routes: Routes = [
     canActivate: [authGuard]
   },
   {
-    path: 'saisons/:seasonId/classement',
-    redirectTo: 'saisons/:seasonId/statistiques',
-    pathMatch: 'full'
-  },
-  {
     path: 'saisons/:seasonId/statistiques',
     loadChildren: () => import('./statistics/statistics.module').then(m => m.StatisticsPageModule),
     canActivate: [authGuard]
@@ -66,11 +61,6 @@ const routes: Routes = [
   {
     path: 'payments',
     loadChildren: () => import('./payments/payments.module').then(m => m.PaymentsPageModule),
-    canActivate: [authGuard]
-  },
-  {
-    path: 'ranking',
-    loadChildren: () => import('./ranking/ranking.module').then(m => m.RankingPageModule),
     canActivate: [authGuard]
   },
   {

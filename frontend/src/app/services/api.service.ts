@@ -89,12 +89,6 @@ export class ApiService {
     );
   }
 
-  getSeasonRanking(seasonId: string) {
-    return this.getHeadersWithToken().pipe(
-      switchMap((headers) => this.http.get(`${environment.apiUrl}/api/seasons/${seasonId}/ranking`, { headers }))
-    );
-  }
-
   getSeasonRules(seasonId: string) {
     return this.getHeadersWithToken().pipe(
       switchMap((headers) => this.http.get(`${environment.apiUrl}/api/seasons/${seasonId}/rules`, {
