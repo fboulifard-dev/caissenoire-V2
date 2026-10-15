@@ -2,12 +2,25 @@
   <main class="ledger-shell">
     <section *ngIf="!loading" class="ledger-overview fine-overview">
       <div>
-        <span class="ledger-eyebrow">{{ playerId ? 'AMENDES DU JOUEUR' : 'TOTAL ATTRIBUÉ' }}</span>
-        <h1>{{ playerId ? (playerName || 'Joueur') : 'Amendes' }}</h1>
-        <p>{{ fines.length }} amende{{ fines.length === 1 ? '' : 's' }} {{ playerId ? 'pour ce joueur' : 'sur la saison' }}</p>
+        <span class="ledger-eyebrow">{{ selectedRuleId ? 'AMENDES PAR RÈGLE' : playerId ? 'AMENDES DU JOUEUR' : 'TOTAL ATTRIBUÉ' }}</span>
+        <h1>{{ selectedRuleId ? selectedRuleLabel : playerId ? (playerName || 'Joueur') : 'Amendes' }}</h1>
+        <p>{{ filteredFines.length }} amende{{ filteredFines.length === 1 ? '' : 's' }} {{ selectedRuleId ? 'pour cette règle' : playerId ? 'pour ce joueur' : 'sur la saison' }}</p>
       </div>
       <strong>{{ formatCurrency(totalFineAmount) }}</strong>
     </section>
+
+    <div *ngIf="!loading && (playerId || selectedRuleId)" class="active-filter-chips" aria-label="Filtres actifs">
+      <ion-chip *ngIf="playerId" button="true" (click)="clearFilter('joueur')" [attr.aria-label]="'Retirer le filtre joueur ' + (playerName || 'Joueur')">
+        <ion-icon name="person-outline" aria-hidden="true"></ion-icon>
+        <ion-label>Joueur : {{ playerName || 'Joueur' }}</ion-label>
+        <ion-icon name="close-circle-outline" aria-hidden="true"></ion-icon>
+      </ion-chip>
+      <ion-chip *ngIf="selectedRuleId" button="true" (click)="clearFilter('regle')" [attr.aria-label]="'Retirer le filtre règle ' + selectedRuleLabel">
+        <ion-icon name="funnel-outline" aria-hidden="true"></ion-icon>
+        <ion-label>Règle : {{ selectedRuleLabel }}</ion-label>
+        <ion-icon name="close-circle-outline" aria-hidden="true"></ion-icon>
+      </ion-chip>
+    </div>
 
     <div *ngIf="!loading && fineGroups.length" class="ledger-groups">
       <section *ngFor="let group of fineGroups" class="date-group">
@@ -58,10 +71,10 @@
       </section>
     </div>
 
-    <section *ngIf="!loading && !fines.length" class="ledger-empty">
+    <section *ngIf="!loading && !filteredFines.length" class="ledger-empty">
       <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>
-      <h2>Aucune amende</h2>
-      <p>Les amendes de la saison apparaîtront ici.</p>
+      <h2>{{ selectedRuleId ? 'Aucune amende pour cette règle' : 'Aucune amende' }}</h2>
+      <p>{{ selectedRuleId ? 'Aucune amende ne correspond au filtre actif.' : 'Les amendes de la saison apparaîtront ici.' }}</p>
     </section>
 
     <ion-list *ngIf="loading" class="list-skeleton" aria-label="Chargement des amendes">

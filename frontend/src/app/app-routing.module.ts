@@ -44,6 +44,11 @@ const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'saisons/:seasonId/statistiques',
+    loadChildren: () => import('./statistics/statistics.module').then(m => m.StatisticsPageModule),
+    canActivate: [authGuard]
+  },
+  {
     path: 'saisons/:seasonId',
     loadChildren: () => import('./home/home.module').then(m => m.HomePageModule),
     canActivate: [authGuard]

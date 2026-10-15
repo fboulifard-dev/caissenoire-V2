@@ -34,8 +34,14 @@ export class FinesPage implements OnInit, OnDestroy {
 
   get filteredFines(): any[] {
     return this.selectedRuleId
-      ? this.fines.filter(fine => fine.ruleId === this.selectedRuleId)
+      ? this.fines.filter(fine => String(fine.ruleId || fine.ruleLabel || 'unknown') === this.selectedRuleId)
       : this.fines;
+  }
+
+  get selectedRuleLabel(): string {
+    return this.rules.find(rule => rule.id === this.selectedRuleId)?.label
+      || this.fines.find(fine => String(fine.ruleId || fine.ruleLabel || 'unknown') === this.selectedRuleId)?.ruleLabel
+      || (this.selectedRuleId === 'unknown' ? 'Règle inconnue' : 'Règle sélectionnée');
   }
 
   constructor(
@@ -48,11 +54,14 @@ export class FinesPage implements OnInit, OnDestroy {
   ngOnInit() {
     this.ensureSeasonUrl();
     this.playerId = this.route.snapshot.queryParamMap.get('joueur') || '';
+    this.selectedRuleId = this.route.snapshot.queryParamMap.get('regle') || '';
     this.querySubscription = this.route.queryParamMap.subscribe(params => {
       const playerId = params.get('joueur') || '';
-      if (playerId === this.playerId) return;
+      const selectedRuleId = params.get('regle') || '';
+      if (playerId === this.playerId && selectedRuleId === this.selectedRuleId) return;
 
       this.playerId = playerId;
+      this.selectedRuleId = selectedRuleId;
       if (this.isActive) this.loadFines();
     });
   }
@@ -61,6 +70,7 @@ export class FinesPage implements OnInit, OnDestroy {
     this.isActive = true;
     this.ensureSeasonUrl();
     this.playerId = this.route.snapshot.queryParamMap.get('joueur') || '';
+    this.selectedRuleId = this.route.snapshot.queryParamMap.get('regle') || '';
     this.loadFines();
   }
 
@@ -111,6 +121,14 @@ export class FinesPage implements OnInit, OnDestroy {
 
   onRuleFilterChanged() {
     this.fineGroups = this.groupByCreationDate(this.filteredFines);
+  }
+
+  clearFilter(filter: 'joueur' | 'regle') {
+    return this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { [filter]: null },
+      queryParamsHandling: 'merge'
+    });
   }
 
   openFinePhoto(photo: string) {

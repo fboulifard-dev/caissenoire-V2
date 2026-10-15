@@ -1,0 +1,256 @@
+.statistics-header ion-toolbar {
+  --background: #fff;
+  --color: #1f3427;
+  --border-width: 0;
+}
+
+.statistics-content {
+  --background: #f2f5f0;
+}
+
+.statistics-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: min(100%, 760px);
+  margin: 0 auto;
+  padding: 20px 16px 32px;
+}
+
+.totals-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 18px 16px;
+  background: #fff;
+  border: 1px solid #e0e7e0;
+  border-radius: 8px;
+}
+
+.totals-row > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.totals-row > div + div {
+  padding-left: 14px;
+  border-left: 1px solid #e2e8e2;
+}
+
+.stat-label {
+  color: #667469;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.totals-row strong {
+  color: #1f3427;
+  font-size: 1.25rem;
+  overflow-wrap: anywhere;
+}
+
+.statistics-section {
+  padding: 18px 16px;
+  background: #fff;
+  border: 1px solid #e0e7e0;
+  border-radius: 8px;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.section-heading h1,
+.section-heading h2 {
+  margin: 5px 0 0;
+  color: #1f3427;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.section-heading ion-segment {
+  flex: 0 0 auto;
+  width: 170px;
+  --background: #edf2ed;
+  --color: #526256;
+  --color-checked: #fff;
+  --indicator-color: #41634d;
+}
+
+.section-heading ion-segment-button {
+  min-height: 36px;
+  font-size: 0.75rem;
+  --border-radius: 6px;
+}
+
+.trend-chart {
+  position: relative;
+  padding: 8px 0 0;
+}
+
+.trend-chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.chart-axis,
+.chart-gridline {
+  vector-effect: non-scaling-stroke;
+}
+
+.chart-axis {
+  stroke: #d5ded5;
+  stroke-width: 1;
+}
+
+.chart-gridline {
+  stroke: #e7ece7;
+  stroke-dasharray: 3 4;
+  stroke-width: 1;
+}
+
+.chart-area {
+  fill: rgba(65, 99, 77, 0.12);
+}
+
+.chart-line {
+  fill: none;
+  stroke: #41634d;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.chart-maximum {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: #667469;
+  font-size: 0.7rem;
+}
+
+.chart-dates {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 2px 0 24px;
+  color: #667469;
+  font-size: 0.7rem;
+}
+
+.rule-row {
+  display: block;
+  padding: 14px 0;
+  border-top: 1px solid #e8ede8;
+}
+
+.rule-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.rule-link:focus-visible {
+  outline: 2px solid #41634d;
+  outline-offset: 3px;
+}
+
+.rule-row-heading,
+.rule-row-detail {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.rule-row-heading strong {
+  color: #25372b;
+  font-size: 0.9rem;
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.rule-row-heading > span {
+  flex: 0 0 auto;
+  color: #25372b;
+  font-size: 0.88rem;
+  font-weight: 650;
+  text-align: right;
+}
+
+.rule-amount small {
+  display: block;
+  margin-top: 3px;
+  color: #667469;
+  font-size: 0.7rem;
+  font-weight: 400;
+}
+
+.rule-row-detail {
+  margin-top: 10px;
+  color: #667469;
+  font-size: 0.75rem;
+}
+
+.rule-track {
+  flex: 1;
+  height: 5px;
+  overflow: hidden;
+  background: #e8eee8;
+  border-radius: 3px;
+}
+
+.rule-track > span {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  background: #66836d;
+  border-radius: inherit;
+}
+
+.statistics-loading,
+.statistics-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 100px;
+  color: #667469;
+  font-size: 0.88rem;
+  text-align: center;
+}
+
+.statistics-loading ion-spinner {
+  color: #41634d;
+}
+
+.statistics-message {
+  padding: 18px;
+  color: #8c342d;
+  background: #fff;
+  border: 1px solid #ead7d5;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 380px) {
+  .section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .section-heading ion-segment {
+    width: 100%;
+  }
+
+  .totals-row strong {
+    font-size: 1.05rem;
+  }
+}

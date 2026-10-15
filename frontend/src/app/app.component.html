@@ -22,6 +22,13 @@
             <span>Classement</span>
           </span>
         </ion-button>
+        <ion-button [routerLink]="['/saisons', currentSeasonId, 'statistiques']" routerLinkActive="season-navigation-active" #statisticsNav="routerLinkActive" [routerLinkActiveOptions]="{ exact: true }" aria-label="Statistiques de la saison">
+          <span class="season-navigation-content">
+            <ion-icon *ngIf="statisticsNav.isActive" name="stats-chart"></ion-icon>
+            <ion-icon *ngIf="!statisticsNav.isActive" name="stats-chart-outline"></ion-icon>
+            <span>Stats</span>
+          </span>
+        </ion-button>
         <ion-button [routerLink]="['/saisons', currentSeasonId, 'operation']" routerLinkActive="season-navigation-active" #operationsNav="routerLinkActive" [routerLinkActiveOptions]="{ exact: false }" aria-label="Opérations de la saison">
           <span class="season-navigation-content">
             <ion-icon *ngIf="operationsNav.isActive" name="book"></ion-icon>
