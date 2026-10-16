@@ -27,7 +27,18 @@ export class PaymentCreatePage {
     private api: ApiService,
     private route: ActivatedRoute,
     private router: Router
-  ) {
+  ) {}
+
+  // Ionic met la page en cache : on réinitialise à chaque entrée.
+  ionViewWillEnter() {
+    this.payment = {
+      date: new Date().toISOString().slice(0, 10),
+      amount: '',
+      playerId: '',
+      comment: ''
+    };
+    this.error = '';
+    this.saving = false;
     this.ensureSeasonUrl();
     this.paymentId = this.route.snapshot.paramMap.get('paymentId') || '';
     this.editing = Boolean(this.paymentId);

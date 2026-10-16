@@ -24,30 +24,14 @@
       [value]="summaryView"
       class="summary-filter"
       (ionChange)="onSummaryViewChanged($event)">
-      <ion-segment-button value="common">
-        <ion-label>Commune</ion-label>
-      </ion-segment-button>
       <ion-segment-button value="connected">
         <ion-label>Ma caisse</ion-label>
       </ion-segment-button>
-      <ion-segment-button value="selected">
-        <ion-label>Joueur</ion-label>
+      <ion-segment-button value="common">
+        <ion-label>Commune</ion-label>
       </ion-segment-button>
+      
     </ion-segment>
-
-    <div *ngIf="summaryView === 'selected'" class="player-summary-header">
-      <ion-select
-        *ngIf="players.length"
-        label="Joueur"
-        labelPlacement="stacked"
-        [(ngModel)]="selectedPlayerId"
-        (ionChange)="onPlayerChanged()"
-        interface="popover">
-        <ion-select-option *ngFor="let player of players" [value]="player.id">
-          {{ playerName(player.id) }}
-        </ion-select-option>
-      </ion-select>
-    </div>
 
     <section class="balance-panel fine-feature">
       <div class="balance-heading">

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { ApiService } from '../services/api.service';
 
 interface RuleStatistics {
@@ -33,13 +34,15 @@ export class StatisticsPage {
   seasonName = '';
   loading = true;
   error = '';
+  dataset: 'fines' | 'payments' = 'fines';
   metric: 'count' | 'amount' = 'amount';
   rankingMode: 'players' | 'rules' = 'players';
   fines: any[] = [];
+  payments: any[] = [];
   players: PlayerStatistics[] = [];
   rules: RuleStatistics[] = [];
-  totalFineCount = 0;
-  totalFineAmount = 0;
+  totalCount = 0;
+  totalAmount = 0;
   chartPoints = '';
   chartAreaPoints = '';
   chartMaxLabel = '';
@@ -63,6 +66,28 @@ export class StatisticsPage {
     this.loadStatistics();
   }
 
+  get items(): any[] {
+    return this.dataset === 'fines' ? this.fines : this.payments;
+  }
+
+  get itemNoun(): string {
+    return this.dataset === 'fines' ? 'amende' : 'paiement';
+  }
+
+  get operationPath(): string {
+    return this.dataset === 'fines' ? 'amendes' : 'paiements';
+  }
+
+  onDatasetChanged(event: CustomEvent) {
+    const value = (event.detail as { value?: string }).value;
+    if (value === 'fines' || value === 'payments') {
+      this.dataset = value;
+      // Les paiements n'ont pas de règle : seul le classement par joueur existe.
+      if (value === 'payments') this.rankingMode = 'players';
+      this.rebuild();
+    }
+  }
+
   onMetricChanged(event: CustomEvent) {
     const value = (event.detail as { value?: string }).value;
     if (value === 'count' || value === 'amount') {
@@ -79,10 +104,10 @@ export class StatisticsPage {
   }
 
   ruleShare(rule: RuleStatistics): number {
-    if (this.totalFineAmount > 0) {
-      return rule.amount / this.totalFineAmount * 100;
+    if (this.totalAmount > 0) {
+      return rule.amount / this.totalAmount * 100;
     }
-    return this.totalFineCount ? rule.count / this.totalFineCount * 100 : 0;
+    return this.totalCount ? rule.count / this.totalCount * 100 : 0;
   }
 
   ruleBarWidth(rule: RuleStatistics): number {
@@ -90,10 +115,10 @@ export class StatisticsPage {
   }
 
   playerShare(player: PlayerStatistics): number {
-    if (this.totalFineAmount > 0) {
-      return Math.min(100, player.amount / this.totalFineAmount * 100);
+    if (this.totalAmount > 0) {
+      return Math.min(100, player.amount / this.totalAmount * 100);
     }
-    return this.totalFineCount ? player.count / this.totalFineCount * 100 : 0;
+    return this.totalCount ? player.count / this.totalCount * 100 : 0;
   }
 
   playerBarWidth(player: PlayerStatistics): number {
@@ -115,14 +140,14 @@ export class StatisticsPage {
   private loadStatistics() {
     this.loading = true;
     this.error = '';
-    this.api.getSeasonFines(this.seasonId).subscribe({
-      next: (fines: any) => {
+    forkJoin({
+      fines: this.api.getSeasonFines(this.seasonId),
+      payments: this.api.getSeasonPayments(this.seasonId)
+    }).subscribe({
+      next: ({ fines, payments }: any) => {
         this.fines = Array.isArray(fines) ? fines : [];
-        this.totalFineCount = this.fines.length;
-        this.totalFineAmount = this.fines.reduce((total, fine) => total + this.parseAmount(fine.amount), 0);
-        this.buildPlayerStatistics();
-        this.buildRuleStatistics();
-        this.buildTrend();
+        this.payments = Array.isArray(payments) ? payments : [];
+        this.rebuild();
         this.loading = false;
       },
       error: () => {
@@ -132,10 +157,18 @@ export class StatisticsPage {
     });
   }
 
+  private rebuild() {
+    this.totalCount = this.items.length;
+    this.totalAmount = this.items.reduce((total, item) => total + this.parseAmount(item.amount), 0);
+    this.buildPlayerStatistics();
+    this.buildRuleStatistics();
+    this.buildTrend();
+  }
+
   private buildPlayerStatistics() {
     const grouped = new Map<string, PlayerStatistics>();
 
-    this.fines.forEach(fine => {
+    this.items.forEach(fine => {
       const id = String(fine.playerId || fine.playerName || 'unknown');
       const name = fine.playerName
         || [fine.playerFirstName, fine.playerLastName].filter(Boolean).join(' ')
@@ -155,7 +188,7 @@ export class StatisticsPage {
   private buildRuleStatistics() {
     const grouped = new Map<string, RuleStatistics>();
 
-    this.fines.forEach(fine => {
+    this.items.forEach(fine => {
       const id = String(fine.ruleId || fine.ruleLabel || 'unknown');
       const existing = grouped.get(id) || {
         id,
@@ -175,7 +208,7 @@ export class StatisticsPage {
 
   private buildTrend() {
     const daily = new Map<string, DailyFines>();
-    this.fines.forEach(fine => {
+    this.items.forEach(fine => {
       const date = this.normalizeDate(fine.date || fine.createdAt);
       if (!date) return;
 

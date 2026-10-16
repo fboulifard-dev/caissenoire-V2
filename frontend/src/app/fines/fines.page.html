@@ -1,9 +1,15 @@
+
+<ion-header class="statistics-header">
+  <ion-toolbar>
+    <ion-title>Amendes</ion-title>
+  </ion-toolbar>
+</ion-header>
 <ion-content class="ledger-content">
   <main class="ledger-shell">
     <section *ngIf="!loading" class="ledger-overview fine-overview">
       <div>
-        <span class="ledger-eyebrow">{{ selectedRuleId ? 'AMENDES PAR RÈGLE' : playerId ? 'AMENDES DU JOUEUR' : 'TOTAL ATTRIBUÉ' }}</span>
-        <h1>{{ selectedRuleId ? selectedRuleLabel : playerId ? (playerName || 'Joueur') : 'Amendes' }}</h1>
+        <span class="ledger-eyebrow">{{ selectedRuleId ? 'PAR RÈGLE' : playerId ? 'JOUEUR' : 'TOTAL ATTRIBUÉ' }}</span>
+        <h1>{{ selectedRuleId ? selectedRuleLabel : playerId ? (playerName || 'Joueur') : 'Tous' }}</h1>
         <p>{{ filteredFines.length }} amende{{ filteredFines.length === 1 ? '' : 's' }} {{ selectedRuleId ? 'pour cette règle' : playerId ? 'pour ce joueur' : 'sur la saison' }}</p>
       </div>
       <strong>{{ formatCurrency(totalFineAmount) }}</strong>
@@ -23,11 +29,11 @@
     </div>
 
     <div *ngIf="!loading && fineGroups.length" class="ledger-groups">
-      <section *ngFor="let group of fineGroups" class="date-group">
+      <section *ngFor="let group of visibleFineGroups" class="date-group">
         <header class="date-group-title">
           <div>
             <strong>{{ group.label }}</strong>
-            <small>{{ group.items.length }} amende{{ group.items.length === 1 ? '' : 's' }}</small>
+            <small>{{ group.count }} amende{{ group.count === 1 ? '' : 's' }}</small>
           </div>
           <strong>{{ formatGroupTotal(group.total) }}</strong>
         </header>
@@ -70,6 +76,10 @@
         </div>
       </section>
     </div>
+
+    <ion-infinite-scroll *ngIf="!loading && hasMore" threshold="200px" (ionInfinite)="onInfinite($event)">
+      <ion-infinite-scroll-content loadingSpinner="crescent"></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
 
     <section *ngIf="!loading && !filteredFines.length" class="ledger-empty">
       <ion-icon name="checkmark-circle-outline" aria-hidden="true"></ion-icon>

@@ -1,3 +1,9 @@
+
+<ion-header class="statistics-header">
+  <ion-toolbar>
+    <ion-title>Paiements</ion-title>
+  </ion-toolbar>
+</ion-header>
 <ion-content class="ledger-content">
   <main class="ledger-shell">
     <section *ngIf="!loading" class="ledger-overview payment-overview">
@@ -10,11 +16,11 @@
     </section>
 
     <div *ngIf="!loading && paymentGroups.length" class="ledger-groups">
-      <section *ngFor="let group of paymentGroups" class="date-group">
+      <section *ngFor="let group of visiblePaymentGroups" class="date-group">
         <header class="date-group-title">
           <div>
             <strong>{{ group.label }}</strong>
-            <small>{{ group.items.length }} paiement{{ group.items.length === 1 ? '' : 's' }}</small>
+            <small>{{ group.count }} paiement{{ group.count === 1 ? '' : 's' }}</small>
           </div>
           <strong>{{ formatGroupTotal(group.total) }}</strong>
         </header>
@@ -49,6 +55,10 @@
         </div>
       </section>
     </div>
+
+    <ion-infinite-scroll *ngIf="!loading && hasMore" threshold="200px" (ionInfinite)="onInfinite($event)">
+      <ion-infinite-scroll-content loadingSpinner="crescent"></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
 
     <section *ngIf="!loading && !payments.length" class="ledger-empty">
       <ion-icon name="wallet-outline" aria-hidden="true"></ion-icon>

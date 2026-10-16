@@ -17,6 +17,13 @@
   padding: 20px 16px 32px;
 }
 
+.dataset-switch {
+  --background: #e3eae3;
+  --color: #526256;
+  --color-checked: #fff;
+  --indicator-color: #247145;
+}
+
 .totals-row {
   display: grid;
   grid-template-columns: 1fr 1fr;

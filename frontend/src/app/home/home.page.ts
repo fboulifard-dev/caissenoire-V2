@@ -47,7 +47,7 @@ export class HomePage implements OnInit {
   connectedPlayerId = '';
   selectedPlayerId = '';
   players: any[] = [];
-  summaryView: 'common' | 'connected' | 'selected' = 'common';
+  summaryView: 'common' | 'connected' = 'common';
   iban = '';
   readOnly = false;
   isAdmin = false;
@@ -231,18 +231,9 @@ export class HomePage implements OnInit {
     };
   }
 
-  onPlayerChanged() {
-    this.summaryView = 'selected';
-    if (this.seasonId) {
-      this.summaryLoading = true;
-      this.loadPaymentSummary(this.seasonId);
-      this.loadRecentActivity(this.seasonId);
-    }
-  }
-
   onSummaryViewChanged(event: CustomEvent) {
     const view = event.detail.value;
-    if (view === 'common' || view === 'connected' || view === 'selected') {
+    if (view === 'common' || view === 'connected') {
       this.summaryView = view;
       if (this.seasonId) {
         this.loadRecentActivity(this.seasonId);

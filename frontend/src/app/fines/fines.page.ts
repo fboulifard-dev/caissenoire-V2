@@ -4,6 +4,14 @@ import { AlertController } from '@ionic/angular';
 import { catchError, forkJoin, of, Subscription } from 'rxjs';
 import { ApiService } from '../services/api.service';
 
+interface FineGroup {
+  date: string;
+  label: string;
+  total: number;
+  count?: number;
+  items: any[];
+}
+
 @Component({
   selector: 'app-fines',
   templateUrl: './fines.page.html',
@@ -12,7 +20,36 @@ import { ApiService } from '../services/api.service';
 })
 export class FinesPage implements OnInit, OnDestroy {
   fines: any[] = [];
-  fineGroups: { date: string; label: string; total: number; items: any[] }[] = [];
+  private allFineGroups: FineGroup[] = [];
+  private visibleCount = 30;
+  visibleFineGroups: FineGroup[] = [];
+  hasMore = false;
+
+  get fineGroups(): FineGroup[] {
+    return this.allFineGroups;
+  }
+
+  set fineGroups(groups: FineGroup[]) {
+    this.allFineGroups = groups;
+    this.refreshVisible();
+  }
+
+  onInfinite(event: Event) {
+    this.visibleCount += 30;
+    this.refreshVisible();
+    (event.target as HTMLIonInfiniteScrollElement).complete();
+  }
+
+  private refreshVisible() {
+    let remaining = this.visibleCount;
+    this.visibleFineGroups = [];
+    for (const group of this.allFineGroups) {
+      if (remaining <= 0) break;
+      this.visibleFineGroups.push({ ...group, count: group.items.length, items: group.items.slice(0, remaining) });
+      remaining -= group.items.length;
+    }
+    this.hasMore = this.allFineGroups.reduce((total, group) => total + group.items.length, 0) > this.visibleCount;
+  }
   loading = true;
   seasonId = '';
   playerId = '';
@@ -108,6 +145,7 @@ export class FinesPage implements OnInit, OnDestroy {
           ? `${player.firstName || ''} ${player.lastName || ''}`.trim() || player.name || player.email || ''
           : '';
         this.fines = fines || [];
+        this.visibleCount = 30;
         this.fineGroups = this.groupByCreationDate(this.filteredFines);
         this.loading = false;
       },
@@ -120,6 +158,7 @@ export class FinesPage implements OnInit, OnDestroy {
   }
 
   onRuleFilterChanged() {
+    this.visibleCount = 30;
     this.fineGroups = this.groupByCreationDate(this.filteredFines);
   }
 
