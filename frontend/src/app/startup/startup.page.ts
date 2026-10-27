@@ -38,6 +38,26 @@ export class StartupPage implements OnInit {
     this.error = '';
 
     try {
+      const params = new URLSearchParams(window.location.search);
+      const oobCode = params.get('oobCode');
+      if (params.get('mode') === 'verifyEmail' && oobCode) {
+        this.loadingMessage = 'Activation du compte';
+        let signedIn = false;
+        try {
+          signedIn = await this.waitFor(this.auth.verifyEmail(oobCode));
+        } catch {
+          signedIn = await this.auth.authReady();
+        }
+        window.history.replaceState({}, '', window.location.pathname);
+        if (!signedIn) {
+          await this.router.navigateByUrl('/login', { replaceUrl: true });
+          return;
+        }
+        await this.waitForMinimumDisplay(startedAt);
+        await this.router.navigate(['/saisons'], { replaceUrl: true });
+        return;
+      }
+
       this.loadingMessage = 'Restauration du compte';
       if (!await this.waitFor(this.auth.authReady())) {
         await this.waitForMinimumDisplay(startedAt);
