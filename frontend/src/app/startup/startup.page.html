@@ -1,0 +1,20 @@
+<ion-content class="startup-content">
+  <main class="startup-shell">
+    <section class="startup-brand" aria-label="ASPTT Caisse noire">
+      <img src="assets/image/logo-asptt-grande.png" alt="ASPTT Nantes Handball" />
+      <span class="startup-club">ASPTT NANTES HB</span>
+      <h1>CAISSE NOIRE</h1>
+      <p class="startup-version">Version {{ appVersion }}</p>
+    </section>
+
+    <div class="startup-status" *ngIf="loading" role="status">
+      <ion-spinner name="crescent" aria-hidden="true"></ion-spinner>
+      <span>{{ loadingMessage }}</span>
+    </div>
+
+    <div class="startup-error" *ngIf="error" role="alert">
+      <p>{{ error }}</p>
+      <ion-button fill="outline" (click)="retry()">Réessayer</ion-button>
+    </div>
+  </main>
+</ion-content>

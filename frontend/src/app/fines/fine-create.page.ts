@@ -32,15 +32,45 @@ export class FineCreatePage implements OnDestroy {
   seasonId = '';
   fineId = '';
   editing = false;
+  isAdmin = false;
 
   constructor(
     private api: ApiService,
     private route: ActivatedRoute,
     private router: Router
-  ) {
+  ) {}
+
+  // Ionic met la page en cache : on réinitialise à chaque entrée.
+  ionViewWillEnter() {
+    if (this.photoPreviewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(this.photoPreviewUrl);
+    }
+    this.fine = {
+      date: new Date().toISOString().slice(0, 10),
+      playerId: '',
+      playerIds: [],
+      ruleId: '',
+      amount: 0,
+      comment: '',
+      photo: '',
+      matchDay: false,
+    };
+    this.pendingPhoto = null;
+    this.photoPreviewUrl = '';
+    this.photoRemoved = false;
+    this.imageError = '';
+    this.error = '';
+    this.saving = false;
     this.ensureSeasonUrl();
     this.fineId = this.route.snapshot.paramMap.get('fineId') || '';
     this.editing = Boolean(this.fineId);
+    this.api.getSeason(this.seasonId).subscribe({
+      next: (season: any) => {
+        this.isAdmin = Array.isArray(season?.player?.roles)
+          && season.player.roles.includes('ADMIN')
+          && season.readOnly !== true;
+      }
+    });
     this.loadSelectableData();
     if (this.editing) {
       this.loadFine();
@@ -130,7 +160,7 @@ export class FineCreatePage implements OnDestroy {
   }
 
   async submit() {
-    if (this.saving) {
+    if (this.saving || !this.isAdmin) {
       return;
     }
 

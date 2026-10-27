@@ -67,7 +67,7 @@ export class LoginPage {
     private pushNotifications: PushNotificationsService
   ) {
     if (this.auth.isLoggedIn()) {
-      this.router.navigate(['/saisons']);
+      this.router.navigateByUrl('/', { replaceUrl: true });
     }
   }
 
@@ -77,7 +77,7 @@ export class LoginPage {
       const {user} = await this.auth.signInEmail(this.email, this.password);
       if(user.emailVerified) {
       await this.registerPushToken();
-      this.router.navigate(['/saisons']);
+      this.router.navigateByUrl('/', { replaceUrl: true });
       } else {
         alert("Votre email n'est pas vérifier. Veuillez vérifier votre boîte mail pour activer votre compte.")
       }
@@ -93,7 +93,7 @@ export class LoginPage {
       this.loading = true;
       await this.auth.signInGoogle();
       await this.registerPushToken();
-      this.router.navigate(['/saisons']);
+      this.router.navigateByUrl('/', { replaceUrl: true });
     } catch (err) {
       alert('Google login failed');
     } finally {
@@ -106,7 +106,7 @@ export class LoginPage {
       this.loading = true;
       await this.auth.signInAppleWeb();
       await this.registerPushToken();
-      this.router.navigate(['/saisons']);
+      this.router.navigateByUrl('/', { replaceUrl: true });
     } catch (err) {
       alert('Apple login failed');
     } finally {

@@ -47,6 +47,32 @@ ion-card, ion-card-content, ion-list, ion-item, ion-item-sliding {
 	font-size: 1.25rem;
 }
 
+.fine-row-icon {
+	background: #fff0ec;
+	color: #b84d3e;
+}
+
+.active-filter-chips {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin: 8px 12px;
+}
+
+.active-filter-chips ion-chip {
+	max-width: 100%;
+	min-height: 34px;
+	margin: 2px;
+	--background: #edf5ef;
+	--color: #355640;
+	--border-color: #d8e6da;
+}
+
+.active-filter-chips ion-label {
+	font-size: 0.78rem;
+}
+
 .fine-photo-trigger {
 	display: block;
 	flex: 0 0 auto;

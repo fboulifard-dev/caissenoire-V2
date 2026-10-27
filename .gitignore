@@ -27,3 +27,4 @@ Thumbs.db
 frontend/android/.gradle/
 frontend/android/app/build/
 frontend/android/build/
+frontend/.firebase/hosting.*

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { getAuth, Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, OAuthProvider, signOut, onAuthStateChanged, sendEmailVerification, sendPasswordResetEmail } from 'firebase/auth';
+import { getAuth, Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, OAuthProvider, signOut, onAuthStateChanged, sendPasswordResetEmail, applyActionCode } from 'firebase/auth';
 import { initializeApp } from 'firebase/app';
 import { environment } from '../../environments/environment';
 import { BehaviorSubject } from 'rxjs';
@@ -57,9 +57,27 @@ export class AuthService {
 
   async createAccount(email: string, password: string) {
     const {user} = await createUserWithEmailAndPassword(this.auth, email, password);
-    await sendEmailVerification(user);
+    const response = await fetch(`${environment.apiUrl}/api/auth/send-verification`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${await user.getIdToken()}` },
+    });
+    if (!response.ok) {
+      throw new Error('verification-email-failed');
+    }
+  }
 
-    
+  // Valide le lien d'activation puis rafraîchit la session si l'utilisateur est déjà connecté
+  async verifyEmail(oobCode: string): Promise<boolean> {
+    await applyActionCode(this.auth, oobCode);
+    await this.auth.authStateReady();
+    const user = this.auth.currentUser;
+    if (!user) {
+      return false;
+    }
+    await user.reload();
+    await user.getIdToken(true);
+    this.currentUserSubject.next(user);
+    return user.emailVerified;
   }
 
   signInGoogle() {

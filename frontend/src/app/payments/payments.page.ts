@@ -4,6 +4,14 @@ import { AlertController } from '@ionic/angular';
 import { catchError, forkJoin, of, Subscription } from 'rxjs';
 import { ApiService } from '../services/api.service';
 
+interface PaymentGroup {
+  date: string;
+  label: string;
+  total: number;
+  count?: number;
+  items: any[];
+}
+
 @Component({
   selector: 'app-payments',
   templateUrl: './payments.page.html',
@@ -12,14 +20,45 @@ import { ApiService } from '../services/api.service';
 })
 export class PaymentsPage implements OnInit, OnDestroy {
   payments: any[] = [];
-  paymentGroups: { date: string; label: string; total: number; items: any[] }[] = [];
+  private allPaymentGroups: PaymentGroup[] = [];
+  private visibleCount = 30;
+  visiblePaymentGroups: PaymentGroup[] = [];
+  hasMore = false;
+
+  get paymentGroups(): PaymentGroup[] {
+    return this.allPaymentGroups;
+  }
+
+  set paymentGroups(groups: PaymentGroup[]) {
+    this.allPaymentGroups = groups;
+    this.refreshVisible();
+  }
+
+  onInfinite(event: Event) {
+    this.visibleCount += 30;
+    this.refreshVisible();
+    (event.target as HTMLIonInfiniteScrollElement).complete();
+  }
+
+  private refreshVisible() {
+    let remaining = this.visibleCount;
+    this.visiblePaymentGroups = [];
+    for (const group of this.allPaymentGroups) {
+      if (remaining <= 0) break;
+      this.visiblePaymentGroups.push({ ...group, count: group.items.length, items: group.items.slice(0, remaining) });
+      remaining -= group.items.length;
+    }
+    this.hasMore = this.allPaymentGroups.reduce((total, group) => total + group.items.length, 0) > this.visibleCount;
+  }
   creators: any[] = [];
   selectedCreator = '';
   loading = true;
   seasonId = '';
   playerId = '';
   playerName = '';
-  readOnly = false;
+  isAdmin = false;
+  selectedPaymentPhoto = '';
+  isPaymentPhotoOpen = false;
   seasonYear = '';
   private isActive = false;
   private querySubscription?: Subscription;
@@ -69,14 +108,19 @@ export class PaymentsPage implements OnInit, OnDestroy {
     this.dataSubscription?.unsubscribe();
     this.dataSubscription = forkJoin({
       payments: this.api.getSeasonPayments(this.seasonId, this.playerId || undefined),
-      players: this.playerId ? this.api.getSeasonPlayers(this.seasonId).pipe(catchError(() => of([]))) : of([])
+      players: this.playerId ? this.api.getSeasonPlayers(this.seasonId).pipe(catchError(() => of([]))) : of([]),
+      season: this.api.getSeason(this.seasonId).pipe(catchError(() => of(null)))
     }).subscribe({
-      next: ({ payments, players }: any) => {
+      next: ({ payments, players, season }: any) => {
+        this.isAdmin = Array.isArray(season?.player?.roles)
+          && season.player.roles.includes('ADMIN')
+          && season.readOnly !== true;
         const player = (players || []).find((item: any) => item.id === this.playerId);
         this.playerName = player
           ? `${player.firstName || ''} ${player.lastName || ''}`.trim() || player.name || player.email || ''
           : '';
         this.payments = payments || [];
+        this.visibleCount = 30;
         this.paymentGroups = this.groupByCreationDate(this.payments);
         this.creators = this.payments.filter((payment, index, paymentList) =>
           paymentList.findIndex(item => item.createdBy === payment.createdBy) === index
@@ -85,6 +129,24 @@ export class PaymentsPage implements OnInit, OnDestroy {
       },
       error: () => (this.loading = false)
     });
+  }
+
+  clearFilter(filter: 'joueur') {
+    return this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { [filter]: null },
+      queryParamsHandling: 'merge'
+    });
+  }
+
+  openPaymentPhoto(photo: string) {
+    this.selectedPaymentPhoto = photo;
+    this.isPaymentPhotoOpen = true;
+  }
+
+  closePaymentPhoto() {
+    this.isPaymentPhotoOpen = false;
+    this.selectedPaymentPhoto = '';
   }
 
   editPayment(payment: any) {

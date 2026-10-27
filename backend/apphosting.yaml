@@ -9,3 +9,15 @@ scripts:
 env:
   - variable: NODE_ENV
     value: recette
+  - variable: APP_URL
+    value: https://rec-asptt.fboulifard.com
+  - variable: SMTP_HOST
+    value: smtp.example.com
+  - variable: SMTP_PORT
+    value: "587"
+  - variable: SMTP_FROM
+    value: Caisse Noire <no-reply@fboulifard.com>
+  - variable: SMTP_USER
+    secret: SMTP_USER
+  - variable: SMTP_PASSWORD
+    secret: SMTP_PASSWORD
