@@ -107,6 +107,16 @@ Remplacer `caisse-noire-api` par l'ID reel du backend choisi pendant
 `firebase init apphosting`. L'URL publique sera affichee par la commande de
 deploiement. Les routes actives sont notamment `/api/users` et `/api/seasons`.
 
+Si le deploiement echoue avec l'erreur `Error resolving secret version ...
+SMTP_USER/versions/latest`, creer les secrets s'ils n'existent pas, puis
+donner acces au backend :
+
+```powershell
+firebase apphosting:secrets:set SMTP_USER --project caissenoire-dev-84854
+firebase apphosting:secrets:set SMTP_PASSWORD --project caissenoire-dev-84854
+firebase apphosting:secrets:grantaccess SMTP_USER,SMTP_PASSWORD --project caissenoire-dev-84854 --backend api
+```
+
 Pour les appels depuis l'application Ionic, remplacer l'URL locale de l'API
 par cette URL App Hosting et verifier que le jeton Firebase est envoye dans
 `Authorization: Bearer <ID_TOKEN>`.
