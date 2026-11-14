@@ -191,6 +191,16 @@ export class ApiService {
     );
   }
 
+  setFineFavorite(seasonId: string, fineId: string, favorite: boolean) {
+    return this.getHeadersWithToken().pipe(
+      switchMap(headers => this.http.put<{ favorite: boolean }>(
+        `${environment.apiUrl}/api/seasons/${seasonId}/fines/${fineId}/favorite`,
+        { favorite },
+        { headers }
+      ))
+    );
+  }
+
   registerDeviceToken(token: string) {
     return this.getHeadersWithToken().pipe(
       switchMap((headers) => this.http.post(

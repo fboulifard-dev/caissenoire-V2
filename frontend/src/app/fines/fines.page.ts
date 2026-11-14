@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlertController } from '@ionic/angular';
-import { catchError, forkJoin, of, Subscription } from 'rxjs';
+import { AlertController, IonItemSliding } from '@ionic/angular';
+import { catchError, finalize, forkJoin, of, Subscription } from 'rxjs';
 import { ApiService } from '../services/api.service';
 
 interface FineGroup {
@@ -61,6 +61,7 @@ export class FinesPage implements OnInit, OnDestroy {
   ruleIcons: Record<string, string> = {};
   selectedFinePhoto = '';
   isFinePhotoOpen = false;
+  pendingFavorites = new Set<string>();
   private isActive = false;
   private querySubscription?: Subscription;
   private dataSubscription?: Subscription;
@@ -190,6 +191,28 @@ export class FinesPage implements OnInit, OnDestroy {
 
   editFine(fine: any) {
     this.router.navigate(['/saisons', this.seasonId, 'operation', 'amendes', 'edit', fine.id]);
+  }
+
+  toggleFavorite(fine: { id: string; favorite?: boolean }, sliding: IonItemSliding) {
+    if (!this.isAdmin || this.pendingFavorites.has(fine.id)) return;
+
+    this.pendingFavorites.add(fine.id);
+    this.api.setFineFavorite(this.seasonId, fine.id, fine.favorite !== true)
+      .pipe(finalize(() => this.pendingFavorites.delete(fine.id)))
+      .subscribe({
+        next: ({ favorite }) => {
+          fine.favorite = favorite;
+          void sliding.close();
+        },
+        error: async () => {
+          const alert = await this.alertController.create({
+            header: 'Erreur',
+            message: 'Impossible de modifier les favoris. Réessayez.',
+            buttons: ['OK']
+          });
+          await alert.present();
+        }
+      });
   }
 
   async deleteFine(fine: any) {

@@ -451,6 +451,24 @@ router.put('/:seasonId/fines/:id', requireSeason, requireAdmin, async (req, res)
   }
 });
 
+router.put('/:seasonId/fines/:id/favorite', requireSeason, requireAdmin, async (req, res) => {
+  if (typeof req.body?.favorite !== 'boolean') {
+    return res.status(400).json({ error: 'A boolean favorite value is required' });
+  }
+
+  try {
+    await getDb().collection('seasons').doc(req.season.id)
+      .collection('fines').doc(req.params.id).update({ favorite: req.body.favorite });
+    res.json({ favorite: req.body.favorite });
+  } catch (err) {
+    if (err.code === 5 || err.code === 'not-found') {
+      return res.status(404).json({ error: 'Fine not found' });
+    }
+    console.error('Fine favorite update failed:', err.code || err.message);
+    res.status(500).json({ error: 'Failed to update fine favorite' });
+  }
+});
+
 router.delete('/:seasonId/fines/:id', requireSeason, requireAdmin, async (req, res) => {
   try {
     const id = req.params.id;

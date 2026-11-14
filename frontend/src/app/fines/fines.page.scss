@@ -52,6 +52,10 @@ ion-card, ion-card-content, ion-list, ion-item, ion-item-sliding {
 	color: #b84d3e;
 }
 
+.favorite-icon {
+	color: var(--ion-color-warning-shade);
+}
+
 .active-filter-chips {
 	display: flex;
 	align-items: center;
