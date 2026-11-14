@@ -1,5 +1,21 @@
 /* Styles for fines page */
 
+.fine-filters-menu {
+	--width: min(360px, 88vw);
+}
+
+.fine-filter-fields {
+	width: calc(100% - 32px);
+	max-width: 300px;
+	margin: 16px auto;
+}
+
+.fine-filter-actions {
+	max-width: 332px;
+	margin: 0 auto;
+	padding: 16px;
+}
+
 .date-group-title {
 	margin: 16px 0 8px;
 	padding: 8px 12px 0 12px;
