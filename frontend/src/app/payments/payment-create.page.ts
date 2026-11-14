@@ -21,15 +21,34 @@ export class PaymentCreatePage {
   seasonId = '';
   paymentId = '';
   editing = false;
+  isAdmin = false;
 
   constructor(
     private api: ApiService,
     private route: ActivatedRoute,
     private router: Router
-  ) {
+  ) {}
+
+  // Ionic met la page en cache : on réinitialise à chaque entrée.
+  ionViewWillEnter() {
+    this.payment = {
+      date: new Date().toISOString().slice(0, 10),
+      amount: '',
+      playerId: '',
+      comment: ''
+    };
+    this.error = '';
+    this.saving = false;
     this.ensureSeasonUrl();
     this.paymentId = this.route.snapshot.paramMap.get('paymentId') || '';
     this.editing = Boolean(this.paymentId);
+    this.api.getSeason(this.seasonId).subscribe({
+      next: (season: any) => {
+        this.isAdmin = Array.isArray(season?.player?.roles)
+          && season.player.roles.includes('ADMIN')
+          && season.readOnly !== true;
+      }
+    });
     this.api.getSeasonPlayers(this.seasonId).subscribe({
       next: (players: any) => (this.users = players || []),
       error: () => (this.error = 'Impossible de charger les joueurs.')
@@ -68,7 +87,7 @@ export class PaymentCreatePage {
   }
 
   submit() {
-    if (this.saving) {
+    if (this.saving || !this.isAdmin) {
       return;
     }
 

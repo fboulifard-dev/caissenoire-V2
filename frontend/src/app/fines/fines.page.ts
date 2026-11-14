@@ -1,8 +1,16 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlertController } from '@ionic/angular';
-import { catchError, forkJoin, of, Subscription } from 'rxjs';
+import { AlertController, IonItemSliding } from '@ionic/angular';
+import { catchError, finalize, forkJoin, of, Subscription } from 'rxjs';
 import { ApiService } from '../services/api.service';
+
+interface FineGroup {
+  date: string;
+  label: string;
+  total: number;
+  count?: number;
+  items: any[];
+}
 
 @Component({
   selector: 'app-fines',
@@ -12,18 +20,48 @@ import { ApiService } from '../services/api.service';
 })
 export class FinesPage implements OnInit, OnDestroy {
   fines: any[] = [];
-  fineGroups: { date: string; label: string; total: number; items: any[] }[] = [];
+  private allFineGroups: FineGroup[] = [];
+  private visibleCount = 30;
+  visibleFineGroups: FineGroup[] = [];
+  hasMore = false;
+
+  get fineGroups(): FineGroup[] {
+    return this.allFineGroups;
+  }
+
+  set fineGroups(groups: FineGroup[]) {
+    this.allFineGroups = groups;
+    this.refreshVisible();
+  }
+
+  onInfinite(event: Event) {
+    this.visibleCount += 30;
+    this.refreshVisible();
+    (event.target as HTMLIonInfiniteScrollElement).complete();
+  }
+
+  private refreshVisible() {
+    let remaining = this.visibleCount;
+    this.visibleFineGroups = [];
+    for (const group of this.allFineGroups) {
+      if (remaining <= 0) break;
+      this.visibleFineGroups.push({ ...group, count: group.items.length, items: group.items.slice(0, remaining) });
+      remaining -= group.items.length;
+    }
+    this.hasMore = this.allFineGroups.reduce((total, group) => total + group.items.length, 0) > this.visibleCount;
+  }
   loading = true;
   seasonId = '';
   playerId = '';
   playerName = '';
   seasonYear = '';
-  readOnly = false;
+  isAdmin = false;
   rules: any[] = [];
   selectedRuleId = '';
   ruleIcons: Record<string, string> = {};
   selectedFinePhoto = '';
   isFinePhotoOpen = false;
+  pendingFavorites = new Set<string>();
   private isActive = false;
   private querySubscription?: Subscription;
   private dataSubscription?: Subscription;
@@ -34,8 +72,14 @@ export class FinesPage implements OnInit, OnDestroy {
 
   get filteredFines(): any[] {
     return this.selectedRuleId
-      ? this.fines.filter(fine => fine.ruleId === this.selectedRuleId)
+      ? this.fines.filter(fine => String(fine.ruleId || fine.ruleLabel || 'unknown') === this.selectedRuleId)
       : this.fines;
+  }
+
+  get selectedRuleLabel(): string {
+    return this.rules.find(rule => rule.id === this.selectedRuleId)?.label
+      || this.fines.find(fine => String(fine.ruleId || fine.ruleLabel || 'unknown') === this.selectedRuleId)?.ruleLabel
+      || (this.selectedRuleId === 'unknown' ? 'Règle inconnue' : 'Règle sélectionnée');
   }
 
   constructor(
@@ -48,11 +92,14 @@ export class FinesPage implements OnInit, OnDestroy {
   ngOnInit() {
     this.ensureSeasonUrl();
     this.playerId = this.route.snapshot.queryParamMap.get('joueur') || '';
+    this.selectedRuleId = this.route.snapshot.queryParamMap.get('regle') || '';
     this.querySubscription = this.route.queryParamMap.subscribe(params => {
       const playerId = params.get('joueur') || '';
-      if (playerId === this.playerId) return;
+      const selectedRuleId = params.get('regle') || '';
+      if (playerId === this.playerId && selectedRuleId === this.selectedRuleId) return;
 
       this.playerId = playerId;
+      this.selectedRuleId = selectedRuleId;
       if (this.isActive) this.loadFines();
     });
   }
@@ -61,6 +108,7 @@ export class FinesPage implements OnInit, OnDestroy {
     this.isActive = true;
     this.ensureSeasonUrl();
     this.playerId = this.route.snapshot.queryParamMap.get('joueur') || '';
+    this.selectedRuleId = this.route.snapshot.queryParamMap.get('regle') || '';
     this.loadFines();
   }
 
@@ -79,9 +127,13 @@ export class FinesPage implements OnInit, OnDestroy {
     this.dataSubscription = forkJoin({
       fines: this.api.getSeasonFines(this.seasonId, this.playerId || undefined),
       rules: this.api.getSeasonRules(this.seasonId).pipe(catchError(() => of([]))),
-      players: this.playerId ? this.api.getSeasonPlayers(this.seasonId).pipe(catchError(() => of([]))) : of([])
+      players: this.playerId ? this.api.getSeasonPlayers(this.seasonId).pipe(catchError(() => of([]))) : of([]),
+      season: this.api.getSeason(this.seasonId).pipe(catchError(() => of(null)))
     }).subscribe({
-      next: ({ fines, rules, players }: any) => {
+      next: ({ fines, rules, players, season }: any) => {
+        this.isAdmin = Array.isArray(season?.player?.roles)
+          && season.player.roles.includes('ADMIN')
+          && season.readOnly !== true;
         this.rules = rules || [];
         this.ruleIcons = {};
         this.rules.forEach((rule: any) => {
@@ -94,6 +146,7 @@ export class FinesPage implements OnInit, OnDestroy {
           ? `${player.firstName || ''} ${player.lastName || ''}`.trim() || player.name || player.email || ''
           : '';
         this.fines = fines || [];
+        this.visibleCount = 30;
         this.fineGroups = this.groupByCreationDate(this.filteredFines);
         this.loading = false;
       },
@@ -106,7 +159,16 @@ export class FinesPage implements OnInit, OnDestroy {
   }
 
   onRuleFilterChanged() {
+    this.visibleCount = 30;
     this.fineGroups = this.groupByCreationDate(this.filteredFines);
+  }
+
+  clearFilter(filter: 'joueur' | 'regle') {
+    return this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { [filter]: null },
+      queryParamsHandling: 'merge'
+    });
   }
 
   openFinePhoto(photo: string) {
@@ -129,6 +191,28 @@ export class FinesPage implements OnInit, OnDestroy {
 
   editFine(fine: any) {
     this.router.navigate(['/saisons', this.seasonId, 'operation', 'amendes', 'edit', fine.id]);
+  }
+
+  toggleFavorite(fine: { id: string; favorite?: boolean }, sliding: IonItemSliding) {
+    if (!this.isAdmin || this.pendingFavorites.has(fine.id)) return;
+
+    this.pendingFavorites.add(fine.id);
+    this.api.setFineFavorite(this.seasonId, fine.id, fine.favorite !== true)
+      .pipe(finalize(() => this.pendingFavorites.delete(fine.id)))
+      .subscribe({
+        next: ({ favorite }) => {
+          fine.favorite = favorite;
+          void sliding.close();
+        },
+        error: async () => {
+          const alert = await this.alertController.create({
+            header: 'Erreur',
+            message: 'Impossible de modifier les favoris. Réessayez.',
+            buttons: ['OK']
+          });
+          await alert.present();
+        }
+      });
   }
 
   async deleteFine(fine: any) {

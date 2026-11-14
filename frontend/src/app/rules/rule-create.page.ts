@@ -34,6 +34,7 @@ export class RuleCreatePage {
   seasonId = '';
   saving = false;
   error = '';
+  isAdmin = false;
 
   constructor(
     private api: ApiService,
@@ -41,10 +42,17 @@ export class RuleCreatePage {
     private router: Router
   ) {
     this.seasonId = this.route.snapshot.paramMap.get('seasonId') || this.route.parent?.snapshot.paramMap.get('seasonId') || '';
+    this.api.getSeason(this.seasonId).subscribe({
+      next: (season: any) => {
+        this.isAdmin = Array.isArray(season?.player?.roles)
+          && season.player.roles.includes('ADMIN')
+          && season.readOnly !== true;
+      }
+    });
   }
 
   submit() {
-    if (this.saving) {
+    if (this.saving || !this.isAdmin) {
       return;
     }
 

@@ -4,6 +4,11 @@ import { authGuard, verifiedAuthGuard } from './guards/auth.guard';
 
 const routes: Routes = [
   {
+    path: '',
+    loadChildren: () => import('./startup/startup.module').then(m => m.StartupPageModule),
+    pathMatch: 'full'
+  },
+  {
     path: 'saisons',
     loadChildren: () => import('./seasons/seasons.module').then(m => m.SeasonsPageModule),
     canActivate: [verifiedAuthGuard]
@@ -34,8 +39,8 @@ const routes: Routes = [
     canActivate: [authGuard]
   },
   {
-    path: 'saisons/:seasonId/classement',
-    loadChildren: () => import('./ranking/ranking.module').then(m => m.RankingPageModule),
+    path: 'saisons/:seasonId/statistiques',
+    loadChildren: () => import('./statistics/statistics.module').then(m => m.StatisticsPageModule),
     canActivate: [authGuard]
   },
   {
@@ -59,11 +64,6 @@ const routes: Routes = [
     canActivate: [authGuard]
   },
   {
-    path: 'ranking',
-    loadChildren: () => import('./ranking/ranking.module').then(m => m.RankingPageModule),
-    canActivate: [authGuard]
-  },
-  {
     path: 'login',
     loadChildren: () => import('./login/login.module').then(m => m.LoginPageModule)
   },
@@ -74,11 +74,6 @@ const routes: Routes = [
   {
     path: 'operation',
     redirectTo: 'operation/amendes',
-    pathMatch: 'full'
-  },
-  {
-    path: '',
-    redirectTo: 'login',
     pathMatch: 'full'
   },
 ];

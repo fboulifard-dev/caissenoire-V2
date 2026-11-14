@@ -1,0 +1,127 @@
+<ion-header class="statistics-header">
+  <ion-toolbar>
+    <ion-title>Statistiques</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="statistics-content">
+  <main class="statistics-shell">
+    <div *ngIf="loading" class="statistics-loading" role="status">
+      <ion-spinner name="crescent"></ion-spinner>
+      <span>Chargement des statistiques</span>
+    </div>
+
+    <div *ngIf="error" class="statistics-message" role="alert">{{ error }}</div>
+
+    <ng-container *ngIf="!loading && !error">
+      <ion-segment class="dataset-switch" [value]="dataset" (ionChange)="onDatasetChanged($event)" aria-label="Amendes ou paiements">
+        <ion-segment-button value="fines"><ion-label>Amendes</ion-label></ion-segment-button>
+        <ion-segment-button value="payments"><ion-label>Paiements</ion-label></ion-segment-button>
+      </ion-segment>
+
+      <span class="stat-label">ÉVOLUTION DE LA CAISSE</span>
+      <section class="statistics-section trend-section">
+        
+        <header class="section-heading">
+          <div>
+            
+            <h1>{{ metric === 'amount' ? 'Montant cumulé' : 'Nombre cumulé' }}</h1>
+          </div>
+          <ion-segment [value]="metric" (ionChange)="onMetricChanged($event)" aria-label="Mesure de l’évolution">
+            <ion-segment-button value="amount"><ion-label>Montant</ion-label></ion-segment-button>
+            <ion-segment-button value="count"><ion-label>Nombre</ion-label></ion-segment-button>
+          </ion-segment>
+        </header>
+
+        <div *ngIf="!items.length" class="statistics-empty">Aucun{{ dataset === 'fines' ? 'e amende' : ' paiement' }} enregistré{{ dataset === 'fines' ? 'e' : '' }} pour cette saison.</div>
+        <div *ngIf="items.length" class="trend-chart">
+          <div class="chart-maximum">{{ chartMaxLabel }}</div>
+          <svg viewBox="0 0 360 180" role="img" [attr.aria-label]="'Évolution cumulée : ' + (metric === 'amount' ? 'montant' : 'nombre') + (dataset === 'fines' ? ' d’amendes' : ' de paiements')">
+            <line x1="24" y1="20" x2="24" y2="140" class="chart-axis"></line>
+            <line x1="24" y1="140" x2="336" y2="140" class="chart-axis"></line>
+            <line x1="24" y1="80" x2="336" y2="80" class="chart-gridline"></line>
+            <polygon [attr.points]="chartAreaPoints" class="chart-area"></polygon>
+            <polyline [attr.points]="chartPoints" class="chart-line"></polyline>
+          </svg>
+          <div class="chart-dates" aria-hidden="true">
+            <span>{{ chartStartLabel }}</span>
+            <span>{{ chartMiddleLabel }}</span>
+            <span>{{ chartEndLabel }}</span>
+          </div>
+        </div>
+      </section>
+
+      <a class="totals-row rule-link" [routerLink]="['/saisons', seasonId, 'operation', operationPath]" [attr.aria-label]="dataset === 'fines' ? 'Voir toutes les amendes' : 'Voir tous les paiements'">
+        <div>
+          <span class="stat-label">{{ dataset === 'fines' ? 'AMENDES' : 'PAIEMENTS' }}</span>
+          <strong>{{ formatNumber(totalCount) }}</strong>
+        </div>
+        <div>
+          <span class="stat-label">MONTANT TOTAL</span>
+          <strong>{{ formatCurrency(totalAmount) }}</strong>
+        </div>
+      </a>
+
+      <span class="stat-label">CLASSEMENTS</span>
+      <section class="statistics-section ranking-section">
+        <header class="section-heading">
+          <div>
+            <span class="stat-label">{{ dataset === 'fines' ? 'AMENDES' : 'PAIEMENTS' }}</span>
+            <h2>{{ rankingMode === 'players' ? 'Par joueur' : 'Par règle' }}</h2>
+          </div>
+          <ion-segment *ngIf="dataset === 'fines'" [value]="rankingMode" (ionChange)="onRankingModeChanged($event)" aria-label="Classement par joueur ou règle">
+            <ion-segment-button value="players"><ion-label>Joueurs</ion-label></ion-segment-button>
+            <ion-segment-button value="rules"><ion-label>Règles</ion-label></ion-segment-button>
+          </ion-segment>
+        </header>
+
+        <ng-container *ngIf="rankingMode === 'players'">
+          <div *ngIf="!players.length" class="statistics-empty">Aucun{{ dataset === 'fines' ? 'e amende' : ' paiement' }} enregistré{{ dataset === 'fines' ? 'e' : '' }} pour cette saison.</div>
+          <a
+            *ngFor="let player of players; let position = index"
+            class="ranking-player rule-link"
+            [routerLink]="['/saisons', seasonId, 'operation', operationPath]"
+            [queryParams]="{ joueur: player.id }"
+            [attr.aria-label]="'Voir les ' + (dataset === 'fines' ? 'amendes' : 'paiements') + ' de ' + player.name">
+            <span class="ranking-position">{{ position + 1 }}</span>
+            <div class="ranking-player-content">
+              <div class="rule-row-heading">
+                <strong>{{ player.name }}</strong>
+                <span class="rule-amount">
+                  {{ formatCurrency(player.amount) }}
+                  <small>{{ playerShare(player) | number:'1.0-1' }} % du total</small>
+                </span>
+              </div>
+              <div class="rule-row-detail">
+                <span class="rule-track"><span [style.width.%]="playerBarWidth(player)"></span></span>
+                <span>{{ formatNumber(player.count) }} {{ itemNoun }}{{ player.count === 1 ? '' : 's' }}</span>
+              </div>
+            </div>
+          </a>
+        </ng-container>
+
+        <ng-container *ngIf="rankingMode === 'rules' && dataset === 'fines'">
+          <div *ngIf="!rules.length" class="statistics-empty">Aucune règle avec amende pour cette saison.</div>
+          <a
+            *ngFor="let rule of rules"
+            class="rule-row rule-link"
+            [routerLink]="['/saisons', seasonId, 'operation', 'amendes']"
+            [queryParams]="{ regle: rule.id }"
+            [attr.aria-label]="'Voir les amendes pour la règle ' + rule.label">
+            <div class="rule-row-heading">
+              <strong>{{ rule.label }}</strong>
+              <span class="rule-amount">
+                {{ formatCurrency(rule.amount) }}
+                <small>{{ ruleShare(rule) | number:'1.0-1' }} % du {{ totalAmount > 0 ? 'montant' : 'nombre' }} total</small>
+              </span>
+            </div>
+            <div class="rule-row-detail">
+              <span class="rule-track"><span [style.width.%]="ruleBarWidth(rule)"></span></span>
+              <span>{{ formatNumber(rule.count) }} amende{{ rule.count === 1 ? '' : 's' }}</span>
+            </div>
+          </a>
+        </ng-container>
+      </section>
+    </ng-container>
+  </main>
+</ion-content>

@@ -50,7 +50,7 @@
       <p>{{ error }}</p>
     </ion-text>
 
-    <ion-button expand="block" type="submit" [disabled]="saving || !rule.label.trim() || rule.cost < 0">
+    <ion-button *ngIf="isAdmin" expand="block" type="submit" [disabled]="saving || !rule.label.trim() || rule.cost < 0">
       {{ saving ? 'Création...' : 'Créer' }}
     </ion-button>
   </form>

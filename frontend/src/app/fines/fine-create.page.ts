@@ -12,6 +12,7 @@ import { ApiService } from '../services/api.service';
 export class FineCreatePage implements OnDestroy {
   private readonly maxPhotoSize = 5 * 1024 * 1024;
   private pendingPhoto: Blob | null = null;
+  private initialFavorite = false;
   fine = {
     date: new Date().toISOString().slice(0, 10),
     playerId: '',
@@ -21,6 +22,7 @@ export class FineCreatePage implements OnDestroy {
     comment: '',
     photo: '',
     matchDay: false,
+    favorite: false,
   };
   players: any[] = [];
   rules: any[] = [];
@@ -32,15 +34,47 @@ export class FineCreatePage implements OnDestroy {
   seasonId = '';
   fineId = '';
   editing = false;
+  isAdmin = false;
 
   constructor(
     private api: ApiService,
     private route: ActivatedRoute,
     private router: Router
-  ) {
+  ) {}
+
+  // Ionic met la page en cache : on réinitialise à chaque entrée.
+  ionViewWillEnter() {
+    if (this.photoPreviewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(this.photoPreviewUrl);
+    }
+    this.fine = {
+      date: new Date().toISOString().slice(0, 10),
+      playerId: '',
+      playerIds: [],
+      ruleId: '',
+      amount: 0,
+      comment: '',
+      photo: '',
+      matchDay: false,
+      favorite: false,
+    };
+    this.initialFavorite = false;
+    this.pendingPhoto = null;
+    this.photoPreviewUrl = '';
+    this.photoRemoved = false;
+    this.imageError = '';
+    this.error = '';
+    this.saving = false;
     this.ensureSeasonUrl();
     this.fineId = this.route.snapshot.paramMap.get('fineId') || '';
     this.editing = Boolean(this.fineId);
+    this.api.getSeason(this.seasonId).subscribe({
+      next: (season: any) => {
+        this.isAdmin = Array.isArray(season?.player?.roles)
+          && season.player.roles.includes('ADMIN')
+          && season.readOnly !== true;
+      }
+    });
     this.loadSelectableData();
     if (this.editing) {
       this.loadFine();
@@ -93,7 +127,9 @@ export class FineCreatePage implements OnDestroy {
           comment: existingFine.comment || '',
           photo: existingFine.photo || '',
           matchDay: Boolean(existingFine.matchDay),
+          favorite: existingFine.favorite === true,
         };
+        this.initialFavorite = this.fine.favorite;
         this.photoPreviewUrl = this.fine.photo;
         this.photoRemoved = false;
       },
@@ -130,7 +166,7 @@ export class FineCreatePage implements OnDestroy {
   }
 
   async submit() {
-    if (this.saving) {
+    if (this.saving || !this.isAdmin) {
       return;
     }
 
@@ -168,8 +204,12 @@ export class FineCreatePage implements OnDestroy {
         matchDay: this.fine.matchDay,
       };
       const saveRequest = this.editing
-        ? this.api.updateFine(this.seasonId, this.fineId, { ...commonFineData, playerId: this.fine.playerId })
-        : this.api.createFine(this.seasonId, { ...commonFineData, playerIds });
+        ? this.api.updateFine(this.seasonId, this.fineId, {
+          ...commonFineData,
+          playerId: this.fine.playerId,
+          ...(this.fine.favorite !== this.initialFavorite ? { favorite: this.fine.favorite } : {})
+        })
+        : this.api.createFine(this.seasonId, { ...commonFineData, playerIds, favorite: this.fine.favorite });
       await firstValueFrom(saveRequest);
       await this.router.navigate(['/saisons', this.seasonId, 'operation', 'amendes']);
     } catch {

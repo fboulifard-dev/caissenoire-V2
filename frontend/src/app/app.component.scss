@@ -4,14 +4,13 @@
 	right: 0;
 	bottom: 0;
 	width: auto;
-	padding-bottom: env(safe-area-inset-bottom);
 	background: #fff;
 	box-shadow: 0 -4px 18px rgba(28, 49, 35, 0.08);
 	z-index: 10;
 }
 
 ion-app > ion-content {
-	--padding-bottom: calc(76px + env(safe-area-inset-bottom));
+	--padding-bottom: 76px;
 }
 
 .floating-season-navigation ion-toolbar {

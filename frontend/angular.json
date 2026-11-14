@@ -36,6 +36,11 @@
                 "output": "."
               },
               {
+                "glob": "apple-touch-icon.png",
+                "input": "src/assets/icon",
+                "output": "."
+              },
+              {
                 "glob": "firebase-messaging-sw.js",
                 "input": "src",
                 "output": "."
