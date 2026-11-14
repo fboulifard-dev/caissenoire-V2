@@ -12,6 +12,7 @@ import { ApiService } from '../services/api.service';
 export class FineCreatePage implements OnDestroy {
   private readonly maxPhotoSize = 5 * 1024 * 1024;
   private pendingPhoto: Blob | null = null;
+  private initialFavorite = false;
   fine = {
     date: new Date().toISOString().slice(0, 10),
     playerId: '',
@@ -21,6 +22,7 @@ export class FineCreatePage implements OnDestroy {
     comment: '',
     photo: '',
     matchDay: false,
+    favorite: false,
   };
   players: any[] = [];
   rules: any[] = [];
@@ -54,7 +56,9 @@ export class FineCreatePage implements OnDestroy {
       comment: '',
       photo: '',
       matchDay: false,
+      favorite: false,
     };
+    this.initialFavorite = false;
     this.pendingPhoto = null;
     this.photoPreviewUrl = '';
     this.photoRemoved = false;
@@ -123,7 +127,9 @@ export class FineCreatePage implements OnDestroy {
           comment: existingFine.comment || '',
           photo: existingFine.photo || '',
           matchDay: Boolean(existingFine.matchDay),
+          favorite: existingFine.favorite === true,
         };
+        this.initialFavorite = this.fine.favorite;
         this.photoPreviewUrl = this.fine.photo;
         this.photoRemoved = false;
       },
@@ -198,8 +204,12 @@ export class FineCreatePage implements OnDestroy {
         matchDay: this.fine.matchDay,
       };
       const saveRequest = this.editing
-        ? this.api.updateFine(this.seasonId, this.fineId, { ...commonFineData, playerId: this.fine.playerId })
-        : this.api.createFine(this.seasonId, { ...commonFineData, playerIds });
+        ? this.api.updateFine(this.seasonId, this.fineId, {
+          ...commonFineData,
+          playerId: this.fine.playerId,
+          ...(this.fine.favorite !== this.initialFavorite ? { favorite: this.fine.favorite } : {})
+        })
+        : this.api.createFine(this.seasonId, { ...commonFineData, playerIds, favorite: this.fine.favorite });
       await firstValueFrom(saveRequest);
       await this.router.navigate(['/saisons', this.seasonId, 'operation', 'amendes']);
     } catch {

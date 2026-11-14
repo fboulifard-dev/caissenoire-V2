@@ -416,6 +416,9 @@ router.post('/:seasonId/fines/photo', requireSeason, requireAdmin, (req, res, ne
 router.post('/:seasonId/fines',requireSeason, requireAdmin, async (req, res) => {
   try {
     const fine = {...req.body, creator : req.user.uid};
+    if (fine.favorite !== undefined && typeof fine.favorite !== 'boolean') {
+      return res.status(400).json({ error: 'A boolean favorite value is required' });
+    }
     const requestedPlayerIds = Array.isArray(fine.playerIds) ? fine.playerIds : (fine.playerId ? [fine.playerId] : []);
     const selectedPlayerIds = [...new Set(requestedPlayerIds.filter(id => typeof id === 'string' && id.trim()))];
     if (!selectedPlayerIds.length || typeof fine.ruleId !== 'string' || !fine.ruleId.trim()) {
@@ -444,6 +447,9 @@ router.post('/:seasonId/fines',requireSeason, requireAdmin, async (req, res) => 
 router.put('/:seasonId/fines/:id', requireSeason, requireAdmin, async (req, res) => {
   try {
     const fine = {...req.body, id : req.params.id};
+    if (fine.favorite !== undefined && typeof fine.favorite !== 'boolean') {
+      return res.status(400).json({ error: 'A boolean favorite value is required' });
+    }
     await updateFine(req.season.id, fine)
     res.json(fine.id);
   } catch (err) {

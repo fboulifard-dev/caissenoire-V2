@@ -93,6 +93,18 @@
         <ion-label slot="start">Jour de match</ion-label>
       </ion-item>
 
+      <ion-item>
+        <ion-icon name="star-outline" slot="start" aria-hidden="true"></ion-icon>
+        <ion-toggle
+          slot="end"
+          [(ngModel)]="fine.favorite"
+          name="favorite"
+          [disabled]="!isAdmin || saving"
+          aria-label="Amende favorite">
+        </ion-toggle>
+        <ion-label slot="start">Favori</ion-label>
+      </ion-item>
+
       <h2 class="operation-section-title media-section-title">Compléments</h2>
       <ion-item>
         <ion-textarea

@@ -38,6 +38,8 @@ Security:
 - Exemple de règles Firestore: `firebase.firestore.rules` (autorise uniquement les utilisateurs authentifiés)
 - Les amendes des saisons sont modifiées uniquement via l'API backend ; les
   favoris communs sont réservés aux administrateurs de la saison active.
+  Le choix de favori à la création s'applique à toutes les amendes créées
+  pour les joueurs sélectionnés ; il reste modifiable par amende.
   Déployez les règles `firebase.firestore.rules` sur chaque projet Firebase :
   sans ces règles, un accès Firestore direct plus permissif pourrait contourner
   cette restriction.

@@ -43,6 +43,9 @@ test('only active-season admins can update a shared fine favorite', async (t) =>
     }
   };
   mock.method(firebase, 'getDb', () => db);
+  const fines = require('../services/fines');
+  const createFine = mock.method(fines, 'createFine', async () => []);
+  const updateFine = mock.method(fines, 'updateFine', async () => {});
   mock.method(auth, 'verifyToken', (req, res, next) => {
     if (!req.headers.authorization) return res.sendStatus(401);
     req.user = { uid: req.headers.authorization };
@@ -83,4 +86,21 @@ test('only active-season admins can update a shared fine favorite', async (t) =>
   assert.equal(response.status, 200);
   assert.equal(fine.favorite, false);
   assert.equal(fine.amount, 10);
+
+  const save = (method, path, body) => fetch(`${url}/active/fines${path}`, {
+    method,
+    headers: { 'Content-Type': 'application/json', Authorization: 'admin' },
+    body: JSON.stringify(body)
+  });
+  const createBody = { playerIds: ['player'], ruleId: 'rule' };
+  assert.equal((await save('POST', '', { ...createBody, favorite: null })).status, 400);
+  assert.equal((await save('PUT', '/fine', { favorite: 'false' })).status, 400);
+  assert.equal(createFine.mock.calls.length, 0);
+  assert.equal(updateFine.mock.calls.length, 0);
+  assert.equal((await save('POST', '', { ...createBody, favorite: true })).status, 201);
+  assert.equal(createFine.mock.calls[0].arguments[1].favorite, true);
+  assert.equal((await save('PUT', '/fine', { favorite: false })).status, 200);
+  assert.equal(updateFine.mock.calls[0].arguments[1].favorite, false);
+  assert.equal((await save('PUT', '/fine', { amount: 12 })).status, 200);
+  assert.equal(Object.hasOwn(updateFine.mock.calls[1].arguments[1], 'favorite'), false);
 });
