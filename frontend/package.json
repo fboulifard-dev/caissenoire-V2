@@ -10,7 +10,8 @@
     "build-rec": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/build-rec.ps1",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "deploy": "ng build & firebase deploy"
   },
   "private": true,
   "dependencies": {
