@@ -36,6 +36,22 @@ npm run seed
 
 Security:
 - Exemple de règles Firestore: `firebase.firestore.rules` (autorise uniquement les utilisateurs authentifiés)
+- Les amendes des saisons sont modifiées uniquement via l'API backend ; les
+  favoris communs sont réservés aux administrateurs de la saison active.
+  Le choix de favori à la création s'applique à toutes les amendes créées
+  pour les joueurs sélectionnés ; il reste modifiable par amende.
+  Déployez les règles `firebase.firestore.rules` sur chaque projet Firebase :
+  sans ces règles, un accès Firestore direct plus permissif pourrait contourner
+  cette restriction.
+
+Depuis la racine du dépôt, après avoir sélectionné le bon projet Firebase :
+
+```sh
+firebase deploy --config firebase.firestore.json --only firestore:rules --project ID_DU_PROJET
+```
+
+Cette commande remplace les règles Firestore du projet ciblé ; vérifiez-les
+avant de l'exécuter, notamment en production.
 
 Firebase setup (quick start)
 1. Create a Firebase project at https://console.firebase.google.com.

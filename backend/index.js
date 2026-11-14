@@ -12,14 +12,8 @@ app.get('/test', (req, res) => {
 	res.send("L'api est OK");
 });
 
-// const finesRouter = require('./routes/fines');
-// const paymentsRouter = require('./routes/payments');
-// const usersRouter = require('./routes/users');
 const seasonsRouter = require('./routes/seasons');
 
-//app.use('/api/fines', finesRouter);
-//app.use('/api/payments', paymentsRouter);
-// app.use('/api/users', usersRouter);
 app.use('/api/seasons', seasonsRouter);
 app.use('/api/auth', require('./routes/auth'));
 

@@ -155,6 +155,7 @@ export class ApiService {
     comment?: string;
     photo?: string | null;
     matchDay?: boolean;
+    favorite?: boolean;
   }) {
     return this.getHeadersWithToken().pipe(
       switchMap((headers) => this.http.post(`${environment.apiUrl}/api/seasons/${seasonId}/fines`, fine, { headers }))
@@ -179,6 +180,7 @@ export class ApiService {
     comment?: string;
     photo?: string | null;
     matchDay?: boolean;
+    favorite?: boolean;
   }) {
     return this.getHeadersWithToken().pipe(
       switchMap((headers) => this.http.put(`${environment.apiUrl}/api/seasons/${seasonId}/fines/${fineId}`, fine, { headers }))
@@ -188,6 +190,16 @@ export class ApiService {
   deleteFine(seasonId: string, fineId: string) {
     return this.getHeadersWithToken().pipe(
       switchMap((headers) => this.http.delete(`${environment.apiUrl}/api/seasons/${seasonId}/fines/${fineId}`, { headers }))
+    );
+  }
+
+  setFineFavorite(seasonId: string, fineId: string, favorite: boolean) {
+    return this.getHeadersWithToken().pipe(
+      switchMap(headers => this.http.put<{ favorite: boolean }>(
+        `${environment.apiUrl}/api/seasons/${seasonId}/fines/${fineId}/favorite`,
+        { favorite },
+        { headers }
+      ))
     );
   }
 

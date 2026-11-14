@@ -118,6 +118,7 @@ async function createFine(saisonId, fine, playersId) {
         ruleLabel: ruleData.label,
         amount: fine.amount || 0,
         matchDay: finalMatchDay,
+        favorite: fine.favorite === true,
         photo: fine.photo || null,
         comment: fine.comment || '',
         createdBy: fine.creator,

@@ -129,7 +129,7 @@ export class StatisticsPage {
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
       currency: 'EUR',
-      maximumFractionDigits: 2
+      maximumFractionDigits: 0
     }).format(amount);
   }
 

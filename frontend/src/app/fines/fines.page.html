@@ -38,7 +38,7 @@
           <strong>{{ formatGroupTotal(group.total) }}</strong>
         </header>
         <div class="ledger-rows">
-          <ion-item-sliding *ngFor="let f of group.items">
+          <ion-item-sliding *ngFor="let f of group.items" #sliding>
             <ion-item class="ledger-row fine-row" lines="none">
               <span slot="start" class="ledger-row-icon fine-row-icon">
                 <ion-icon [name]="getRuleIcon(f.ruleId)" aria-hidden="true"></ion-icon>
@@ -58,6 +58,7 @@
                 <img [src]="f.photo" alt="" />
               </button>
               <ion-note slot="end" class="ledger-amount fine-row-amount">
+                <ion-icon *ngIf="f.favorite === true" name="star" class="favorite-icon" aria-label="Amende favorite"></ion-icon>
                 <ion-icon *ngIf="f.matchDay" name="football-outline" aria-label="Jour de match"></ion-icon>
                 <strong>{{ (f.amount || 0) | currency:'EUR':'symbol':'1.0-0' }}</strong>
               </ion-note>
@@ -68,6 +69,10 @@
               </ion-item-option>
             </ion-item-options>
             <ion-item-options *ngIf="isAdmin" side="end">
+              <ion-item-option color="warning" [disabled]="pendingFavorites.has(f.id)" (click)="toggleFavorite(f, sliding)"
+                [attr.aria-label]="f.favorite === true ? 'Retirer des favoris' : 'Ajouter aux favoris'">
+                <ion-icon [name]="f.favorite === true ? 'star' : 'star-outline'" slot="icon-only"></ion-icon>
+              </ion-item-option>
               <ion-item-option color="primary" (click)="editFine(f)" aria-label="Modifier l’amende">
                 <ion-icon name="create-outline" slot="icon-only"></ion-icon>
               </ion-item-option>
