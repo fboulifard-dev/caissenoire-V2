@@ -12,6 +12,14 @@ interface FineGroup {
   items: any[];
 }
 
+interface FinePlayer {
+  id: string;
+  firstName?: string;
+  lastName?: string;
+  name?: string;
+  email?: string;
+}
+
 @Component({
   selector: 'app-fines',
   templateUrl: './fines.page.html',
@@ -19,6 +27,9 @@ interface FineGroup {
   standalone: false,
 })
 export class FinesPage implements OnInit, OnDestroy {
+  private static nextMenuId = 0;
+  readonly filterMenuId = `fine-filters-${++FinesPage.nextMenuId}`;
+  readonly filterContentId = `${this.filterMenuId}-content`;
   fines: any[] = [];
   private allFineGroups: FineGroup[] = [];
   private visibleCount = 30;
@@ -56,8 +67,12 @@ export class FinesPage implements OnInit, OnDestroy {
   playerName = '';
   seasonYear = '';
   isAdmin = false;
+  players: FinePlayer[] = [];
+  playersLoadError = false;
   rules: any[] = [];
   selectedRuleId = '';
+  favoritesOnly = false;
+  matchDayOnly = false;
   ruleIcons: Record<string, string> = {};
   selectedFinePhoto = '';
   isFinePhotoOpen = false;
@@ -71,9 +86,46 @@ export class FinesPage implements OnInit, OnDestroy {
   }
 
   get filteredFines(): any[] {
-    return this.selectedRuleId
-      ? this.fines.filter(fine => String(fine.ruleId || fine.ruleLabel || 'unknown') === this.selectedRuleId)
-      : this.fines;
+    return this.fines.filter(fine =>
+      (!this.selectedRuleId || String(fine.ruleId || fine.ruleLabel || 'unknown') === this.selectedRuleId)
+      && (!this.favoritesOnly || fine.favorite === true)
+      && (!this.matchDayOnly || fine.matchDay === true)
+    );
+  }
+
+  get hasFineFilters(): boolean {
+    return !!this.playerId || !!this.selectedRuleId || this.favoritesOnly || this.matchDayOnly;
+  }
+
+  get filterPlayers(): { id: string; label: string }[] {
+    const options = this.players.map(player => ({
+      id: player.id,
+      label: this.playerOptionLabel(player)
+    }));
+    if (this.playerId && !options.some(player => player.id === this.playerId)) {
+      options.push({ id: this.playerId, label: this.playerName || 'Joueur sélectionné' });
+    }
+    return options.sort((first, second) => first.label.localeCompare(second.label, 'fr'));
+  }
+
+  get filterRules(): { id: string; label: string }[] {
+    const options = new Map<string, string>();
+    this.rules.forEach(rule => {
+      if (rule.id && rule.label) options.set(String(rule.id), String(rule.label));
+    });
+    this.fines.forEach(fine => {
+      const id = String(fine.ruleId || fine.ruleLabel || 'unknown');
+      if (!options.has(id)) options.set(id, String(fine.ruleLabel || 'Règle inconnue'));
+    });
+    if (this.selectedRuleId && !options.has(this.selectedRuleId)) {
+      options.set(this.selectedRuleId, this.selectedRuleLabel);
+    }
+    return Array.from(options, ([id, label]) => ({ id, label }))
+      .sort((first, second) => first.label.localeCompare(second.label, 'fr'));
+  }
+
+  trackFilterOption(_index: number, option: { id: string }): string {
+    return option.id;
   }
 
   get selectedRuleLabel(): string {
@@ -121,13 +173,17 @@ export class FinesPage implements OnInit, OnDestroy {
     this.dataSubscription?.unsubscribe();
   }
 
-  private loadFines() {
+  loadFines() {
     this.loading = true;
+    this.playersLoadError = false;
     this.dataSubscription?.unsubscribe();
     this.dataSubscription = forkJoin({
       fines: this.api.getSeasonFines(this.seasonId, this.playerId || undefined),
       rules: this.api.getSeasonRules(this.seasonId).pipe(catchError(() => of([]))),
-      players: this.playerId ? this.api.getSeasonPlayers(this.seasonId).pipe(catchError(() => of([]))) : of([]),
+      players: this.api.getSeasonPlayers(this.seasonId).pipe(catchError(() => {
+        this.playersLoadError = true;
+        return of([]);
+      })),
       season: this.api.getSeason(this.seasonId).pipe(catchError(() => of(null)))
     }).subscribe({
       next: ({ fines, rules, players, season }: any) => {
@@ -141,10 +197,9 @@ export class FinesPage implements OnInit, OnDestroy {
             this.ruleIcons[rule.id] = rule.icon;
           }
         });
-        const player = (players || []).find((item: any) => item.id === this.playerId);
-        this.playerName = player
-          ? `${player.firstName || ''} ${player.lastName || ''}`.trim() || player.name || player.email || ''
-          : '';
+        this.players = players || [];
+        const player = this.players.find(item => item.id === this.playerId);
+        this.playerName = player ? this.playerOptionLabel(player) : '';
         this.fines = fines || [];
         this.visibleCount = 30;
         this.fineGroups = this.groupByCreationDate(this.filteredFines);
@@ -158,9 +213,44 @@ export class FinesPage implements OnInit, OnDestroy {
     return ruleId ? this.ruleIcons[ruleId] || 'help-circle-outline' : 'help-circle-outline';
   }
 
-  onRuleFilterChanged() {
+  onFilterChanged() {
     this.visibleCount = 30;
     this.fineGroups = this.groupByCreationDate(this.filteredFines);
+  }
+
+  setRuleFilter(ruleId: string | null) {
+    return this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { regle: ruleId || null },
+      queryParamsHandling: 'merge'
+    });
+  }
+
+  setPlayerFilter(playerId: string | null) {
+    return this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { joueur: playerId || null },
+      queryParamsHandling: 'merge'
+    });
+  }
+
+  resetFineFilters() {
+    this.favoritesOnly = false;
+    this.matchDayOnly = false;
+    this.onFilterChanged();
+    if (this.selectedRuleId || this.playerId) {
+      return this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { joueur: null, regle: null },
+        queryParamsHandling: 'merge'
+      });
+    }
+    return Promise.resolve(true);
+  }
+
+  private playerOptionLabel(player: FinePlayer): string {
+    return `${player.firstName || ''} ${player.lastName || ''}`.trim()
+      || player.name || player.email || player.id;
   }
 
   clearFilter(filter: 'joueur' | 'regle') {
@@ -202,6 +292,7 @@ export class FinesPage implements OnInit, OnDestroy {
       .subscribe({
         next: ({ favorite }) => {
           fine.favorite = favorite;
+          if (this.favoritesOnly) this.onFilterChanged();
           void sliding.close();
         },
         error: async () => {
