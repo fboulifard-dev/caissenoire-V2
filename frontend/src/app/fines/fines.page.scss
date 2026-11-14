@@ -10,6 +10,12 @@
 	margin: 16px auto;
 }
 
+.fine-filter-fields,
+.fine-filter-fields ion-item {
+	background: transparent !important;
+	--background: transparent !important;
+}
+
 .fine-filter-actions {
 	max-width: 332px;
 	margin: 0 auto;

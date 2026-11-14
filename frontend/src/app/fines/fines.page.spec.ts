@@ -233,6 +233,10 @@ describe('FinesPage filter menu', () => {
       const fields: HTMLElement = menu.querySelector('.fine-filter-fields')!;
       const container: HTMLElement = menu.shadowRoot!.querySelector('.menu-inner')!;
       expect(fields.getBoundingClientRect().width).toBeLessThan(container.getBoundingClientRect().width);
+      expect(getComputedStyle(fields).backgroundColor).toBe('rgba(0, 0, 0, 0)');
+      const item: HTMLIonItemElement = fields.querySelector('ion-item')!;
+      await item.componentOnReady();
+      expect(getComputedStyle(item).getPropertyValue('--background').trim()).toBe('transparent');
       const closeButton: HTMLIonButtonElement = menu.querySelector('ion-button')!;
       closeButton.click();
       await new Promise(resolve => setTimeout(resolve, 600));
