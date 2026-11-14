@@ -16,6 +16,38 @@ npm start
 ```
 
 API:
+### Email de test public
+
+Configurer `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`,
+`SMTP_PASSWORD`, `SMTP_FROM` et `SMTP_TEST_TO` dans `.env`. Pour IONOS France,
+utiliser `smtp.ionos.fr`, le port `465` et `SMTP_SECURE=true` ; le port `587`
+utilise `SMTP_SECURE=false` avec STARTTLS obligatoire. L'identifiant est
+l'adresse complète de la boîte IONOS, et l'expéditeur doit être autorisé par
+IONOS. Voir les [paramètres IONOS](https://www.ionos.fr/assistance/email/sujets-generaux/messagerie-ionos-donnees-de-serveur-pour-imap-pop3-et-smtp/).
+Le destinataire est configuré côté serveur, jamais fourni par l'appelant.
+L'objet est `test` et le contenu est modifiable dans
+`templates/test-mail.txt`.
+
+Définir `SMTP_TEST_ENABLED=true` pour activer l'URL publique, puis :
+
+```sh
+curl http://localhost:3000/api/mail/test
+```
+
+Sans authentification, toute personne ayant accès à l'URL peut déclencher le
+test. Une seule tentative par minute est autorisée par instance ; `429` indique
+une limitation. Cette limite n'est pas partagée entre instances ni conservée
+après redémarrage : prévoir une limitation de débit au niveau de l'hébergement
+et désactiver l'URL après le test avec `SMTP_TEST_ENABLED=false`. La réponse
+`200` signifie que le serveur SMTP a accepté le message, pas qu'il a été
+livré ; `500` indique une erreur de configuration ou d'envoi.
+Une requête GET peut également être déclenchée par un navigateur, un aperçu
+de lien ou un robot : ne laisser cette URL activée que pendant les tests.
+
+Ne pas versionner les mots de passe. En App Hosting, configurer les variables
+dans l'environnement de chaque déploiement et conserver `SMTP_PASSWORD` dans
+un secret.
+
 API (protégées par Firebase ID tokens):
 - `GET /api/fines` — liste des amendes (collection `fines` dans Firestore)
 - `POST /api/fines` — créer une amende (body JSON)

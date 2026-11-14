@@ -13,8 +13,10 @@ app.get('/test', (req, res) => {
 });
 
 const seasonsRouter = require('./routes/seasons');
+const mailTestRouter = require('./routes/mail-test');
 
 app.use('/api/seasons', seasonsRouter);
+app.use('/api/mail', mailTestRouter);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
