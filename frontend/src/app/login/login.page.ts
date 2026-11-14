@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../services/auth.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { ApiService } from '../services/api.service';
 import { PushNotificationsService } from '../services/push-notifications.service';
@@ -19,6 +19,9 @@ export class LoginPage {
   resetMode = false;
   resetSent = false;
   resetError = '';
+  verificationMessage = '';
+  verificationError = '';
+  unverifiedAccount = false;
 
   get isEmailValid(): boolean {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email.trim());
@@ -64,22 +67,63 @@ export class LoginPage {
     private auth: AuthService,
     private router: Router,
     private api: ApiService,
-    private pushNotifications: PushNotificationsService
+    private pushNotifications: PushNotificationsService,
+    private route: ActivatedRoute
   ) {
-    if (this.auth.isLoggedIn()) {
+    if (!this.route.snapshot.queryParamMap.has('oobCode') && !this.route.snapshot.queryParamMap.has('mode') && this.auth.isLoggedIn()) {
       this.router.navigateByUrl('/', { replaceUrl: true });
+    }
+  }
+
+  async ionViewWillEnter() {
+    const params = this.route.snapshot.queryParamMap;
+    const code = params.get('oobCode');
+    if (!code && !params.has('mode')) return;
+
+    this.loading = true;
+    this.verificationMessage = '';
+    this.verificationError = '';
+    await this.router.navigate(['/login'], { replaceUrl: true });
+    try {
+      if (params.get('mode') !== 'verifyEmail' || !code) {
+        throw new Error('Invalid verification link');
+      }
+      await this.auth.verifyEmail(code);
+      this.unverifiedAccount = false;
+      this.verificationMessage = 'Votre compte a été validé, merci de vous connecter.';
+    } catch {
+      this.verificationError = 'Ce lien de validation est invalide ou a expiré. Connectez-vous pour demander un nouvel email.';
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  async resendVerificationEmail() {
+    try {
+      this.loading = true;
+      this.verificationError = '';
+      this.verificationMessage = '';
+      await firstValueFrom(this.api.sendVerificationEmail());
+      this.verificationMessage = 'Un email de vérification a été envoyé. Vérifiez votre boîte mail.';
+    } catch {
+      this.verificationError = 'Impossible d’envoyer l’email de vérification. Veuillez réessayer plus tard.';
+    } finally {
+      this.loading = false;
     }
   }
 
   async signInEmail() {
     try {
       this.loading = true;
+      this.unverifiedAccount = false;
       const {user} = await this.auth.signInEmail(this.email, this.password);
       if(user.emailVerified) {
       await this.registerPushToken();
       this.router.navigateByUrl('/', { replaceUrl: true });
       } else {
-        alert("Votre email n'est pas vérifier. Veuillez vérifier votre boîte mail pour activer votre compte.")
+        this.unverifiedAccount = true;
+        this.verificationMessage = '';
+        this.verificationError = 'Votre email n’est pas encore vérifié. Consultez votre boîte mail ou demandez un nouvel email.';
       }
     } catch (err) {
       alert('Login failed');

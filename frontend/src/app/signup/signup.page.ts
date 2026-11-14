@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { ApiService } from '../services/api.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-signup',
@@ -55,7 +57,7 @@ export class SignupPage {
       && this.password === this.confirmPassword;
   }
 
-  constructor(private auth: AuthService, private router: Router) {
+  constructor(private auth: AuthService, private router: Router, private api: ApiService) {
     if (this.auth.isLoggedIn()) {
       this.router.navigate(['/saisons']);
     }
@@ -66,15 +68,20 @@ export class SignupPage {
       return;
     }
 
+    let accountCreated = false;
     try {
       this.loading = true;
       this.error = '';
       await this.auth.createAccount(this.email.trim(), this.password);
+      accountCreated = true;
+      await firstValueFrom(this.api.sendVerificationEmail());
       alert("Votre compte a été créé. Vérifiez votre boîte mail pour activer votre compte.")
       await this.router.navigate(['/login']);
     } catch (err: unknown) {
       const authError = err as { code?: string };
-      this.error = authError.code === 'auth/email-already-in-use'
+      this.error = accountCreated
+        ? 'Votre compte a été créé, mais l’email de vérification n’a pas pu être envoyé. Connectez-vous pour demander un nouvel envoi.'
+        : authError.code === 'auth/email-already-in-use'
         ? 'Cette adresse email possède déjà un compte. Connectez-vous ou utilisez une autre adresse.'
         : 'Impossible de créer le compte. Vérifiez votre email et votre mot de passe.';
     } finally {

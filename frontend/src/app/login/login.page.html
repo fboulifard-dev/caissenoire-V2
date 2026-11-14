@@ -22,6 +22,16 @@
         <h1>Connexion</h1>
       </div>
 
+      <ion-text color="success" *ngIf="verificationMessage">
+        <p class="reset-message" role="status">{{ verificationMessage }}</p>
+      </ion-text>
+      <ion-text color="danger" *ngIf="verificationError">
+        <p class="reset-message" role="alert">{{ verificationError }}</p>
+      </ion-text>
+      <ion-button *ngIf="unverifiedAccount" fill="clear" expand="block" (click)="resendVerificationEmail()" [disabled]="loading">
+        Renvoyer l’email de vérification
+      </ion-button>
+
       <div class="auth-fields">
         <ion-item>
           <ion-icon name="person-outline" slot="start" aria-hidden="true"></ion-icon>

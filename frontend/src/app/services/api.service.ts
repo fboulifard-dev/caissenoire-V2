@@ -23,6 +23,12 @@ export class ApiService {
     );
   }
 
+  sendVerificationEmail() {
+    return this.getHeadersWithToken().pipe(
+      switchMap((headers) => this.http.post(`${environment.apiUrl}/api/account/verification-email`, {}, { headers }))
+    );
+  }
+
   getSeasonFines(seasonId: string, playerId?: string) {
     return this.getHeadersWithToken().pipe(
       switchMap((headers) => this.http.get(`${environment.apiUrl}/api/seasons/${seasonId}/fines`, {

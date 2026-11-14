@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { getAuth, Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, OAuthProvider, signOut, onAuthStateChanged, sendEmailVerification, sendPasswordResetEmail } from 'firebase/auth';
+import { getAuth, Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, OAuthProvider, signOut, onAuthStateChanged, checkActionCode, applyActionCode, sendPasswordResetEmail } from 'firebase/auth';
 import { initializeApp } from 'firebase/app';
 import { environment } from '../../environments/environment';
 import { BehaviorSubject } from 'rxjs';
@@ -55,11 +55,20 @@ export class AuthService {
     return sendPasswordResetEmail(this.auth, email);
   }
 
-  async createAccount(email: string, password: string) {
-    const {user} = await createUserWithEmailAndPassword(this.auth, email, password);
-    await sendEmailVerification(user);
+  createAccount(email: string, password: string) {
+    return createUserWithEmailAndPassword(this.auth, email, password);
+  }
 
-    
+  async verifyEmail(code: string) {
+    await this.auth.authStateReady();
+    const action = await checkActionCode(this.auth, code);
+    if (action.operation !== 'VERIFY_EMAIL') {
+      throw new Error('Invalid verification action');
+    }
+    if (this.auth.currentUser?.email === action.data.email) {
+      await signOut(this.auth);
+    }
+    await applyActionCode(this.auth, code);
   }
 
   signInGoogle() {

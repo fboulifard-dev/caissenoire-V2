@@ -1,0 +1,6 @@
+Bonjour,
+
+Pour valider votre compte Caisse Noire, ouvrez ce lien :
+{{verificationUrl}}
+
+Si vous n'avez pas créé de compte, ignorez cet email.

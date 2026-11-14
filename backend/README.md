@@ -16,37 +16,35 @@ npm start
 ```
 
 API:
-### Email de test public
+### Vérification des comptes
 
+L'inscription envoie un email de vérification via IONOS.
 Configurer `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`,
-`SMTP_PASSWORD`, `SMTP_FROM` et `SMTP_TEST_TO` dans `.env`. Pour IONOS France,
+`SMTP_PASSWORD` et `SMTP_FROM` dans `.env`. Pour IONOS France,
 utiliser `smtp.ionos.fr`, le port `465` et `SMTP_SECURE=true` ; le port `587`
 utilise `SMTP_SECURE=false` avec STARTTLS obligatoire. L'identifiant est
 l'adresse complète de la boîte IONOS, et l'expéditeur doit être autorisé par
 IONOS. Voir les [paramètres IONOS](https://www.ionos.fr/assistance/email/sujets-generaux/messagerie-ionos-donnees-de-serveur-pour-imap-pop3-et-smtp/).
-Le destinataire est configuré côté serveur, jamais fourni par l'appelant.
-L'objet est `test` et le contenu est modifiable dans
-`templates/test-mail.txt`.
-
-Définir `SMTP_TEST_ENABLED=true` pour activer l'URL publique, puis :
-
-```sh
-curl http://localhost:3000/api/mail/test
-```
-
-Sans authentification, toute personne ayant accès à l'URL peut déclencher le
-test. Une seule tentative par minute est autorisée par instance ; `429` indique
-une limitation. Cette limite n'est pas partagée entre instances ni conservée
-après redémarrage : prévoir une limitation de débit au niveau de l'hébergement
-et désactiver l'URL après le test avec `SMTP_TEST_ENABLED=false`. La réponse
-`200` signifie que le serveur SMTP a accepté le message, pas qu'il a été
-livré ; `500` indique une erreur de configuration ou d'envoi.
-Une requête GET peut également être déclenchée par un navigateur, un aperçu
-de lien ou un robot : ne laisser cette URL activée que pendant les tests.
-
 Ne pas versionner les mots de passe. En App Hosting, configurer les variables
 dans l'environnement de chaque déploiement et conserver `SMTP_PASSWORD` dans
 un secret.
+
+Configurer `EMAIL_VERIFICATION_URL` avec l'URL absolue de la page `/login` de
+l'application pour chaque environnement : par exemple
+`http://localhost:4200/login` en local, et l'URL HTTPS de l'application
+correspondante en recette et en production. L'URL doit être accessible depuis
+l'appareil ouvrant l'email ; `localhost` désigne cet appareil.
+Le backend et le frontend doivent utiliser le même projet Firebase. Le lien
+contient un code à usage unique Firebase ; un lien expiré ou déjà utilisé
+affiche une erreur sur la page de connexion. Si l'envoi échoue après création
+du compte, l'utilisateur peut se connecter et demander un nouvel email.
+Le lien ouvre la version web ; une ouverture directe dans l'application native
+nécessite une configuration distincte des liens universels ou Android App Links.
+
+L'API `POST /api/account/verification-email` exige un jeton Firebase et envoie
+uniquement à l'adresse du compte authentifié non vérifié. Elle limite les
+tentatives par compte à une par minute et par instance ; ajouter une limitation
+distribuée au niveau de l'hébergement pour un déploiement public.
 
 API (protégées par Firebase ID tokens):
 - `GET /api/fines` — liste des amendes (collection `fines` dans Firestore)
