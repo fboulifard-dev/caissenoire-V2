@@ -4,13 +4,14 @@
       <h1>{{ editing ? 'Modifier le paiement' : 'Nouveau paiement' }}</h1>
     </header>
 
-    <form #paymentForm="ngForm" (ngSubmit)="submit()">
+    <form #paymentForm="ngForm" (ngSubmit)="!paymentForm.invalid && submit()">
       <h2 class="operation-section-title">Informations</h2>
       <ion-list class="operation-fields">
       <ion-item>
         <ion-icon name="calendar-outline" slot="start"></ion-icon>
         <ion-input
           type="date"
+          enterkeyhint="send"
           label="Date"
           labelPlacement="stacked"
           name="date"
@@ -24,6 +25,7 @@
         <ion-icon name="cash-outline" slot="start"></ion-icon>
         <ion-input
           type="text"
+          enterkeyhint="send"
           inputmode="decimal"
           label="Montant"
           labelPlacement="stacked"

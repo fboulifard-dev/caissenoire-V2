@@ -19,6 +19,7 @@
         <p>{{ personalInfoStep ? 'Renseignez votre prénom et votre nom.' : 'Quelques informations pour accéder à votre caisse.' }}</p>
       </div>
 
+      <form (ngSubmit)="personalInfoStep ? createAccount() : checkAvailability()">
       <div class="auth-fields" *ngIf="!personalInfoStep">
         <ion-item>
           <ion-icon name="person-outline" slot="start" aria-hidden="true"></ion-icon>
@@ -30,6 +31,7 @@
             label="Adresse e-mail"
             labelPlacement="stacked"
             autocomplete="email"
+            enterkeyhint="send"
             required>
           </ion-input>
         </ion-item>
@@ -47,6 +49,7 @@
             label="Mot de passe"
             labelPlacement="stacked"
             autocomplete="new-password"
+            enterkeyhint="send"
             required>
           </ion-input>
           <ion-button slot="end" fill="clear" type="button" [attr.aria-label]="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" [attr.aria-pressed]="showPassword" (click)="showPassword = !showPassword">
@@ -89,6 +92,7 @@
             label="Confirmer le mot de passe"
             labelPlacement="stacked"
             autocomplete="new-password"
+            enterkeyhint="send"
             required>
           </ion-input>
           <ion-button slot="end" fill="clear" type="button" [attr.aria-label]="showConfirmPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" [attr.aria-pressed]="showConfirmPassword" (click)="showConfirmPassword = !showConfirmPassword">
@@ -103,11 +107,11 @@
       <div class="auth-fields" *ngIf="personalInfoStep">
         <ion-item>
           <ion-icon name="person-outline" slot="start" aria-hidden="true"></ion-icon>
-          <ion-input name="firstName" [(ngModel)]="firstName" label="Prénom" labelPlacement="stacked" autocomplete="given-name" required></ion-input>
+          <ion-input name="firstName" [(ngModel)]="firstName" label="Prénom" labelPlacement="stacked" autocomplete="given-name" enterkeyhint="send" required></ion-input>
         </ion-item>
         <ion-item>
           <ion-icon name="person-outline" slot="start" aria-hidden="true"></ion-icon>
-          <ion-input name="lastName" [(ngModel)]="lastName" label="Nom" labelPlacement="stacked" autocomplete="family-name" required></ion-input>
+          <ion-input name="lastName" [(ngModel)]="lastName" label="Nom" labelPlacement="stacked" autocomplete="family-name" enterkeyhint="send" required></ion-input>
         </ion-item>
       </div>
 
@@ -115,17 +119,14 @@
         <p class="auth-error" role="alert">{{ error }}</p>
       </ion-text>
 
-      <ion-button *ngIf="!personalInfoStep" class="auth-primary" expand="block" (click)="checkAvailability()" [disabled]="loading || !canContinue">
+      <ion-button class="auth-primary" expand="block" type="submit" [disabled]="loading || (personalInfoStep ? !canCreateAccount : !canContinue)">
         <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
-        <span *ngIf="!loading">Continuer</span>
+        <span *ngIf="!loading">{{ personalInfoStep ? 'Créer mon compte' : 'Continuer' }}</span>
       </ion-button>
-      <ion-button *ngIf="personalInfoStep" class="auth-primary" expand="block" (click)="createAccount()" [disabled]="loading || !canCreateAccount">
-        <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
-        <span *ngIf="!loading">Créer mon compte</span>
-      </ion-button>
-      <ion-button *ngIf="personalInfoStep && canGoBack" fill="clear" expand="block" (click)="backToCredentials()" [disabled]="loading">
+      <ion-button *ngIf="personalInfoStep && canGoBack" type="button" fill="clear" expand="block" (click)="backToCredentials()" [disabled]="loading">
         Retour
       </ion-button>
+      </form>
     </section>
   </main>
 </ion-content>

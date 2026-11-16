@@ -44,7 +44,7 @@ export class LoginPage {
   }
 
   async sendPasswordReset() {
-    if (!this.isEmailValid) {
+    if (this.loading || !this.isEmailValid) {
       return;
     }
 
@@ -113,6 +113,10 @@ export class LoginPage {
   }
 
   async signInEmail() {
+    if (this.loading || !this.canSignInEmail) {
+      return;
+    }
+
     try {
       this.loading = true;
       this.unverifiedAccount = false;

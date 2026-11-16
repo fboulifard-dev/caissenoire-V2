@@ -92,6 +92,15 @@ describe('SignupPage verification email', () => {
     expect(page.error).toContain('informations ont changé');
   });
 
+  it('does not submit either step while a request is running', async () => {
+    page.loading = true;
+    await page.checkAvailability();
+    expect(api.checkAccountAvailability).not.toHaveBeenCalled();
+    page.personalInfoStep = true;
+    await page.createAccount();
+    expect(auth.createAccount).not.toHaveBeenCalled();
+  });
+
   it('returns to the first step if the account is created elsewhere meanwhile', async () => {
     await page.checkAvailability();
     auth.createAccount.and.rejectWith({ code: 'auth/email-already-in-use' });
@@ -147,11 +156,18 @@ describe('SignupPage form steps', () => {
     expect(form.querySelector('ion-input[name="firstName"]')).toBeNull();
     expect(form.querySelector('ion-input[name="lastName"]')).toBeNull();
 
-    await page.checkAvailability();
+    const check = spyOn(page, 'checkAvailability').and.callThrough();
+    form.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    await fixture.whenStable();
     fixture.detectChanges();
+    expect(check).toHaveBeenCalledTimes(1);
     expect(form.querySelector('ion-input[name="email"]')).toBeNull();
     expect(form.querySelector('ion-input[name="firstName"]')).not.toBeNull();
     expect(form.querySelector('ion-input[name="lastName"]')).not.toBeNull();
+
+    const create = spyOn(page, 'createAccount').and.stub();
+    form.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    expect(create).toHaveBeenCalledTimes(1);
 
     page.backToCredentials();
     fixture.detectChanges();

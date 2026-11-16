@@ -77,7 +77,7 @@ export class SignupPage {
   }
 
   async checkAvailability() {
-    if (!this.canContinue) {
+    if (this.loading || !this.canContinue) {
       return;
     }
 
@@ -110,7 +110,7 @@ export class SignupPage {
   }
 
   async createAccount() {
-    if (!this.personalInfoStep || !this.canCreateAccount) {
+    if (this.loading || !this.personalInfoStep || !this.canCreateAccount) {
       return;
     }
 

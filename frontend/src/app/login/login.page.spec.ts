@@ -14,7 +14,7 @@ describe('LoginPage email verification', () => {
   let router: jasmine.SpyObj<Router>;
 
   beforeEach(() => {
-    auth = jasmine.createSpyObj<AuthService>('AuthService', ['isLoggedIn', 'verifyEmail', 'signInEmail']);
+    auth = jasmine.createSpyObj<AuthService>('AuthService', ['isLoggedIn', 'verifyEmail', 'signInEmail', 'requestPasswordReset']);
     auth.isLoggedIn.and.returnValue(false);
     auth.verifyEmail.and.resolveTo();
     api = jasmine.createSpyObj<ApiService>('ApiService', ['sendVerificationEmail']);
@@ -61,5 +61,21 @@ describe('LoginPage email verification', () => {
     await page.resendVerificationEmail();
     expect(page.verificationMessage).toBe('');
     expect(page.verificationError).toContain('Impossible d’envoyer');
+  });
+
+  it('does not submit invalid or loading login and password reset forms', async () => {
+    page.email = 'invalid';
+    page.password = 'password';
+    await page.signInEmail();
+    await page.sendPasswordReset();
+    expect(auth.signInEmail).not.toHaveBeenCalled();
+    expect(auth.requestPasswordReset).not.toHaveBeenCalled();
+
+    page.email = 'user@example.com';
+    page.loading = true;
+    await page.signInEmail();
+    await page.sendPasswordReset();
+    expect(auth.signInEmail).not.toHaveBeenCalled();
+    expect(auth.requestPasswordReset).not.toHaveBeenCalled();
   });
 });

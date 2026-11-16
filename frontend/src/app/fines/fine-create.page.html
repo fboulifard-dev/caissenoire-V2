@@ -4,13 +4,14 @@
       <h1>{{ editing ? 'Modifier l’amende' : 'Nouvelle amende' }}</h1>
     </header>
 
-    <form #fineForm="ngForm" (ngSubmit)="submit()">
+    <form #fineForm="ngForm" (ngSubmit)="!fineForm.invalid && submit()">
       <h2 class="operation-section-title">Informations</h2>
       <ion-list class="operation-fields">
       <ion-item>
         <ion-icon name="calendar-outline" slot="start"></ion-icon>
         <ion-input
           type="date"
+          enterkeyhint="send"
           label="Date"
           labelPlacement="stacked"
           name="date"
@@ -70,6 +71,7 @@
         <ion-icon name="cash-outline" slot="start"></ion-icon>
         <ion-input
           type="number"
+          enterkeyhint="send"
           label="Montant"
           labelPlacement="stacked"
           name="amount"
