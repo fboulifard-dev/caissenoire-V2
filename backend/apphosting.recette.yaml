@@ -2,8 +2,8 @@ env:
   - variable: NODE_ENV
     value: recette
   - variable: EMAIL_VERIFICATION_URL
-    value: https://asptt-rec.fboulifard.com/login
+    value: https://rec-asptt.fboulifard.com/login
     availability: [RUNTIME]
   - variable: SMTP_FROM
-    value: asptt-rec@mail-asptt.fboulifard.com
+    value: rec-asptt@mail-asptt.fboulifard.com
     availability: [RUNTIME]
