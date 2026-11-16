@@ -105,6 +105,31 @@ describe('FinesPage favorites', () => {
     expect(page.totalFineAmount).toBe(0);
   });
 
+  it('combines the photo filter with other filters and updates groups and totals', async () => {
+    page.fines = [
+      { id: 'one', date: '2026-01-01', amount: 10, photo: 'photo.jpg', favorite: true },
+      { id: 'two', date: '2026-01-01', amount: 20, photo: '', favorite: true },
+      { id: 'three', date: '2026-01-02', amount: 30, favorite: true },
+      { id: 'four', date: '2026-01-02', amount: 40, photo: 'other.jpg', favorite: false }
+    ];
+    page.favoritesOnly = true;
+    page.photoOnly = true;
+    page.onFilterChanged();
+
+    expect(page.hasFineFilters).toBeTrue();
+    expect(page.filteredFines.map(fine => fine.id)).toEqual(['one']);
+    expect(page.totalFineAmount).toBe(10);
+    expect(page.visibleFineGroups[0].items.map(fine => fine.id)).toEqual(['one']);
+    expect(page.fineGroups[0].total).toBe(10);
+
+    page.favoritesOnly = false;
+    await page.resetFineFilters();
+    expect(page.photoOnly).toBeFalse();
+    expect(page.hasFineFilters).toBeFalse();
+    expect(page.filteredFines.length).toBe(4);
+    expect(page.totalFineAmount).toBe(100);
+  });
+
   it('offers historical rules and resets player and rule filters together', async () => {
     page.rules = [{ id: 'current', label: 'Actuelle' }];
     page.fines = [{ ruleId: 'old', ruleLabel: 'Ancienne' }, {}];
@@ -231,6 +256,18 @@ describe('FinesPage filter menu', () => {
       expect(await menu.isOpen()).toBeTrue();
       expect(menu.side).toBe('end');
       const fields: HTMLElement = menu.querySelector('.fine-filter-fields')!;
+      expect(Array.from(fields.querySelectorAll('ion-toggle')).some(toggle =>
+        toggle.textContent?.includes('Avec photo uniquement')
+      )).toBeTrue();
+      fixture.componentInstance.loading = false;
+      fixture.componentInstance.photoOnly = true;
+      fixture.detectChanges();
+      const photoChip: HTMLElement = fixture.nativeElement.querySelector('ion-chip[aria-label="Retirer le filtre photo"]');
+      expect(photoChip).not.toBeNull();
+      photoChip.click();
+      fixture.detectChanges();
+      expect(fixture.componentInstance.photoOnly).toBeFalse();
+      expect(fixture.nativeElement.querySelector('ion-chip[aria-label="Retirer le filtre photo"]')).toBeNull();
       const container: HTMLElement = menu.shadowRoot!.querySelector('.menu-inner')!;
       expect(fields.getBoundingClientRect().width).toBeLessThan(container.getBoundingClientRect().width);
       expect(getComputedStyle(fields).backgroundColor).toBe('rgba(0, 0, 0, 0)');

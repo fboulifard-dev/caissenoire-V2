@@ -73,6 +73,7 @@ export class FinesPage implements OnInit, OnDestroy {
   selectedRuleId = '';
   favoritesOnly = false;
   matchDayOnly = false;
+  photoOnly = false;
   ruleIcons: Record<string, string> = {};
   selectedFinePhoto = '';
   isFinePhotoOpen = false;
@@ -90,11 +91,12 @@ export class FinesPage implements OnInit, OnDestroy {
       (!this.selectedRuleId || String(fine.ruleId || fine.ruleLabel || 'unknown') === this.selectedRuleId)
       && (!this.favoritesOnly || fine.favorite === true)
       && (!this.matchDayOnly || fine.matchDay === true)
+      && (!this.photoOnly || !!fine.photo)
     );
   }
 
   get hasFineFilters(): boolean {
-    return !!this.playerId || !!this.selectedRuleId || this.favoritesOnly || this.matchDayOnly;
+    return !!this.playerId || !!this.selectedRuleId || this.favoritesOnly || this.matchDayOnly || this.photoOnly;
   }
 
   get filterPlayers(): { id: string; label: string }[] {
@@ -237,6 +239,7 @@ export class FinesPage implements OnInit, OnDestroy {
   resetFineFilters() {
     this.favoritesOnly = false;
     this.matchDayOnly = false;
+    this.photoOnly = false;
     this.onFilterChanged();
     if (this.selectedRuleId || this.playerId) {
       return this.router.navigate([], {
