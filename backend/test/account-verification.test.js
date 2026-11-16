@@ -15,7 +15,12 @@ test('verification email is restricted to the authenticated unverified account',
       if (token === 'invalid') throw new Error('Invalid token');
       return { uid: token };
     },
-    getUser: async uid => ({ uid, email: `${uid}@example.com`, emailVerified: uid === 'verified' }),
+    getUser: async uid => ({ uid, email: `${uid}@example.com`, displayName: `${uid} Martin`, emailVerified: uid === 'verified' }),
+    getUserByEmail: async email => {
+      if (email === 'available@example.com') throw Object.assign(new Error('not found'), { code: 'auth/user-not-found' });
+      if (email === 'error@example.com') throw new Error('Firebase failure');
+      return { email };
+    },
     generateEmailVerificationLink: async () => 'https://firebase.example.com/action?mode=verifyEmail&oobCode=secure-code'
   };
   mock.method(admin, 'auth', () => () => firebaseAuth, { getter: true });
@@ -43,7 +48,7 @@ test('verification email is restricted to the authenticated unverified account',
   assert.equal((await post('verified')).status, 400);
   assert.equal((await post('alice')).status, 200);
   assert.deepEqual(send.mock.calls[0].arguments, [
-    'alice@example.com', 'https://app.example.com/login?mode=verifyEmail&oobCode=secure-code'
+    'alice@example.com', 'https://app.example.com/login?mode=verifyEmail&oobCode=secure-code', 'alice Martin'
   ]);
   const limited = await post('alice');
   assert.equal(limited.status, 429);
@@ -53,4 +58,24 @@ test('verification email is restricted to the authenticated unverified account',
   send.mock.mockImplementation(async () => { throw new Error('SMTP failed'); });
   assert.equal((await post('alice')).status, 500);
   assert.equal((await post('alice')).status, 429);
+
+  const check = email => fetch(`http://127.0.0.1:${server.address().port}/api/account/availability`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
+  });
+  let response = await check('available@example.com');
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('cache-control'), 'no-store');
+  assert.deepEqual(await response.json(), { available: true });
+  response = await check('existing@example.com');
+  assert.deepEqual(await response.json(), { available: false });
+  assert.equal((await check('invalid')).status, 400);
+  assert.equal((await check('error@example.com')).status, 500);
+  for (let i = 0; i < 6; i++) assert.equal((await check('existing@example.com')).status, 200);
+  response = await check('existing@example.com');
+  assert.equal(response.status, 429);
+  assert.equal(response.headers.get('retry-after'), '60');
+  now += 60000;
+  assert.equal((await check('available@example.com')).status, 200);
 });

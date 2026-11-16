@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { ApiService } from '../services/api.service';
 import { firstValueFrom } from 'rxjs';
+import { User } from 'firebase/auth';
 
 @Component({
   selector: 'app-signup',
@@ -14,6 +15,10 @@ export class SignupPage {
   email = '';
   password = '';
   confirmPassword = '';
+  firstName = '';
+  lastName = '';
+  personalInfoStep = false;
+  private createdUser: User | null = null;
   showPassword = false;
   showConfirmPassword = false;
   loading = false;
@@ -51,10 +56,18 @@ export class SignupPage {
       && this.hasPasswordSpecialCharacter;
   }
 
-  get canCreateAccount(): boolean {
+  get canContinue(): boolean {
     return this.isEmailValid
       && this.isPasswordValid
       && this.password === this.confirmPassword;
+  }
+
+  get canCreateAccount(): boolean {
+    return this.canContinue && !!this.firstName.trim() && !!this.lastName.trim();
+  }
+
+  get canGoBack(): boolean {
+    return !this.createdUser;
   }
 
   constructor(private auth: AuthService, private router: Router, private api: ApiService) {
@@ -63,27 +76,65 @@ export class SignupPage {
     }
   }
 
-  async createAccount() {
-    if (!this.canCreateAccount) {
+  async checkAvailability() {
+    if (!this.canContinue) {
       return;
     }
 
-    let accountCreated = false;
     try {
       this.loading = true;
       this.error = '';
-      await this.auth.createAccount(this.email.trim(), this.password);
-      accountCreated = true;
+      const email = this.email.trim();
+      const { available } = await firstValueFrom(this.api.checkAccountAvailability(email));
+      if (email !== this.email.trim() || !this.canContinue) {
+        this.error = 'Les informations ont changé. Vérifiez à nouveau votre adresse email.';
+        return;
+      }
+      if (!available) {
+        this.error = 'Cette adresse email possède déjà un compte. Connectez-vous ou utilisez une autre adresse.';
+        return;
+      }
+      this.personalInfoStep = true;
+    } catch {
+      this.error = 'Impossible de vérifier cette adresse email. Veuillez réessayer plus tard.';
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  backToCredentials() {
+    if (!this.createdUser) {
+      this.personalInfoStep = false;
+      this.error = '';
+    }
+  }
+
+  async createAccount() {
+    if (!this.personalInfoStep || !this.canCreateAccount) {
+      return;
+    }
+
+    try {
+      this.loading = true;
+      this.error = '';
+      if (!this.createdUser) {
+        const { user } = await this.auth.createAccount(this.email.trim(), this.password);
+        this.createdUser = user;
+      }
+      await this.auth.updateAccountName(this.createdUser, `${this.firstName.trim()} ${this.lastName.trim()}`);
       await firstValueFrom(this.api.sendVerificationEmail());
       alert("Votre compte a été créé. Vérifiez votre boîte mail pour activer votre compte.")
       await this.router.navigate(['/login']);
     } catch (err: unknown) {
       const authError = err as { code?: string };
-      this.error = accountCreated
-        ? 'Votre compte a été créé, mais l’email de vérification n’a pas pu être envoyé. Connectez-vous pour demander un nouvel envoi.'
-        : authError.code === 'auth/email-already-in-use'
-        ? 'Cette adresse email possède déjà un compte. Connectez-vous ou utilisez une autre adresse.'
-        : 'Impossible de créer le compte. Vérifiez votre email et votre mot de passe.';
+      if (this.createdUser) {
+        this.error = 'Votre compte a été créé, mais sa finalisation ou l’envoi de l’email a échoué. Réessayez.';
+      } else if (authError.code === 'auth/email-already-in-use') {
+        this.personalInfoStep = false;
+        this.error = 'Cette adresse email possède déjà un compte. Connectez-vous ou utilisez une autre adresse.';
+      } else {
+        this.error = 'Impossible de créer le compte. Vérifiez votre email et votre mot de passe.';
+      }
     } finally {
       this.loading = false;
     }

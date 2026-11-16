@@ -15,11 +15,11 @@
 
     <section class="auth-form">
       <div class="auth-intro">
-        <h1>Créer un compte</h1>
-        <p>Quelques informations pour accéder à votre caisse.</p>
+        <h1>{{ personalInfoStep ? 'Informations personnelles' : 'Créer un compte' }}</h1>
+        <p>{{ personalInfoStep ? 'Renseignez votre prénom et votre nom.' : 'Quelques informations pour accéder à votre caisse.' }}</p>
       </div>
 
-      <div class="auth-fields">
+      <div class="auth-fields" *ngIf="!personalInfoStep">
         <ion-item>
           <ion-icon name="person-outline" slot="start" aria-hidden="true"></ion-icon>
           <ion-input
@@ -100,13 +100,31 @@
         </p>
       </div>
 
+      <div class="auth-fields" *ngIf="personalInfoStep">
+        <ion-item>
+          <ion-icon name="person-outline" slot="start" aria-hidden="true"></ion-icon>
+          <ion-input name="firstName" [(ngModel)]="firstName" label="Prénom" labelPlacement="stacked" autocomplete="given-name" required></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-icon name="person-outline" slot="start" aria-hidden="true"></ion-icon>
+          <ion-input name="lastName" [(ngModel)]="lastName" label="Nom" labelPlacement="stacked" autocomplete="family-name" required></ion-input>
+        </ion-item>
+      </div>
+
       <ion-text color="danger" *ngIf="error">
         <p class="auth-error" role="alert">{{ error }}</p>
       </ion-text>
 
-      <ion-button class="auth-primary" expand="block" (click)="createAccount()" [disabled]="loading || !canCreateAccount">
+      <ion-button *ngIf="!personalInfoStep" class="auth-primary" expand="block" (click)="checkAvailability()" [disabled]="loading || !canContinue">
+        <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
+        <span *ngIf="!loading">Continuer</span>
+      </ion-button>
+      <ion-button *ngIf="personalInfoStep" class="auth-primary" expand="block" (click)="createAccount()" [disabled]="loading || !canCreateAccount">
         <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
         <span *ngIf="!loading">Créer mon compte</span>
+      </ion-button>
+      <ion-button *ngIf="personalInfoStep && canGoBack" fill="clear" expand="block" (click)="backToCredentials()" [disabled]="loading">
+        Retour
       </ion-button>
     </section>
   </main>

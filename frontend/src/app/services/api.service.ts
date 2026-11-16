@@ -29,6 +29,10 @@ export class ApiService {
     );
   }
 
+  checkAccountAvailability(email: string) {
+    return this.http.post<{ available: boolean }>(`${environment.apiUrl}/api/account/availability`, { email });
+  }
+
   getSeasonFines(seasonId: string, playerId?: string) {
     return this.getHeadersWithToken().pipe(
       switchMap((headers) => this.http.get(`${environment.apiUrl}/api/seasons/${seasonId}/fines`, {

@@ -66,6 +66,15 @@ uniquement à l'adresse du compte authentifié non vérifié. Elle limite les
 tentatives par compte à une par minute et par instance ; ajouter une limitation
 distribuée au niveau de l'hébergement pour un déploiement public.
 
+L'inscription vérifie d'abord l'adresse via `POST /api/account/availability`,
+puis demande le prénom et le nom enregistrés dans le profil Firebase. L'email
+de vérification affiche ce nom et le logo ; les anciens comptes sans nom
+reçoivent une salutation générique. Cette API publique révèle si une adresse
+possède un compte : elle limite les vérifications à 10 par minute et par adresse
+IP observée par le serveur sur chaque instance. Derrière un proxy, plusieurs
+utilisateurs peuvent partager cette adresse. Cette limite n'est pas distribuée ;
+prévoir également une protection contre les abus au niveau de l'hébergement.
+
 API (protégées par Firebase ID tokens):
 - `GET /api/fines` — liste des amendes (collection `fines` dans Firestore)
 - `POST /api/fines` — créer une amende (body JSON)

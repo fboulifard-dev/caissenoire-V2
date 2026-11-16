@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { getAuth, Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, OAuthProvider, signOut, onAuthStateChanged, checkActionCode, applyActionCode, sendPasswordResetEmail } from 'firebase/auth';
+import { getAuth, Auth, User, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider, OAuthProvider, signOut, onAuthStateChanged, checkActionCode, applyActionCode, sendPasswordResetEmail } from 'firebase/auth';
 import { initializeApp } from 'firebase/app';
 import { environment } from '../../environments/environment';
 import { BehaviorSubject } from 'rxjs';
@@ -57,6 +57,10 @@ export class AuthService {
 
   createAccount(email: string, password: string) {
     return createUserWithEmailAndPassword(this.auth, email, password);
+  }
+
+  updateAccountName(user: User, displayName: string) {
+    return updateProfile(user, { displayName });
   }
 
   async verifyEmail(code: string) {
