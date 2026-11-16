@@ -2,6 +2,32 @@
 
 Cette application Angular sera utilisée pour le Web et empaquetée avec Ionic/Capacitor pour Android et iOS.
 
+### Déploiement de recette
+
+Depuis `frontend`, après connexion à Firebase (`npx firebase login`) et avec
+les droits sur le projet `caissenoire-dev-84854` :
+
+```sh
+npm run deploy-rec
+```
+
+Cette commande lance `build-rec` (qui incrémente la version), puis déploie
+uniquement `www-recette` sur Firebase Hosting. Si le build échoue, aucun
+déploiement n'est lancé. PowerShell (`pwsh`) est nécessaire au build.
+
+### Déploiement de production
+
+Depuis `frontend`, après connexion à Firebase et avec les droits sur le projet
+`asptt-nantes-hb` :
+
+```sh
+npm run deploy-prod
+```
+
+Cette commande lance le build de production, puis déploie uniquement
+`www-production` sur Firebase Hosting. Si le build échoue, aucun déploiement
+n'est lancé. PowerShell (`pwsh`) est nécessaire au build.
+
 Exemple de création d'un projet Angular + Ionic:
 
 ```powershell

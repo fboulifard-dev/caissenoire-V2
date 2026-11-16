@@ -14,6 +14,9 @@ $versionContent = [regex]::Replace($versionContent, "APP_VERSION = '\d+'", "APP_
 Remove-Item -Recurse -Force www-recette -ErrorAction SilentlyContinue
 
 npx ng build --configuration recette --output-path www-recette
+if ($LASTEXITCODE -ne 0) {
+  throw "Recette build failed with exit code $LASTEXITCODE"
+}
 if (-not (Test-Path 'www-recette\index.html')) {
   throw 'Recette build did not produce www-recette/index.html'
 }

@@ -5,6 +5,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "node --watch index.js",
+    "deploy-rec": "firebase deploy --config firebase.json --only apphosting:api --project caissenoire-dev-84854",
+    "deploy-prod": "firebase deploy --config firebase.json --only apphosting:backend-prod --project asptt-nantes-hb",
     "seed": "node seed.js",
     "validate-users": "node batchs/validateUsers.js",
     "backfill-rule-icons": "node batchs/backfillRuleIcons.js"
