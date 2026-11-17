@@ -75,6 +75,29 @@ IP observée par le serveur sur chaque instance. Derrière un proxy, plusieurs
 utilisateurs peuvent partager cette adresse. Cette limite n'est pas distribuée ;
 prévoir également une protection contre les abus au niveau de l'hébergement.
 
+### Réinitialisation du mot de passe
+
+`POST /api/account/password-reset-email` est accessible sans connexion et
+accepte `{ "email": "..." }`. Firebase génère un code à usage unique ; le
+backend l'envoie avec la même configuration SMTP que les emails de vérification.
+L'email utilise les modèles `templates/password-reset-mail.html` et
+`templates/password-reset-mail.txt`, avec la variable `{{resetUrl}}`.
+Le lien ouvre la page de l'application permettant de saisir et confirmer un
+nouveau mot de passe, puis revient à la connexion. Les liens expirés ou déjà
+utilisés sont refusés par Firebase.
+
+Configurer `PASSWORD_RESET_URL` sur l'URL absolue de la page `/reset-password`
+de chaque environnement. L'exemple local est dans `.env.example` et les URL de
+recette et production sont dans les fichiers App Hosting correspondants ; les
+valeurs de la console App Hosting peuvent les remplacer. L'URL doit être
+accessible sur l'appareil ouvrant l'email. Le backend et le frontend doivent
+utiliser le même projet Firebase. Le lien ouvre la version web de l'application.
+
+La réponse ne confirme pas l'existence d'un compte. Les erreurs SMTP et Firebase sont signalées.
+La limite est d'une demande par adresse et de dix par IP observée par minute,
+sur chaque instance. Derrière un proxy, plusieurs utilisateurs peuvent partager
+une IP ; prévoir également une protection distribuée au niveau de l'hébergement.
+
 API (protégées par Firebase ID tokens):
 - `GET /api/fines` — liste des amendes (collection `fines` dans Firestore)
 - `POST /api/fines` — créer une amende (body JSON)

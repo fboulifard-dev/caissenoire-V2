@@ -4,6 +4,7 @@ import { AuthService } from '../services/auth.service';
 import { ApiService } from '../services/api.service';
 import { firstValueFrom } from 'rxjs';
 import { User } from 'firebase/auth';
+import { passwordRequirements } from '../services/password-policy';
 
 @Component({
   selector: 'app-signup',
@@ -28,32 +29,8 @@ export class SignupPage {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email.trim());
   }
 
-  get hasMinimumPasswordLength(): boolean {
-    return this.password.length >= 10;
-  }
-
-  get hasPasswordUppercase(): boolean {
-    return /[A-Z]/.test(this.password);
-  }
-
-  get hasPasswordLowercase(): boolean {
-    return /[a-z]/.test(this.password);
-  }
-
-  get hasPasswordNumber(): boolean {
-    return /[0-9]/.test(this.password);
-  }
-
-  get hasPasswordSpecialCharacter(): boolean {
-    return /[^A-Za-z0-9]/.test(this.password);
-  }
-
   get isPasswordValid(): boolean {
-    return this.hasMinimumPasswordLength
-      && this.hasPasswordUppercase
-      && this.hasPasswordLowercase
-      && this.hasPasswordNumber
-      && this.hasPasswordSpecialCharacter;
+    return Object.values(passwordRequirements(this.password)).every(Boolean);
   }
 
   get canContinue(): boolean {

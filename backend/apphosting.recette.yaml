@@ -4,6 +4,9 @@ env:
   - variable: EMAIL_VERIFICATION_URL
     value: https://rec-asptt.fboulifard.com/login
     availability: [RUNTIME]
+  - variable: PASSWORD_RESET_URL
+    value: https://rec-asptt.fboulifard.com/reset-password
+    availability: [RUNTIME]
   - variable: SMTP_FROM
     value: rec-asptt@mail-asptt.fboulifard.com
     availability: [RUNTIME]

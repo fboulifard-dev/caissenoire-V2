@@ -29,6 +29,10 @@ export class ApiService {
     );
   }
 
+  requestPasswordReset(email: string) {
+    return this.http.post(`${environment.apiUrl}/api/account/password-reset-email`, { email });
+  }
+
   checkAccountAvailability(email: string) {
     return this.http.post<{ available: boolean }>(`${environment.apiUrl}/api/account/availability`, { email });
   }

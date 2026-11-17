@@ -16,9 +16,6 @@ export class LoginPage {
   password = '';
   showPassword = false;
   loading = false;
-  resetMode = false;
-  resetSent = false;
-  resetError = '';
   verificationMessage = '';
   verificationError = '';
   unverifiedAccount = false;
@@ -31,38 +28,6 @@ export class LoginPage {
     return this.isEmailValid && this.password.trim().length > 0;
   }
 
-  showPasswordReset() {
-    this.resetMode = true;
-    this.resetSent = false;
-    this.resetError = '';
-  }
-
-  cancelPasswordReset() {
-    this.resetMode = false;
-    this.resetSent = false;
-    this.resetError = '';
-  }
-
-  async sendPasswordReset() {
-    if (this.loading || !this.isEmailValid) {
-      return;
-    }
-
-    try {
-      this.loading = true;
-      this.resetError = '';
-      await this.auth.requestPasswordReset(this.email.trim());
-      this.resetSent = true;
-    } catch (err: unknown) {
-      const authError = err as { code?: string };
-      this.resetError = authError.code === 'auth/too-many-requests'
-        ? 'Trop de tentatives. Veuillez réessayer plus tard.'
-        : 'Impossible d’envoyer le lien. Vérifiez l’adresse et réessayez.';
-    } finally {
-      this.loading = false;
-    }
-  }
-
   constructor(
     private auth: AuthService,
     private router: Router,
@@ -70,13 +35,20 @@ export class LoginPage {
     private pushNotifications: PushNotificationsService,
     private route: ActivatedRoute
   ) {
-    if (!this.route.snapshot.queryParamMap.has('oobCode') && !this.route.snapshot.queryParamMap.has('mode') && this.auth.isLoggedIn()) {
+    if (!this.route.snapshot.queryParamMap.has('oobCode') && !this.route.snapshot.queryParamMap.has('mode')
+      && !this.route.snapshot.queryParamMap.has('passwordReset') && this.auth.isLoggedIn()) {
       this.router.navigateByUrl('/', { replaceUrl: true });
     }
   }
 
   async ionViewWillEnter() {
     const params = this.route.snapshot.queryParamMap;
+    if (params.get('passwordReset') === 'success') {
+      this.verificationError = '';
+      this.verificationMessage = 'Votre mot de passe a été réinitialisé, merci de vous connecter.';
+      await this.router.navigate(['/login'], { replaceUrl: true });
+      return;
+    }
     const code = params.get('oobCode');
     if (!code && !params.has('mode')) return;
 

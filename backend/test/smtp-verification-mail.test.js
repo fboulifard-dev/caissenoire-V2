@@ -59,6 +59,7 @@ test('verification email uses the configured mailbox and secure SMTP', async (t)
   createTransport.mock.mockImplementation(() => streamTransport);
   const result = await sendVerificationMail('recipient@example.com', url, 'Alice Martin');
   const mime = result.message.toString('utf8');
+  assert.match(mime, /Content-Type: text\/plain/);
   assert.match(mime, /Content-Type: text\/html/);
   assert.match(mime, /Content-ID: <caisse-noire-logo>/);
   assert.match(mime, /Content-Type: image\/png/);

@@ -14,7 +14,7 @@ describe('LoginPage email verification', () => {
   let router: jasmine.SpyObj<Router>;
 
   beforeEach(() => {
-    auth = jasmine.createSpyObj<AuthService>('AuthService', ['isLoggedIn', 'verifyEmail', 'signInEmail', 'requestPasswordReset']);
+    auth = jasmine.createSpyObj<AuthService>('AuthService', ['isLoggedIn', 'verifyEmail', 'signInEmail']);
     auth.isLoggedIn.and.returnValue(false);
     auth.verifyEmail.and.resolveTo();
     api = jasmine.createSpyObj<ApiService>('ApiService', ['sendVerificationEmail']);
@@ -42,6 +42,14 @@ describe('LoginPage email verification', () => {
     expect(page.verificationError).toBe('');
   });
 
+  it('displays the password reset confirmation on the login page', async () => {
+    route.snapshot.queryParamMap = convertToParamMap({ passwordReset: 'success' });
+    await page.ionViewWillEnter();
+    expect(page.verificationMessage).toContain('mot de passe a été réinitialisé');
+    expect(router.navigate).toHaveBeenCalledWith(['/login'], { replaceUrl: true });
+    expect(auth.verifyEmail).not.toHaveBeenCalled();
+  });
+
   it('does not report success for expired or invalid links', async () => {
     auth.verifyEmail.and.rejectWith(new Error('expired'));
     await page.ionViewWillEnter();
@@ -63,19 +71,15 @@ describe('LoginPage email verification', () => {
     expect(page.verificationError).toContain('Impossible d’envoyer');
   });
 
-  it('does not submit invalid or loading login and password reset forms', async () => {
+  it('does not submit an invalid or loading login form', async () => {
     page.email = 'invalid';
     page.password = 'password';
     await page.signInEmail();
-    await page.sendPasswordReset();
     expect(auth.signInEmail).not.toHaveBeenCalled();
-    expect(auth.requestPasswordReset).not.toHaveBeenCalled();
 
     page.email = 'user@example.com';
     page.loading = true;
     await page.signInEmail();
-    await page.sendPasswordReset();
     expect(auth.signInEmail).not.toHaveBeenCalled();
-    expect(auth.requestPasswordReset).not.toHaveBeenCalled();
   });
 });

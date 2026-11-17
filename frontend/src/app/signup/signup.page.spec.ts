@@ -9,6 +9,7 @@ import { User } from 'firebase/auth';
 import { AuthService } from '../services/auth.service';
 import { ApiService } from '../services/api.service';
 import { SignupPage } from './signup.page';
+import { PasswordRequirementsComponent } from '../shared/password-requirements/password-requirements.component';
 
 @Directive({
   selector: 'ion-input',
@@ -137,7 +138,7 @@ describe('SignupPage form steps', () => {
     api.checkAccountAvailability.and.returnValue(of({ available: true }));
     await TestBed.configureTestingModule({
       declarations: [SignupPage, TestIonInput],
-      imports: [CommonModule, FormsModule, RouterTestingModule],
+      imports: [CommonModule, FormsModule, RouterTestingModule, PasswordRequirementsComponent],
       schemas: [NO_ERRORS_SCHEMA],
       providers: [
         { provide: AuthService, useValue: auth },
@@ -155,6 +156,7 @@ describe('SignupPage form steps', () => {
     expect(form.querySelector('ion-input[name="email"]')).not.toBeNull();
     expect(form.querySelector('ion-input[name="firstName"]')).toBeNull();
     expect(form.querySelector('ion-input[name="lastName"]')).toBeNull();
+    expect(form.querySelectorAll('.password-requirements [role="listitem"].met').length).toBe(5);
 
     const check = spyOn(page, 'checkAvailability').and.callThrough();
     form.querySelector('form')!.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));

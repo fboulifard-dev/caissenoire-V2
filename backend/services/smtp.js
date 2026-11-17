@@ -53,4 +53,17 @@ async function sendVerificationMail(to, verificationUrl, displayName) {
   }]);
 }
 
-module.exports = { sendVerificationMail };
+async function sendPasswordResetMail(to, resetUrl) {
+  const [textTemplate, htmlTemplate] = await Promise.all([
+    fs.readFile(path.join(__dirname, '../templates/password-reset-mail.txt'), 'utf8'),
+    fs.readFile(path.join(__dirname, '../templates/password-reset-mail.html'), 'utf8')
+  ]);
+  if (![textTemplate, htmlTemplate].every(template => template.includes('{{resetUrl}}'))) {
+    throw new Error('Invalid password reset mail template');
+  }
+  const text = textTemplate.replaceAll('{{resetUrl}}', () => resetUrl);
+  const html = htmlTemplate.replaceAll('{{resetUrl}}', () => escapeHtml(resetUrl));
+  return sendMail(to, 'Réinitialisation de votre mot de passe Caisse Noire', text, html);
+}
+
+module.exports = { sendVerificationMail, sendPasswordResetMail };
