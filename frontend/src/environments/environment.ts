@@ -4,6 +4,7 @@
 
 export const environment = {
   name: 'development',
+  titlePrefix: 'DEV',
   production: false,
   apiUrl: 'http://localhost:3000',
   firebase: {

@@ -1,5 +1,6 @@
 export const environment = {
   name: '',
+  titlePrefix: '',
   production: true,
   apiUrl: 'https://api-asptt.fboulifard.com',
   firebase: {

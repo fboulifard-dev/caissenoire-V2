@@ -2,6 +2,9 @@
 
 Cette application Angular sera utilisée pour le Web et empaquetée avec Ionic/Capacitor pour Android et iOS.
 
+Le titre de l'onglet est préfixé par `DEV` en développement et par `REC` en
+recette. En production, il ne comporte aucun préfixe.
+
 ### Déploiement de recette
 
 Depuis `frontend`, après connexion à Firebase (`npx firebase login`) et avec
