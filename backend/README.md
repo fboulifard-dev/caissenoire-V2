@@ -26,26 +26,32 @@ utilise `SMTP_SECURE=false` avec STARTTLS obligatoire. L'identifiant est
 l'adresse complète de la boîte IONOS, et l'expéditeur doit être autorisé par
 IONOS. Voir les [paramètres IONOS](https://www.ionos.fr/assistance/email/sujets-generaux/messagerie-ionos-donnees-de-serveur-pour-imap-pop3-et-smtp/).
 En App Hosting, `apphosting.yaml` configure le serveur IONOS et référence les
-secrets `SMTP_USER` et `SMTP_PASSWORD`. Chaque fichier d'environnement référence
-son secret `SMTP_FROM`. Créer ces secrets dans
-chacun des projets Firebase avant de déployer, avec l'adresse complète de la
-boîte pour `SMTP_USER`, son mot de passe pour `SMTP_PASSWORD` et une adresse
-d'expéditeur autorisée par IONOS pour `SMTP_FROM`. Ne pas versionner leurs
-valeurs. Les valeurs définies dans la console App Hosting peuvent remplacer
-celles du YAML.
+secrets `SMTP_USER` et `SMTP_PASSWORD`. Chaque fichier d'environnement définit
+la valeur `SMTP_FROM`, qui doit être une adresse d'expéditeur autorisée par
+IONOS. Créer les deux secrets dans chacun des projets Firebase avant de
+déployer, avec l'adresse complète de la boîte pour `SMTP_USER` et son mot de
+passe pour `SMTP_PASSWORD`. Ne pas versionner leurs valeurs. Les valeurs
+définies dans la console App Hosting peuvent remplacer celles du YAML.
 
 Par exemple, pour chaque secret et chaque projet :
 
 ```sh
 firebase apphosting:secrets:set SMTP_USER --project caissenoire-dev-84854
 firebase apphosting:secrets:set SMTP_PASSWORD --project caissenoire-dev-84854
-firebase apphosting:secrets:set SMTP_FROM --project caissenoire-dev-84854
-firebase apphosting:secrets:grantaccess SMTP_USER,SMTP_PASSWORD,SMTP_FROM --backend api --project caissenoire-dev-84854
+firebase apphosting:secrets:grantaccess SMTP_USER,SMTP_PASSWORD --backend api --project caissenoire-dev-84854
 ```
 
-Répéter avec `--project asptt-nantes-hb` et `--backend backend-prod` pour la
-production. La CLI demande les valeurs des secrets ; ne pas les passer en
-arguments ni les partager.
+En production, créer les secrets avec `--project asptt-nantes-hb`, puis
+autoriser le backend `backend-prod` depuis le dossier `backend` :
+
+```sh
+npm run grant-secrets-prod
+```
+
+Cette commande modifie les droits d'accès aux secrets du projet de production ;
+elle nécessite les autorisations Firebase et IAM appropriées. La CLI demande
+les valeurs lors de la création des secrets ; ne pas les passer en arguments ni
+les partager.
 
 Configurer `EMAIL_VERIFICATION_URL` avec l'URL absolue de la page `/login` de
 l'application : par exemple `http://localhost:4200/login` en local. Les URL
