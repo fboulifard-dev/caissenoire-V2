@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { getAuth, Auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, OAuthProvider, signOut, onAuthStateChanged, sendEmailVerification, sendPasswordResetEmail } from 'firebase/auth';
+import { getAuth, Auth, User, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, signInWithPopup, GoogleAuthProvider, OAuthProvider, signOut, onAuthStateChanged, checkActionCode, applyActionCode, verifyPasswordResetCode, confirmPasswordReset } from 'firebase/auth';
 import { initializeApp } from 'firebase/app';
 import { environment } from '../../environments/environment';
 import { BehaviorSubject } from 'rxjs';
@@ -51,15 +51,32 @@ export class AuthService {
     return signInWithEmailAndPassword(this.auth, email, password);
   }
 
-  requestPasswordReset(email: string) {
-    return sendPasswordResetEmail(this.auth, email);
+  verifyPasswordResetCode(code: string) {
+    return verifyPasswordResetCode(this.auth, code);
   }
 
-  async createAccount(email: string, password: string) {
-    const {user} = await createUserWithEmailAndPassword(this.auth, email, password);
-    await sendEmailVerification(user);
+  confirmPasswordReset(code: string, password: string) {
+    return confirmPasswordReset(this.auth, code, password);
+  }
 
-    
+  createAccount(email: string, password: string) {
+    return createUserWithEmailAndPassword(this.auth, email, password);
+  }
+
+  updateAccountName(user: User, displayName: string) {
+    return updateProfile(user, { displayName });
+  }
+
+  async verifyEmail(code: string) {
+    await this.auth.authStateReady();
+    const action = await checkActionCode(this.auth, code);
+    if (action.operation !== 'VERIFY_EMAIL') {
+      throw new Error('Invalid verification action');
+    }
+    if (this.auth.currentUser?.email === action.data.email) {
+      await signOut(this.auth);
+    }
+    await applyActionCode(this.auth, code);
   }
 
   signInGoogle() {

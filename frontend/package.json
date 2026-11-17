@@ -8,6 +8,8 @@
     "start": "ng serve",
     "build": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/build.ps1",
     "build-rec": "pwsh -NoProfile -ExecutionPolicy Bypass -File scripts/build-rec.ps1",
+    "deploy-rec": "npm run build-rec && firebase deploy --only hosting --project caissenoire-dev-84854 --config firebase.rec.json",
+    "deploy-prod": "npm run build && firebase deploy --only hosting --project asptt-nantes-hb --config firebase.json",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint",

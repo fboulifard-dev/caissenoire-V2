@@ -13,8 +13,10 @@ app.get('/test', (req, res) => {
 });
 
 const seasonsRouter = require('./routes/seasons');
+const accountVerificationRouter = require('./routes/account-verification');
 
 app.use('/api/seasons', seasonsRouter);
+app.use('/api/account', accountVerificationRouter);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

@@ -1,0 +1,34 @@
+{
+  "apphosting": [
+    {
+      "backendId": "api",
+      "rootDir": ".",
+      "alwaysDeployFromSource": true,
+      "ignore": [
+        "node_modules",
+        ".git",
+        "**/.*",
+        "**/.env*",
+        "**/*serviceAccount*.json",
+        "**/*.pem",
+        "**/*.key",
+        "**/*.log"
+      ]
+    },
+    {
+      "backendId": "backend-prod",
+      "rootDir": ".",
+      "alwaysDeployFromSource": true,
+      "ignore": [
+        "node_modules",
+        ".git",
+        "**/.*",
+        "**/.env*",
+        "**/*serviceAccount*.json",
+        "**/*.pem",
+        "**/*.key",
+        "**/*.log"
+      ]
+    }
+  ]
+}

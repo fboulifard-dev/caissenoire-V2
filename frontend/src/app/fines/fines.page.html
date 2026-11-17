@@ -34,6 +34,9 @@
       <ion-item>
         <ion-toggle [(ngModel)]="matchDayOnly" (ionChange)="onFilterChanged()">Jour de match uniquement</ion-toggle>
       </ion-item>
+      <ion-item>
+        <ion-toggle [(ngModel)]="photoOnly" (ionChange)="onFilterChanged()">Avec photo uniquement</ion-toggle>
+      </ion-item>
     </ion-list>
     <div class="fine-filter-actions">
       <ion-button fill="outline" expand="block" (click)="resetFineFilters()" [disabled]="!hasFineFilters">
@@ -81,6 +84,11 @@
       <ion-chip *ngIf="matchDayOnly" button="true" (click)="matchDayOnly = false; onFilterChanged()" aria-label="Retirer le filtre jour de match">
         <ion-icon name="football-outline" aria-hidden="true"></ion-icon>
         <ion-label>Jour de match</ion-label>
+        <ion-icon name="close-circle-outline" aria-hidden="true"></ion-icon>
+      </ion-chip>
+      <ion-chip *ngIf="photoOnly" button="true" (click)="photoOnly = false; onFilterChanged()" aria-label="Retirer le filtre photo">
+        <ion-icon name="image-outline" aria-hidden="true"></ion-icon>
+        <ion-label>Avec photo</ion-label>
         <ion-icon name="close-circle-outline" aria-hidden="true"></ion-icon>
       </ion-chip>
     </div>

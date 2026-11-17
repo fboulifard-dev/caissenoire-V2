@@ -15,11 +15,12 @@
 
     <section class="auth-form">
       <div class="auth-intro">
-        <h1>Créer un compte</h1>
-        <p>Quelques informations pour accéder à votre caisse.</p>
+        <h1>{{ personalInfoStep ? 'Informations personnelles' : 'Créer un compte' }}</h1>
+        <p>{{ personalInfoStep ? 'Renseignez votre prénom et votre nom.' : 'Quelques informations pour accéder à votre caisse.' }}</p>
       </div>
 
-      <div class="auth-fields">
+      <form (ngSubmit)="personalInfoStep ? createAccount() : checkAvailability()">
+      <div class="auth-fields" *ngIf="!personalInfoStep">
         <ion-item>
           <ion-icon name="person-outline" slot="start" aria-hidden="true"></ion-icon>
           <ion-input
@@ -30,6 +31,7 @@
             label="Adresse e-mail"
             labelPlacement="stacked"
             autocomplete="email"
+            enterkeyhint="send"
             required>
           </ion-input>
         </ion-item>
@@ -47,6 +49,7 @@
             label="Mot de passe"
             labelPlacement="stacked"
             autocomplete="new-password"
+            enterkeyhint="send"
             required>
           </ion-input>
           <ion-button slot="end" fill="clear" type="button" [attr.aria-label]="showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" [attr.aria-pressed]="showPassword" (click)="showPassword = !showPassword">
@@ -56,28 +59,7 @@
         <p class="field-error" *ngIf="(passwordModel.dirty || passwordModel.touched) && !isPasswordValid">
           Le mot de passe ne respecte pas encore toutes les règles.
         </p>
-        <div class="password-requirements" role="list" aria-label="Règles du mot de passe">
-          <p [class.met]="hasMinimumPasswordLength" role="listitem">
-            <ion-icon [name]="hasMinimumPasswordLength ? 'checkmark-circle' : 'ellipse-outline'" aria-hidden="true"></ion-icon>
-            Au moins 10 caractères
-          </p>
-          <p [class.met]="hasPasswordUppercase" role="listitem">
-            <ion-icon [name]="hasPasswordUppercase ? 'checkmark-circle' : 'ellipse-outline'" aria-hidden="true"></ion-icon>
-            Une lettre majuscule
-          </p>
-          <p [class.met]="hasPasswordLowercase" role="listitem">
-            <ion-icon [name]="hasPasswordLowercase ? 'checkmark-circle' : 'ellipse-outline'" aria-hidden="true"></ion-icon>
-            Une lettre minuscule
-          </p>
-          <p [class.met]="hasPasswordNumber" role="listitem">
-            <ion-icon [name]="hasPasswordNumber ? 'checkmark-circle' : 'ellipse-outline'" aria-hidden="true"></ion-icon>
-            Un chiffre
-          </p>
-          <p [class.met]="hasPasswordSpecialCharacter" role="listitem">
-            <ion-icon [name]="hasPasswordSpecialCharacter ? 'checkmark-circle' : 'ellipse-outline'" aria-hidden="true"></ion-icon>
-            Un caractère spécial
-          </p>
-        </div>
+        <app-password-requirements [password]="password"></app-password-requirements>
 
         <ion-item>
           <ion-icon name="lock-closed-outline" slot="start" aria-hidden="true"></ion-icon>
@@ -89,6 +71,7 @@
             label="Confirmer le mot de passe"
             labelPlacement="stacked"
             autocomplete="new-password"
+            enterkeyhint="send"
             required>
           </ion-input>
           <ion-button slot="end" fill="clear" type="button" [attr.aria-label]="showConfirmPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'" [attr.aria-pressed]="showConfirmPassword" (click)="showConfirmPassword = !showConfirmPassword">
@@ -100,14 +83,29 @@
         </p>
       </div>
 
+      <div class="auth-fields" *ngIf="personalInfoStep">
+        <ion-item>
+          <ion-icon name="person-outline" slot="start" aria-hidden="true"></ion-icon>
+          <ion-input name="firstName" [(ngModel)]="firstName" label="Prénom" labelPlacement="stacked" autocomplete="given-name" enterkeyhint="send" required></ion-input>
+        </ion-item>
+        <ion-item>
+          <ion-icon name="person-outline" slot="start" aria-hidden="true"></ion-icon>
+          <ion-input name="lastName" [(ngModel)]="lastName" label="Nom" labelPlacement="stacked" autocomplete="family-name" enterkeyhint="send" required></ion-input>
+        </ion-item>
+      </div>
+
       <ion-text color="danger" *ngIf="error">
         <p class="auth-error" role="alert">{{ error }}</p>
       </ion-text>
 
-      <ion-button class="auth-primary" expand="block" (click)="createAccount()" [disabled]="loading || !canCreateAccount">
+      <ion-button class="auth-primary" expand="block" type="submit" [disabled]="loading || (personalInfoStep ? !canCreateAccount : !canContinue)">
         <ion-spinner *ngIf="loading" name="crescent"></ion-spinner>
-        <span *ngIf="!loading">Créer mon compte</span>
+        <span *ngIf="!loading">{{ personalInfoStep ? 'Créer mon compte' : 'Continuer' }}</span>
       </ion-button>
+      <ion-button *ngIf="personalInfoStep && canGoBack" type="button" fill="clear" expand="block" (click)="backToCredentials()" [disabled]="loading">
+        Retour
+      </ion-button>
+      </form>
     </section>
   </main>
 </ion-content>

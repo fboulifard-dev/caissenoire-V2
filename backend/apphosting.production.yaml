@@ -1,0 +1,12 @@
+env:
+  - variable: NODE_ENV
+    value: production
+  - variable: EMAIL_VERIFICATION_URL
+    value: https://asptt.fboulifard.com/login
+    availability: [RUNTIME]
+  - variable: PASSWORD_RESET_URL
+    value: https://asptt.fboulifard.com/reset-password
+    availability: [RUNTIME]
+  - variable: SMTP_FROM
+    value: asptt@mail-asptt.fboulifard.com
+    availability: [RUNTIME]

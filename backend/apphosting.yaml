@@ -7,5 +7,18 @@ scripts:
   runCommand: node index.js
 
 env:
-  - variable: NODE_ENV
-    value: recette
+  - variable: SMTP_HOST
+    value: smtp.ionos.fr
+    availability: [RUNTIME]
+  - variable: SMTP_PORT
+    value: "465"
+    availability: [RUNTIME]
+  - variable: SMTP_SECURE
+    value: "true"
+    availability: [RUNTIME]
+  - variable: SMTP_USER
+    secret: SMTP_USER
+    availability: [RUNTIME]
+  - variable: SMTP_PASSWORD
+    secret: SMTP_PASSWORD
+    availability: [RUNTIME]
